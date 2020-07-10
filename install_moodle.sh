@@ -94,10 +94,10 @@ sudo rm -f /var/www/html/index.html
 cat >> /etc/apache2/sites-available/moodle.conf <<EOF
 
 <VirtualHost *:80>
-ServerAdmin admin@example.com
+ServerAdmin admin@vps.rw
 DocumentRoot /var/www/html/moodle/
-ServerName example.com
-ServerAlias courses.example.com
+ServerName vps.rw
+ServerAlias courses.vps.rw
 
 <Directory /var/www/html/moodle/>
 Options +FollowSymlinks
