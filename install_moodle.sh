@@ -45,7 +45,7 @@ sudo apt install -y mysql-server mysql-client
 sudo systemctl enable mysql.service
 sudo systemctl start mysql.service
 
-sudo mysql_secure_installation
+#sudo mysql_secure_installation
 
 cat >> /etc/mysql/mysql.conf.d/mysqld.cnf <<EOF
 [mysqld]
