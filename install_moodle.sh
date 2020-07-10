@@ -122,4 +122,4 @@ sudo apt install -y certbot python-certbot-apache
 
 sudo certbot --apache
 
-echo -e "Access moodle http://ipaddress/install"
+echo -e "Access moodle https://courses.vps.rw/install.php"
