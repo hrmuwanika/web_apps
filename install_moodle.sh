@@ -73,9 +73,8 @@ sudo systemctl start apache2.service
 
 # Download & install Moodle
 cd /usr/src 
-wget https://download.moodle.org/download.php/stable39/moodle-latest-39.tgz
-sudo tar -zxvf moodle-latest-39.tgz 
-sudo cp -rf moodle/* /var/www/html/
+git clone https://github.com/moodle/moodle.git
+sudo mv moodle/* /var/www/html/
 
 sudo chown -R www-data:www-data /var/www/html/
 sudo chmod -R 755 /var/www/html/moodle
