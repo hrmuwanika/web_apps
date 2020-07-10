@@ -1,0 +1,126 @@
+#!/bin/bash
+
+################################################################################
+# Script for installing Moodle v3.9 MariaDB, Apache2 and Php 7.3 on Ubuntu 18.04
+# Authors: Henry Robert Muwanika
+
+# Make a new file:
+# sudo nano install_moodle.sh
+# Place this content in it and then make the file executable:
+# sudo chmod +x install_moodle.sh
+# Execute the script to install Moodle:
+# ./install_moodle.sh
+#
+################################################################################
+
+#----------------------------------------------------
+# Disable password authentication
+#----------------------------------------------------
+sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
+sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo service sshd restart
+
+sudo apt install -y iptables iptables-persistent 
+
+# firewall and iptables
+ufw enable
+ufw allow ssh
+ufw allow http
+ufw allow https
+
+#--------------------------------------------------
+# Update Server
+#--------------------------------------------------
+echo -e "\n============= Update Server ================"
+sudo apt update
+sudo apt upgrade -y
+sudo apt autoremove -y
+
+sudo apt install -y vim wget git
+
+# Installation of MySQL database
+sudo apt install -y mysql-server mysql-client
+
+sudo systemctl enable mysql.service
+sudo systemctl start mysql.service
+
+sudo mysql_secure_installation
+
+cat >> /etc/mysql/mysql.conf.d/mysqld.cnf <<EOF
+[mysqld]
+        innodb_file_format = Barracuda 
+        default_storage_engine = innodb
+        innodb_file_per_table = 1
+EOF
+
+sudo systemctl restart mysql.service
+
+mysql -u root -p<<MYSQL_SCRIPT
+CREATE DATABASE moodle;
+GRANT ALL PRIVILEGES ON moodle.* TO 'admin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'abc1234!';
+FLUSH PRIVILEGES;
+MYSQL_SCRIPT
+
+sudo systemctl restart mysql.service
+
+sudo apt install -y graphviz aspell ghostscript clamav 
+sudo apt install -y apache2 php libapache2-mod-php php-cli php-mysql php-mbstring php-xmlrpc php-zip
+sudo apt install -y php-gd php-xml php-bcmath php-ldap php-pspell php-curl php-intl php-soap php-pear 
+
+sudo systemctl enable apache2.service
+sudo systemctl start apache2.service
+
+# Download & install Moodle
+cd /usr/src 
+wget https://download.moodle.org/download.php/stable39/moodle-latest-39.tgz
+sudo tar -zxvf moodle-latest-39.tgz 
+sudo cp -rf moodle/* /var/www/html/
+
+sudo chown -R www-data:www-data /var/www/html/
+sudo chmod -R 755 /var/www/html/moodle
+
+sudo mkdir -p /var/moodledata
+sudo chown -R www-data /var/moodledata
+sudo chmod -R 777 /var/moodledata
+
+sudo mkdir -p /var/quarantine
+sudo chown -R www-data /var/quarantine
+
+sudo rm -f /var/www/html/index.html
+
+# Configure Apache2 HTTP Server
+#------------------------------------------------------------------------------
+cat >> /etc/apache2/sites-available/moodle.conf <<EOF
+
+<VirtualHost *:80>
+ServerAdmin admin@example.com
+DocumentRoot /var/www/html/moodle/
+ServerName example.com
+ServerAlias courses.example.com
+
+<Directory /var/www/html/moodle/>
+Options +FollowSymlinks
+AllowOverride All
+Require all granted
+</Directory>
+
+ErrorLog ${APACHE_LOG_DIR}/error.log
+CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+EOF
+
+#------------------------------------------------------------------------------
+
+# Enable the Apache rewrite module
+sudo a2enmod rewrite
+sudo a2ensite moodle.conf
+sudo systemctl restart apache2
+
+# Installation of Letsencrypt certificate
+sudo apt install -y certbot python-certbot-apache
+
+sudo certbot --apache
+
+echo -e "Access moodle http://ipaddress/install"
