@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v3.9 MariaDB, Apache2 and Php 7.3 on Ubuntu 18.04
+# Script for installing Moodle v3.11 MariaDB, Apache2 and Php 7.3 on Ubuntu 18.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
