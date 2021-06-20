@@ -12,7 +12,15 @@
 # ./install_moodle.sh
 #
 ################################################################################
-
+#
+#
+# Set to "True" to install certbot and have ssl enabled, "False" to use http
+ENABLE_SSL="True"
+# Set the website name
+WEBSITE_NAME="example.com"
+# Provide Email to register ssl certificate
+ADMIN_EMAIL="odoo@example.com"
+##
 #----------------------------------------------------
 # Disable password authentication
 #----------------------------------------------------
@@ -117,9 +125,24 @@ sudo a2enmod rewrite
 sudo a2ensite moodle.conf
 sudo systemctl restart apache2
 
-# Installation of Letsencrypt certificate
-sudo apt install -y certbot python-certbot-apache
+#--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------
 
-sudo certbot --apache
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "odoo@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+  sudo apt install snapd -y
+  sudo apt-get remove certbot
+  
+  sudo snap install core
+  sudo snap refresh core
+  sudo snap install --classic certbot
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo certbot --apache -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo systemctl reload apache2
+  
+  echo "\n============ SSL/HTTPS is enabled! ========================"
+else
+  echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+fi
 
 echo -e "Access moodle https://courses.vps.rw/install.php"
