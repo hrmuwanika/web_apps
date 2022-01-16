@@ -13,14 +13,15 @@
 #
 ################################################################################
 #
-#
+
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="admin@example.com"
-##
+#
+
 #----------------------------------------------------
 # Disable password authentication
 #----------------------------------------------------
@@ -89,11 +90,15 @@ wget https://download.moodle.org/download.php/direct/stable311/moodle-latest-311
 sudo tar -zxvf moodle-latest-311.tgz 
 sudo mv moodle /var/www/html/
 
+cd /var/www/html/moodle/
+sudo cp config-dist.php config.php
+sudo vim config.php
+
 sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chmod -R 777 /var/www/html/moodle
+sudo chmod -R 775 /var/www/html/moodle
 
 sudo mkdir /var/moodledata
-sudo chown -R www-data /var/moodledata
+sudo chown www-data:www-data -R  /var/moodledata
 sudo chmod -R 777 /var/moodledata
 
 sudo mkdir -p /var/quarantine
