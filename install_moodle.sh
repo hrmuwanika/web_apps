@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v3.11 MariaDB, Apache2 and Php 7.3 on Ubuntu 18.04
+# Script for installing Moodle v3.11.4 MariaDB, Apache2 and Php 7.4 on Ubuntu 20.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -19,7 +19,7 @@ ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
-ADMIN_EMAIL="odoo@example.com"
+ADMIN_EMAIL="admin@example.com"
 ##
 #----------------------------------------------------
 # Disable password authentication
@@ -53,13 +53,14 @@ sudo apt install -y mysql-server mysql-client
 sudo systemctl enable mysql.service
 sudo systemctl start mysql.service
 
-#sudo mysql_secure_installation
+sudo mysql_secure_installation
 
 cat >> /etc/mysql/mysql.conf.d/mysqld.cnf <<EOF
 [mysqld]
-        innodb_file_format = Barracuda 
         default_storage_engine = innodb
         innodb_file_per_table = 1
+        innodb_file_format = Barracuda
+        innodb_large_prefix = 1
 EOF
 
 sudo systemctl restart mysql.service
@@ -72,9 +73,13 @@ MYSQL_SCRIPT
 
 sudo systemctl restart mysql.service
 
-sudo apt install -y graphviz aspell ghostscript clamav 
-sudo apt install -y apache2 php libapache2-mod-php php-cli php-mysql php-mbstring php-xmlrpc php-zip
-sudo apt install -y php-gd php-xml php-bcmath php-ldap php-pspell php-curl php-intl php-soap php-pear 
+sudo add-apt-repository ppa:ondrej/php 
+sudo apt update
+
+sudo apt install -y graphviz aspell ghostscript clamav php7.4 php7.4-pspell php7.4-curl php7.4-gd php7.4-intl php7.4-mysql \
+php7.4-xml php7.4-xmlrpc php7.4-ldap php7.4-zip php7.4-soap php7.4-mbstring php7.4-bcmath  php7.4-pear php7.4-cli 
+
+sudo apt install -y apache2  libapache2-mod-php 
 
 sudo systemctl enable apache2.service
 sudo systemctl start apache2.service
@@ -85,9 +90,9 @@ sudo tar -zxvf moodle-latest-311.tgz
 sudo mv moodle /var/www/html/
 
 sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chmod -R 755 /var/www/html/moodle
+sudo chmod -R 777 /var/www/html/moodle
 
-sudo mkdir -p /var/moodledata
+sudo mkdir /var/moodledata
 sudo chown -R www-data /var/moodledata
 sudo chmod -R 777 /var/moodledata
 
@@ -101,10 +106,9 @@ sudo rm -f /var/www/html/index.html
 cat >> /etc/apache2/sites-available/moodle.conf <<EOF
 
 <VirtualHost *:80>
-ServerAdmin admin@vps.rw
+ServerAdmin admin@example.com
 DocumentRoot /var/www/html/moodle/
-ServerName vps.rw
-ServerAlias courses.vps.rw
+ServerName $WEBSITE_NAME
 
 <Directory /var/www/html/moodle/>
 Options +FollowSymlinks
@@ -122,6 +126,7 @@ EOF
 
 # Enable the Apache rewrite module
 sudo a2enmod rewrite
+
 sudo a2ensite moodle.conf
 sudo systemctl restart apache2
 
@@ -145,4 +150,4 @@ else
   echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-echo -e "Access moodle https://courses.vps.rw/install.php"
+echo -e "Access moodle https://$WEBSITE_NAME/install.php"
