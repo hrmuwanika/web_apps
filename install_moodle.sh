@@ -86,8 +86,8 @@ sudo systemctl enable apache2.service
 sudo systemctl start apache2.service
 
 # Download & install Moodle
-wget https://download.moodle.org/download.php/direct/stable311/moodle-latest-311.tgz
-sudo tar -zxvf moodle-latest-311.tgz 
+wget https://download.moodle.org/download.php/direct/stable400/moodle-latest-400.tgz
+sudo tar -zxvf moodle-latest-400.tgz 
 sudo mv moodle /var/www/html/
 
 cd /var/www/html/moodle/
