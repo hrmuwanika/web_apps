@@ -13,15 +13,14 @@
 #
 ################################################################################
 #
-
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
-ADMIN_EMAIL="admin@example.com"
+ADMIN_EMAIL="moodle@example.com"
 #
-
+#
 #----------------------------------------------------
 # Disable password authentication
 #----------------------------------------------------
@@ -29,117 +28,133 @@ sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthenticat
 sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sudo service sshd restart
-
-sudo apt install -y iptables iptables-persistent 
-
-# firewall and iptables
-ufw enable
-ufw allow ssh
-ufw allow http
-ufw allow https
-
+#
 #--------------------------------------------------
 # Update Server
 #--------------------------------------------------
 echo -e "\n============= Update Server ================"
-sudo apt update
-sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
-sudo apt install -y vim wget git
+#--------------------------------------------------
+# Firewall
+#--------------------------------------------------
+sudo ufw enable
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
 
-# Installation of MySQL database
-sudo apt install -y mysql-server mysql-client
+#--------------------------------------------------
+# Install Nginx Web server
+#--------------------------------------------------
+sudo apt install -y nginx
+sudo systemctl stop nginx.service
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
 
-sudo systemctl enable mysql.service
-sudo systemctl start mysql.service
+#--------------------------------------------------
+# Installation of Mariadb server
+#--------------------------------------------------
+sudo apt install -y mariadb-server mariadb-client
+sudo systemctl stop mariadb.service
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
 
-sudo mysql_secure_installation
+# sudo mysql_secure_installation
 
-cat >> /etc/mysql/mysql.conf.d/mysqld.cnf <<EOF
-[mysqld]
-        default_storage_engine = innodb
-        innodb_file_per_table = 1
-        innodb_file_format = Barracuda
-        innodb_large_prefix = 1
-EOF
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+# add the below statements
+# [mysqld]
+# default_storage_engine = innodb
+# innodb_file_per_table = 1
+# innodb_file_format = Barracuda
+# innodb_large_prefix = 1
 
 sudo systemctl restart mysql.service
 
-mysql -u root -p<<MYSQL_SCRIPT
-CREATE DATABASE moodle;
-GRANT ALL PRIVILEGES ON moodle.* TO 'admin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'abc1234!';
-FLUSH PRIVILEGES;
-MYSQL_SCRIPT
-
+sudo mysql -uroot --password="" -e "CREATE DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodle.* TO 'moodle_admin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'abc1234!';"
+sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
+sudo mysqladmin -uroot --password="" reload 2>/dev/null
 sudo systemctl restart mysql.service
 
+#--------------------------------------------------
+# Installation of PHP
+#--------------------------------------------------
+sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:ondrej/php 
 sudo apt update
 
-sudo apt install -y graphviz aspell ghostscript clamav php7.4 php7.4-pspell php7.4-curl php7.4-gd php7.4-intl php7.4-mysql \
-php7.4-xml php7.4-xmlrpc php7.4-ldap php7.4-zip php7.4-soap php7.4-mbstring php7.4-bcmath  php7.4-pear php7.4-cli 
+sudo apt install -y graphviz aspell ghostscript clamav php8.1-fpm php8.1-cli php8.1-pspell php8.1-curl php8.1-gd php8.1-intl php8.1-mysql \
+php8.1-xml php8.1-xmlrpc php8.1-ldap php8.1-zip php8.1-soap php8.1-mbstring
 
-sudo apt install -y apache2  libapache2-mod-php 
+sudo sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/8.1/fpm/php.ini
+sudo sed -i s/"memory_limit = 128M"/"memory_limit = 256M"/g /etc/php/8.1/fpm/php.ini
+sudo sed -i s/"upload_max_filesize = 2M"/"upload_max_filesize = 100M"/g /etc/php/8.1/fpm/php.ini
+sudo sed -i s/"max_execution_time = 30"/"max_execution_time = 360"/g /etc/php/8.1/fpm/php.ini
+sudo sed -i s/";date.timezone =/date.timezone = Africa\/Kigali"/g /etc/php/8.1/fpm/php.ini
 
-sudo systemctl enable apache2.service
-sudo systemctl start apache2.service
-
-# Download & install Moodle
+#--------------------------------------------------
+# Installation of Moodle
+#--------------------------------------------------
 wget https://download.moodle.org/download.php/direct/stable400/moodle-latest-400.tgz
 sudo tar -zxvf moodle-latest-400.tgz 
 sudo mv moodle /var/www/html/
 
 cd /var/www/html/moodle/
 sudo cp config-dist.php config.php
-sudo vim config.php
+sudo nano config.php
 
 sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chmod -R 775 /var/www/html/moodle
+sudo chmod -R 755 /var/www/html/moodle
 
 sudo mkdir /var/moodledata
-sudo chown www-data:www-data -R  /var/moodledata
-sudo chmod -R 777 /var/moodledata
+sudo chown -R nginx /var/moodledata
+sudo chmod -R 0770 /var/moodledata
+
+sudo cat <<EOF > /etc/nginx/sites-available/moodle
+
+#########################################################################
+
+server {
+    listen 80;
+    listen [::]:80;
+    root /var/www/html/moodle;
+    index  index.php index.html index.htm;
+    server_name $WEBSITE_NAME;
+
+    location / {
+    try_files $uri $uri/ =404;        
+    }
+ 
+    location /dataroot/ {
+    internal;
+    alias /var/moodledata/;
+    }
+
+    location ~ [^/]\.php(/|$) {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+}
+
+#########################################################################
+EOF
+
+sudo ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
+sudo service nginx restart
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data /var/quarantine
-
-sudo rm -f /var/www/html/index.html
-
-# Configure Apache2 HTTP Server
-#------------------------------------------------------------------------------
-cat >> /etc/apache2/sites-available/moodle.conf <<EOF
-
-<VirtualHost *:80>
-ServerAdmin admin@example.com
-DocumentRoot /var/www/html/moodle/
-ServerName $WEBSITE_NAME
-
-<Directory /var/www/html/moodle/>
-Options +FollowSymlinks
-AllowOverride All
-Require all granted
-</Directory>
-
-ErrorLog ${APACHE_LOG_DIR}/error.log
-CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-</VirtualHost>
-EOF
-
-#------------------------------------------------------------------------------
-
-# Enable the Apache rewrite module
-sudo a2enmod rewrite
-
-sudo a2ensite moodle.conf
-sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Enable ssl with certbot
 #--------------------------------------------------
 
-if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "odoo@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
   sudo apt install snapd -y
   sudo apt-get remove certbot
   
@@ -147,8 +162,8 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "odoo@example.com" ]  && [ $WEB
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo certbot --apache -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
-  sudo systemctl reload apache2
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo systemctl reload nginx
   
   echo "\n============ SSL/HTTPS is enabled! ========================"
 else
