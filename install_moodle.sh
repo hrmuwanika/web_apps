@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v3.11.4 MariaDB, Apache2 and Php 7.4 on Ubuntu 20.04
+# Script for installing Moodle v4.0 MariaDB, Nginx and Php 8.1 on Ubuntu 22.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
