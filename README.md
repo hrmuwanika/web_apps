@@ -1,2 +1,2 @@
 # Moodle
-Installation of Moodle LMS on Ubuntu 18.04
+Installation of Moodle LMS on Ubuntu 22.04
