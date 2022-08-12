@@ -112,6 +112,9 @@ sudo mkdir /var/moodledata
 sudo chown -R nginx /var/moodledata
 sudo chmod -R 0770 /var/moodledata
 
+sudo mkdir -p /var/quarantine
+sudo chown -R www-data /var/quarantine
+
 sudo cat <<EOF > /etc/nginx/sites-available/moodle
 
 #########################################################################
@@ -147,15 +150,12 @@ EOF
 sudo ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
 sudo service nginx restart
 
-sudo mkdir -p /var/quarantine
-sudo chown -R www-data /var/quarantine
-
 #--------------------------------------------------
 # Enable ssl with certbot
 #--------------------------------------------------
 
 if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
-  sudo apt install snapd -y
+  sudo apt install -y snapd
   sudo apt-get remove certbot
   
   sudo snap install core
@@ -163,6 +163,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
   sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  
   sudo systemctl reload nginx
   
   echo "\n============ SSL/HTTPS is enabled! ========================"
@@ -171,3 +172,5 @@ else
 fi
 
 echo -e "Access moodle https://$WEBSITE_NAME/install.php"
+
+
