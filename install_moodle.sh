@@ -65,15 +65,15 @@ sudo systemctl enable mariadb.service
 sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
 # add the below statements
 # [mysqld]
-# default_storage_engine = innodb
 # innodb_file_per_table = 1
 # innodb_file_format = Barracuda
-# innodb_large_prefix = 1
+# innodb_large_prefix = ON
 
 sudo systemctl restart mysql.service
 
 sudo mysql -uroot --password="" -e "CREATE DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodle.* TO 'moodle_admin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'abc1234!';"
+sudo mysql -uroot --password="" -e "CREATE USER 'moodle_admin'@'localhost' IDENTIFIED BY 'abc1234!';"
+sudo mysql -uroot --password="" -e "GRANT ALL ON moodle.* TO 'moodle_admin'@'localhost' WITH GRANT OPTION;"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
 sudo mysqladmin -uroot --password="" reload 2>/dev/null
 sudo systemctl restart mysql.service
@@ -81,18 +81,24 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y software-properties-common
+sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https
 sudo add-apt-repository ppa:ondrej/php 
 sudo apt update
 
-sudo apt install -y graphviz aspell ghostscript clamav php8.1-fpm php8.1-cli php8.1-pspell php8.1-curl php8.1-gd php8.1-intl php8.1-mysql \
-php8.1-xml php8.1-xmlrpc php8.1-ldap php8.1-zip php8.1-soap php8.1-mbstring
+apt install -y php7.4 php7.4-fpm php7.4-common php7.4-mysql php7.4-gmp php7.4-curl php7.4-intl php7.4-mbstring php7.4-soap php7.4-xmlrpc php7.4-gd \
+php7.4-xml php7.4-cli php7.4-zip unzip git curl nano
 
-sudo sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/8.1/fpm/php.ini
-sudo sed -i s/"memory_limit = 128M"/"memory_limit = 256M"/g /etc/php/8.1/fpm/php.ini
-sudo sed -i s/"upload_max_filesize = 2M"/"upload_max_filesize = 100M"/g /etc/php/8.1/fpm/php.ini
-sudo sed -i s/"max_execution_time = 30"/"max_execution_time = 360"/g /etc/php/8.1/fpm/php.ini
-sudo sed -i s/";date.timezone =/date.timezone = Africa\/Kigali"/g /etc/php/8.1/fpm/php.ini
+sudo nano /etc/php/7.4/fpm/php.ini
+# file_uploads = On
+# allow_url_fopen = On
+# short_open_tag = On
+# memory_limit = 256M
+# cgi.fix_pathinfo = 0
+# upload_max_filesize = 100M
+# max_execution_time = 360
+# date.timezone = Africa/Kigali
+
+systemctl restart php7.4-fpm
 
 #--------------------------------------------------
 # Installation of Moodle
@@ -109,8 +115,8 @@ sudo chown -R www-data:www-data /var/www/html/moodle
 sudo chmod -R 755 /var/www/html/moodle
 
 sudo mkdir /var/moodledata
-sudo chown -R nginx /var/moodledata
-sudo chmod -R 0770 /var/moodledata
+sudo chown -R www-data:www-data /var/moodledata
+sudo chmod -R  755 /var/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data /var/quarantine
@@ -125,11 +131,14 @@ server {
     root /var/www/html/moodle;
     index  index.php index.html index.htm;
     server_name $WEBSITE_NAME;
-
+    
+    client_max_body_size 100M;
+    
+    autoindex off;
     location / {
-    try_files $uri $uri/ =404;        
+        try_files $uri $uri/ =404;
     }
- 
+    
     location /dataroot/ {
     internal;
     alias /var/moodledata/;
@@ -137,7 +146,7 @@ server {
 
     location ~ [^/]\.php(/|$) {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -147,8 +156,13 @@ server {
 #########################################################################
 EOF
 
+nginx -t
+
 sudo ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
-sudo service nginx restart
+sudo systemctl restart nginx.service
+
+sudo systemctl reload nginx
+sudo systemctl reload php7.4-fpm
 
 #--------------------------------------------------
 # Enable ssl with certbot
