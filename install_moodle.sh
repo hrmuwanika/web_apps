@@ -81,12 +81,14 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https
+sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https dirmngr
 sudo add-apt-repository ppa:ondrej/php 
 sudo apt update
 
 apt install -y php7.4 php7.4-fpm php7.4-common php7.4-mysql php7.4-gmp php7.4-curl php7.4-intl php7.4-mbstring php7.4-soap php7.4-xmlrpc php7.4-gd \
-php7.4-xml php7.4-cli php7.4-zip unzip git curl nano
+php7.4-xml php7.4-cli php7.4-zip php7.4-soap php7.4-iconv php7.4-json unzip git curl nano libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+
+sudo systemctl is-enabled php7.4-fpm 
 
 sudo nano /etc/php/7.4/fpm/php.ini
 # file_uploads = On
@@ -139,6 +141,22 @@ server {
         try_files $uri $uri/ =404;
     }
     
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }	
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }	
+
     location /dataroot/ {
     internal;
     alias /var/moodledata/;
@@ -159,7 +177,6 @@ EOF
 nginx -t
 
 sudo ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
-sudo systemctl restart nginx.service
 
 sudo systemctl reload nginx
 sudo systemctl reload php7.4-fpm
