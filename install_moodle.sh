@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.0 MariaDB, Nginx and Php 8.1 on Ubuntu 22.04
+# Script for installing Moodle v4.0 MariaDB, Nginx and Php 7.4 on Ubuntu 22.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -86,7 +86,7 @@ sudo add-apt-repository ppa:ondrej/php
 sudo apt update
 
 apt install -y php7.4 php7.4-fpm php7.4-common php7.4-mysql php7.4-gmp php7.4-curl php7.4-intl php7.4-mbstring php7.4-soap php7.4-xmlrpc php7.4-gd \
-php7.4-xml php7.4-cli php7.4-zip php7.4-soap php7.4-iconv php7.4-json unzip git curl nano libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+php7.4-xml php7.4-cli php7.4-zip php7.4-soap php7.4-iconv php7.4-json php7.4-pspell unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
 sudo systemctl is-enabled php7.4-fpm 
 
@@ -109,12 +109,12 @@ wget https://download.moodle.org/download.php/direct/stable400/moodle-latest-400
 sudo tar -zxvf moodle-latest-400.tgz 
 sudo mv moodle /var/www/html/
 
-cd /var/www/html/moodle/
+cd /var/www/moodle/
 sudo cp config-dist.php config.php
 sudo nano config.php
 
-sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chmod -R 755 /var/www/html/moodle
+sudo chown -R www-data:www-data /var/www/moodle
+sudo chmod -R 755 /var/www/moodle
 
 sudo mkdir /var/moodledata
 sudo chown -R www-data:www-data /var/moodledata
@@ -130,11 +130,11 @@ sudo cat <<EOF > /etc/nginx/sites-available/moodle
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/moodle;
+    root /var/www/moodle;
     index  index.php index.html index.htm;
     server_name $WEBSITE_NAME;
     
-    client_max_body_size 100M;
+    client_max_body_size 200M;
     
     autoindex off;
     location / {
