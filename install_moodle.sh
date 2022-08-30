@@ -55,6 +55,8 @@ sudo systemctl enable nginx.service
 #--------------------------------------------------
 # Installation of Mariadb server
 #--------------------------------------------------
+curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=10.8
+sudo apt update
 sudo apt install -y mariadb-server mariadb-client
 sudo systemctl stop mariadb.service
 sudo systemctl start mariadb.service
@@ -62,7 +64,7 @@ sudo systemctl enable mariadb.service
 
 # sudo mysql_secure_installation
 
-sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+# sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
 # add the below statements
 # [mysqld]
 # innodb_file_per_table = 1
@@ -90,7 +92,7 @@ php7.4-xml php7.4-cli php7.4-zip php7.4-soap php7.4-iconv php7.4-json php7.4-psp
 
 sudo systemctl is-enabled php7.4-fpm 
 
-sudo nano /etc/php/7.4/fpm/php.ini
+# sudo nano /etc/php/7.4/fpm/php.ini
 # file_uploads = On
 # allow_url_fopen = On
 # short_open_tag = On
@@ -109,12 +111,12 @@ wget https://download.moodle.org/download.php/direct/stable400/moodle-latest-400
 sudo tar -zxvf moodle-latest-400.tgz 
 sudo mv moodle /var/www/html/
 
-cd /var/www/moodle/
+cd /var/www/html/moodle/
 sudo cp config-dist.php config.php
 sudo nano config.php
 
-sudo chown -R www-data:www-data /var/www/moodle
-sudo chmod -R 755 /var/www/moodle
+sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chmod -R 755 /var/www/html/moodle
 
 sudo mkdir /var/moodledata
 sudo chown -R www-data:www-data /var/moodledata
@@ -130,7 +132,7 @@ sudo cat <<EOF > /etc/nginx/sites-available/moodle
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/moodle;
+    root /var/www/html/moodle;
     index  index.php index.html index.htm;
     server_name $WEBSITE_NAME;
     
