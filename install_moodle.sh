@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.0 MariaDB, Nginx and Php 7.4 on Ubuntu 22.04
+# Script for installing Moodle v4.0 MariaDB, Nginx and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -77,10 +77,12 @@ sudo systemctl enable mariadb.service
 
 # sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
 # add the below statements
-# [mysqld]
+# [mysqld] 
+# default_storage_engine = innodb
+# innodb_large_prefix = 1
 # innodb_file_per_table = 1
 # innodb_file_format = Barracuda
-# innodb_large_prefix = ON
+# innodb_large_prefix = 1
 
 sudo systemctl restart mysql.service
 
@@ -98,24 +100,24 @@ sudo apt install -y software-properties-common ca-certificates lsb-release apt-t
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-sudo apt install graphviz aspell ghostscript clamav php8.0-fpm php8.0-cli php8.0-pspell php8.0-curl php8.0-gd php8.0-intl php8.0-mysql php8.0-xml \
-php8.0-xmlrpc php8.0-ldap php8.0-zip php8.0-soap php8.0-mbstring unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+sudo apt install graphviz aspell ghostscript clamav php8.3-fpm php8.3-cli php8.3-pspell php8.3-curl php8.3-gd php8.3-intl php8.3-mysql php8.3-xml \
+php8.3-xmlrpc php8.3-ldap php8.3-zip php8.3-soap php8.3-mbstring unzip git curl libpcre3 libpcre3-dev graphviz
 
-sudo nano /etc/php/8.0/fpm/pool.d/www.conf
+sudo nano /etc/php/8.3/fpm/pool.d/www.conf
    # user = nginx
    # group = nginx
    # listen.owner = nginx
    # listen.group = nginx
    
-# sudo nano /etc/php/8.0/fpm/php.ini
-# file_uploads = On
-# allow_url_fopen = On
-# short_open_tag = On
-# memory_limit = 256M
-# cgi.fix_pathinfo = 0
-# upload_max_filesize = 100M
-# max_execution_time = 360
-# date.timezone = Africa/Kigali
+# sudo nano /etc/php/8.3/fpm/php.ini
+  # memory_limit = 256M
+  # file_uploads = On
+  # allow_url_fopen = On
+  # short_open_tag = On
+  # cgi.fix_pathinfo = 0
+  # upload_max_filesize = 100M
+  # max_execution_time = 360
+  # date.timezone = Africa/Kigali
 
 sudo systemctl restart php8.0-fpm
 
