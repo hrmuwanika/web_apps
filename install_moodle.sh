@@ -49,15 +49,6 @@ sudo ufw status
 #--------------------------------------------------
 # Install Nginx Web server
 #--------------------------------------------------
-sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y
-
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg arch=amd64] \
-http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
-| sudo tee /etc/apt/sources.list.d/nginx.list
-sudo apt update
 sudo apt install -y nginx
 sudo systemctl stop nginx.service
 sudo systemctl start nginx.service
@@ -66,8 +57,6 @@ sudo systemctl enable nginx.service
 #--------------------------------------------------
 # Installation of Mariadb server
 #--------------------------------------------------
-curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=10.8
-sudo apt update
 sudo apt install -y mariadb-server mariadb-client
 sudo systemctl stop mariadb.service
 sudo systemctl start mariadb.service
@@ -96,12 +85,8 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https dirmngr
-sudo add-apt-repository ppa:ondrej/php -y
-sudo apt update
-
-sudo apt install graphviz aspell ghostscript clamav php8.3-fpm php8.3-cli php8.3-pspell php8.3-curl php8.3-gd php8.3-intl php8.3-mysql php8.3-xml \
-php8.3-xmlrpc php8.3-ldap php8.3-zip php8.3-soap php8.3-mbstring unzip git curl libpcre3 libpcre3-dev graphviz
+sudo apt install php8.3 php8.3-common php8.3-fpm php8.3-cli php8.3-pspell php8.3-curl php8.3-gd php8.3-intl php8.3-mysql php8.3-xml php8.3-mbstring php8.3-bcmath php8.3-zip \
+php8.3-xml php8.3-ldap php8.3-zip php8.3-soap php8.3-mbstring unzip git curl libpcre3 libpcre3-dev graphviz
 
 sudo nano /etc/php/8.3/fpm/pool.d/www.conf
    # user = nginx
@@ -197,7 +182,7 @@ server {
     location ~ ^(.+\.php)(.*)$ {
         fastcgi_split_path_info ^(.+\.php)(.*)$;
         fastcgi_index index.php;
-        fastcgi_pass unix:/run/php/php8.0-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         include /etc/nginx/mime.types;
         include fastcgi_params;
         fastcgi_param  PATH_INFO  $fastcgi_path_info;
