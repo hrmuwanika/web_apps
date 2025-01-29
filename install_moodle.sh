@@ -39,14 +39,25 @@ sudo apt autoremove -y
 #--------------------------------------------------
 # Firewall
 #--------------------------------------------------
+sudo apt -y install ufw
 sudo ufw enable
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
+sudo ufw status
 
 #--------------------------------------------------
 # Install Nginx Web server
 #--------------------------------------------------
+sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y
+
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg arch=amd64] \
+http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+| sudo tee /etc/apt/sources.list.d/nginx.list
+sudo apt update
 sudo apt install -y nginx
 sudo systemctl stop nginx.service
 sudo systemctl start nginx.service
@@ -73,9 +84,9 @@ sudo systemctl enable mariadb.service
 
 sudo systemctl restart mysql.service
 
-sudo mysql -uroot --password="" -e "CREATE DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-sudo mysql -uroot --password="" -e "CREATE USER 'moodle_admin'@'localhost' IDENTIFIED BY 'abc1234!';"
-sudo mysql -uroot --password="" -e "GRANT ALL ON moodle.* TO 'moodle_admin'@'localhost' WITH GRANT OPTION;"
+sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'yourpassword';"
+sudo mysql -uroot --password="" -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY TABLES,DROP,INDEX,ALTER ON moodledb.* TO moodleuser@localhost;"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
 sudo mysqladmin -uroot --password="" reload 2>/dev/null
 sudo systemctl restart mysql.service
@@ -84,15 +95,19 @@ sudo systemctl restart mysql.service
 # Installation of PHP
 #--------------------------------------------------
 sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https dirmngr
-sudo add-apt-repository ppa:ondrej/php 
+sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-apt install -y php7.4 php7.4-fpm php7.4-common php7.4-mysql php7.4-gmp php7.4-curl php7.4-intl php7.4-mbstring php7.4-soap php7.4-xmlrpc php7.4-gd \
-php7.4-xml php7.4-cli php7.4-zip php7.4-soap php7.4-iconv php7.4-json php7.4-pspell unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+sudo apt install graphviz aspell ghostscript clamav php8.0-fpm php8.0-cli php8.0-pspell php8.0-curl php8.0-gd php8.0-intl php8.0-mysql php8.0-xml \
+php8.0-xmlrpc php8.0-ldap php8.0-zip php8.0-soap php8.0-mbstring unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
-sudo systemctl is-enabled php7.4-fpm 
-
-# sudo nano /etc/php/7.4/fpm/php.ini
+sudo nano /etc/php/8.0/fpm/pool.d/www.conf
+   # user = nginx
+   # group = nginx
+   # listen.owner = nginx
+   # listen.group = nginx
+   
+# sudo nano /etc/php/8.0/fpm/php.ini
 # file_uploads = On
 # allow_url_fopen = On
 # short_open_tag = On
@@ -102,39 +117,52 @@ sudo systemctl is-enabled php7.4-fpm
 # max_execution_time = 360
 # date.timezone = Africa/Kigali
 
-systemctl restart php7.4-fpm
+sudo systemctl restart php8.0-fpm
 
 #--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
-wget https://download.moodle.org/download.php/direct/stable400/moodle-latest-400.tgz
-sudo tar -zxvf moodle-latest-400.tgz 
-sudo mv moodle /var/www/html/
+cd /var/www/html/
+sudo git clone https://github.com/moodle/moodle.git 
+git branch --track MOODLE_400_STABLE origin/MOODLE_400_STABLE
+git checkout MOODLE_400_STABLE
+
+sudo chown -R $USER:$USER /var/www/html/moodle
 
 cd /var/www/html/moodle/
 sudo cp config-dist.php config.php
-sudo nano config.php
 
-sudo chown -R www-data:www-data /var/www/html/moodle
+sudo nano config.php
+    #CFG->dbtype    = 'mysqli';    // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
+    #CFG->dblibrary = 'native';     // 'native' only at the moment
+    #CFG->dbhost    = 'localhost';  // eg 'localhost' or 'db.isp.com' or IP
+    #CFG->dbname    = 'moodledb';     // database name, eg moodle
+    #CFG->dbuser    = 'moodleuser';   // your database username
+    #CFG->dbpass    = 'yourpassword';   // your database password
+    #CFG->prefix    = 'mdl_';       // prefix to use for all table names
+    #CFG->wwwroot   = 'https://moodle.example.com';
+    #CFG->dataroot  = '/var/moodledata';
+    
 sudo chmod -R 755 /var/www/html/moodle
 
 sudo mkdir /var/moodledata
-sudo chown -R www-data:www-data /var/moodledata
+sudo chown -R nginx /var/moodledata
 sudo chmod -R  755 /var/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data /var/quarantine
 
-sudo cat <<EOF > /etc/nginx/sites-available/moodle
+sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
 #########################################################################
 
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/moodle;
-    index  index.php index.html index.htm;
+    
     server_name $WEBSITE_NAME;
+    root   /var/www/html/moodle;
+    index  index.php;
     
     client_max_body_size 200M;
     
@@ -164,13 +192,27 @@ server {
     alias /var/moodledata/;
     }
 
-    location ~ [^/]\.php(/|$) {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.*)$;
+        fastcgi_index index.php;
+        fastcgi_pass unix:/run/php/php8.0-fpm.sock;
+        include /etc/nginx/mime.types;
         include fastcgi_params;
+        fastcgi_param  PATH_INFO  $fastcgi_path_info;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
+    # Hide all dot files but allow "Well-Known URIs" as per RFC 5785
+    location ~ /\.(?!well-known).* {
+        return 404;
+    }
+
+    # This should be after the php fpm rule and very close to the last nginx ruleset.
+    # Don't allow direct access to various internal files. See MDL-69333
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
+        deny all;
+        return 404;
+    }
 }
 
 #########################################################################
@@ -178,10 +220,10 @@ EOF
 
 nginx -t
 
-sudo ln -s /etc/nginx/sites-available/moodle /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
 sudo systemctl reload nginx
-sudo systemctl reload php7.4-fpm
+sudo systemctl reload php8.0-fpm
 
 #--------------------------------------------------
 # Enable ssl with certbot
