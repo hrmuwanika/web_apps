@@ -71,13 +71,12 @@ sudo systemctl enable mariadb.service
 # innodb_large_prefix = 1
 # innodb_file_per_table = 1
 # innodb_file_format = Barracuda
-# innodb_large_prefix = 1
 
 sudo systemctl restart mysql.service
 
 sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'yourpassword';"
-sudo mysql -uroot --password="" -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY TABLES,DROP,INDEX,ALTER ON moodledb.* TO moodleuser@localhost;"
+sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
 sudo mysqladmin -uroot --password="" reload 2>/dev/null
 sudo systemctl restart mysql.service
@@ -85,8 +84,8 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install php8.3 php8.3-common php8.3-fpm php8.3-cli php8.3-pspell php8.3-curl php8.3-gd php8.3-intl php8.3-mysql php8.3-xml php8.3-mbstring php8.3-bcmath php8.3-zip \
-php8.3-xml php8.3-ldap php8.3-zip php8.3-soap php8.3-mbstring unzip git curl libpcre3 libpcre3-dev graphviz
+sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
+php-bcmath php-fpm php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz
 
 sudo nano /etc/php/8.3/fpm/pool.d/www.conf
    # user = nginx
@@ -96,13 +95,10 @@ sudo nano /etc/php/8.3/fpm/pool.d/www.conf
    
 # sudo nano /etc/php/8.3/fpm/php.ini
   # memory_limit = 256M
-  # file_uploads = On
-  # allow_url_fopen = On
-  # short_open_tag = On
-  # cgi.fix_pathinfo = 0
   # upload_max_filesize = 100M
   # max_execution_time = 360
   # date.timezone = Africa/Kigali
+  # max_input_vars = 5000
 
 sudo systemctl restart php8.0-fpm
 
@@ -110,9 +106,11 @@ sudo systemctl restart php8.0-fpm
 # Installation of Moodle
 #--------------------------------------------------
 cd /var/www/html/
-sudo git clone https://github.com/moodle/moodle.git 
-git branch --track MOODLE_400_STABLE origin/MOODLE_400_STABLE
-git checkout MOODLE_400_STABLE
+git clone https://github.com/moodle/moodle.git
+cd moodle
+git branch -a
+git branch --track MOODLE_405_STABLE origin/MOODLE_405_STABLE
+git checkout MOODLE_405_STABLE
 
 sudo chown -R $USER:$USER /var/www/html/moodle
 
@@ -120,13 +118,13 @@ cd /var/www/html/moodle/
 sudo cp config-dist.php config.php
 
 sudo nano config.php
-    #CFG->dbtype    = 'mysqli';    // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
-    #CFG->dblibrary = 'native';     // 'native' only at the moment
-    #CFG->dbhost    = 'localhost';  // eg 'localhost' or 'db.isp.com' or IP
-    #CFG->dbname    = 'moodledb';     // database name, eg moodle
-    #CFG->dbuser    = 'moodleuser';   // your database username
-    #CFG->dbpass    = 'yourpassword';   // your database password
-    #CFG->prefix    = 'mdl_';       // prefix to use for all table names
+    #CFG->dbtype    = 'mysqli';          // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
+    #CFG->dblibrary = 'native';          // 'native' only at the moment
+    #CFG->dbhost    = 'localhost';       // eg 'localhost' or 'db.isp.com' or IP
+    #CFG->dbname    = 'moodledb';        // database name, eg moodle
+    #CFG->dbuser    = 'moodleuser';      // your database username
+    #CFG->dbpass    = 'yourpassword';    // your database password
+    #CFG->prefix    = 'mdl_';            // prefix to use for all table names
     #CFG->wwwroot   = 'https://moodle.example.com';
     #CFG->dataroot  = '/var/moodledata';
     
@@ -210,7 +208,7 @@ nginx -t
 sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
 sudo systemctl reload nginx
-sudo systemctl reload php8.0-fpm
+sudo systemctl reload php8.3-fpm
 
 #--------------------------------------------------
 # Enable ssl with certbot
@@ -233,6 +231,6 @@ else
   echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-echo -e "Access moodle https://$WEBSITE_NAME/install.php"
+echo -e "Access moodle https://$WEBSITE_NAME/moodle/install.php"
 
 
