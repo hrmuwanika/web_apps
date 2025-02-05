@@ -94,7 +94,7 @@ sudo systemctl restart apache2
 #--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
-cd /var/www/
+cd /var/www/html/
 wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 tar xvf moodle-latest-405.tgz
 
