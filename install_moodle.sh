@@ -47,14 +47,6 @@ sudo ufw allow https
 sudo ufw status
 
 #--------------------------------------------------
-# Install Nginx Web server
-#--------------------------------------------------
-sudo apt install -y nginx
-sudo systemctl stop nginx.service
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
-
-#--------------------------------------------------
 # Installation of Mariadb server
 #--------------------------------------------------
 sudo apt install -y mariadb-server mariadb-client
@@ -64,7 +56,7 @@ sudo systemctl enable mariadb.service
 
 # sudo mysql_secure_installation
 
-# sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
 # add the below statements
 # [mysqld] 
 # default_storage_engine = innodb
@@ -75,7 +67,7 @@ sudo systemctl enable mariadb.service
 sudo systemctl restart mysql.service
 
 sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'yourpassword';"
+sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
 sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
 sudo mysqladmin -uroot --password="" reload 2>/dev/null
@@ -84,28 +76,25 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
-php-bcmath php-fpm php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz
+sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
+php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz
 
-sudo nano /etc/php/8.3/fpm/pool.d/www.conf
-   # user = nginx
-   # group = nginx
-   # listen.owner = nginx
-   # listen.group = nginx
+sudo systemctl start apache2.service
+sudo systemctl enable apache2.service
    
-# sudo nano /etc/php/8.3/fpm/php.ini
+# sudo nano /etc/php/8.3/apache2/php.ini
   # memory_limit = 256M
   # upload_max_filesize = 100M
   # max_execution_time = 360
   # date.timezone = Africa/Kigali
   # max_input_vars = 5000
 
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
-cd /var/www/html/
+cd /var/www/
 git clone https://github.com/moodle/moodle.git
 cd moodle
 git branch -a
@@ -114,7 +103,7 @@ git checkout MOODLE_405_STABLE
 
 sudo chown -R $USER:$USER /var/www/html/moodle
 
-cd /var/www/html/moodle/
+cd /var/www/moodle/
 sudo cp config-dist.php config.php
 
 sudo nano config.php
@@ -128,87 +117,40 @@ sudo nano config.php
     #CFG->wwwroot   = 'https://moodle.example.com';
     #CFG->dataroot  = '/var/moodledata';
     
-sudo chmod -R 755 /var/www/html/moodle
-
-sudo mkdir /var/moodledata
-sudo chown -R nginx /var/moodledata
-sudo chmod -R  755 /var/moodledata
+sudo mkdir -p /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/moodle /var/www/moodledata
+sudo chmod u+rwx /var/www/moodle /var/www/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data /var/quarantine
 
-sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
+sudo a2enmod rewrite
+
+sudo nano /etc/apache2/sites-available/moodle.conf
 
 #########################################################################
 
-server {
-    listen 80;
-    listen [::]:80;
-    
-    server_name $WEBSITE_NAME;
-    root   /var/www/html/moodle;
-    index  index.php;
-    
-    client_max_body_size 200M;
-    
-    autoindex off;
-    location / {
-        try_files $uri $uri/ =404;
-    }
-    
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
-    }
+<VirtualHost *:80>
+ DocumentRoot /var/www/moodle/
+ ServerName moodle.example.com
+ ServerAdmin admin@example.com
+ 
+ <Directory /var/www/moodle/>
+ Options +FollowSymlinks
+ AllowOverride All
+ Require all granted
+ </Directory>
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-        expires max;
-        log_not_found off;
-    }	
-
-    location = /robots.txt {
-        allow all;
-        log_not_found off;
-        access_log off;
-    }	
-
-    location /dataroot/ {
-    internal;
-    alias /var/moodledata/;
-    }
-
-    location ~ ^(.+\.php)(.*)$ {
-        fastcgi_split_path_info ^(.+\.php)(.*)$;
-        fastcgi_index index.php;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        include /etc/nginx/mime.types;
-        include fastcgi_params;
-        fastcgi_param  PATH_INFO  $fastcgi_path_info;
-        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
-
-    # Hide all dot files but allow "Well-Known URIs" as per RFC 5785
-    location ~ /\.(?!well-known).* {
-        return 404;
-    }
-
-    # This should be after the php fpm rule and very close to the last nginx ruleset.
-    # Don't allow direct access to various internal files. See MDL-69333
-    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
-        deny all;
-        return 404;
-    }
-}
+ ErrorLog /var/log/apache2/moodle_error.log
+ CustomLog /var/log/apache2/moodle_access.log combined
+</VirtualHost>
 
 #########################################################################
-EOF
 
-nginx -t
+sudo a2ensite moodle.conf
+sudo apachectl configtest
 
-sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
-
-sudo systemctl reload nginx
-sudo systemctl reload php8.3-fpm
+sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Enable ssl with certbot
@@ -222,9 +164,9 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo certbot --apache2 -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
-  sudo systemctl reload nginx
+  sudo systemctl restart apache2
   
   echo "\n============ SSL/HTTPS is enabled! ========================"
 else
