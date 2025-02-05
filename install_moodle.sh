@@ -70,7 +70,7 @@ sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER S
 sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
 sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
-sudo mysqladmin -uroot --password="" reload 2>/dev/null
+
 sudo systemctl restart mysql.service
 
 #--------------------------------------------------
@@ -101,7 +101,7 @@ git branch -a
 git branch --track MOODLE_405_STABLE origin/MOODLE_405_STABLE
 git checkout MOODLE_405_STABLE
 
-sudo chown -R $USER:$USER /var/www/html/moodle
+sudo chown -R $USER:$USER /var/www/moodle
 
 cd /var/www/moodle/
 sudo cp config-dist.php config.php
@@ -112,7 +112,7 @@ sudo nano config.php
     #CFG->dbhost    = 'localhost';       // eg 'localhost' or 'db.isp.com' or IP
     #CFG->dbname    = 'moodledb';        // database name, eg moodle
     #CFG->dbuser    = 'moodleuser';      // your database username
-    #CFG->dbpass    = 'yourpassword';    // your database password
+    #CFG->dbpass    = 'abc1234!';        // your database password
     #CFG->prefix    = 'mdl_';            // prefix to use for all table names
     #CFG->wwwroot   = 'https://moodle.example.com';
     #CFG->dataroot  = '/var/moodledata';
