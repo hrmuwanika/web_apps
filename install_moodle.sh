@@ -100,7 +100,7 @@ sudo nano /etc/php/8.3/fpm/pool.d/www.conf
   # date.timezone = Africa/Kigali
   # max_input_vars = 5000
 
-sudo systemctl restart php8.0-fpm
+sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
 # Installation of Moodle
