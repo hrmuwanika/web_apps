@@ -95,31 +95,12 @@ sudo systemctl restart apache2
 # Installation of Moodle
 #--------------------------------------------------
 cd /var/www/
-git clone https://github.com/moodle/moodle.git
-cd moodle
-git branch -a
-git branch --track MOODLE_405_STABLE origin/MOODLE_405_STABLE
-git checkout MOODLE_405_STABLE
+wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
+tar xvf moodle-latest-405.tgz
 
-sudo chown -R $USER:$USER /var/www/moodle
-
-cd /var/www/moodle/
-sudo cp config-dist.php config.php
-
-sudo nano config.php
-    #CFG->dbtype    = 'mysqli';          // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
-    #CFG->dblibrary = 'native';          // 'native' only at the moment
-    #CFG->dbhost    = 'localhost';       // eg 'localhost' or 'db.isp.com' or IP
-    #CFG->dbname    = 'moodledb';        // database name, eg moodle
-    #CFG->dbuser    = 'moodleuser';      // your database username
-    #CFG->dbpass    = 'abc1234!';        // your database password
-    #CFG->prefix    = 'mdl_';            // prefix to use for all table names
-    #CFG->wwwroot   = 'https://moodle.example.com';
-    #CFG->dataroot  = '/var/moodledata';
-    
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/moodle /var/www/moodledata
-sudo chmod u+rwx /var/www/moodle /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/html/moodle /var/www/moodledata
+sudo chmod u+rwx /var/www/html/moodle /var/www/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data /var/quarantine
@@ -131,11 +112,11 @@ sudo nano /etc/apache2/sites-available/moodle.conf
 #########################################################################
 
 <VirtualHost *:80>
- DocumentRoot /var/www/moodle/
+ DocumentRoot /var/www/html/moodle/
  ServerName moodle.example.com
  ServerAdmin admin@example.com
  
- <Directory /var/www/moodle/>
+ <Directory /var/www/html/moodle/>
  Options +FollowSymlinks
  AllowOverride All
  Require all granted
@@ -164,7 +145,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo certbot --apache2 -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo certbot --apache -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
   sudo systemctl restart apache2
   
