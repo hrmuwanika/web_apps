@@ -39,8 +39,8 @@ sudo apt autoremove -y
 #--------------------------------------------------
 # Firewall
 #--------------------------------------------------
-sudo apt -y install ufw
-sudo ufw enable
+sudo apt install ufw -y
+sudo ufw enable -y
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
