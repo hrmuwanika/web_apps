@@ -113,7 +113,7 @@ sudo nano /etc/apache2/sites-available/moodle.conf
 
 <VirtualHost *:80>
  DocumentRoot /var/www/html/moodle/
- ServerName moodle.example.com
+ ServerName $WEBSITE_NAME
  ServerAdmin admin@example.com
  
  <Directory /var/www/html/moodle/>
