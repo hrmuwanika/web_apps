@@ -81,13 +81,15 @@ php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git cu
 
 sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
-   
-# sudo nano /etc/php/8.3/apache2/php.ini
-  # memory_limit = 256M
-  # upload_max_filesize = 100M
-  # max_execution_time = 360
-  # date.timezone = Africa/Kigali
-  # max_input_vars = 5000
+
+tee -a /etc/php/8.3/apache2/php.ini <<EOF
+
+   memory_limit = 256M
+   upload_max_filesize = 100M
+   max_execution_time = 360
+   date.timezone = Africa/Kigali
+   max_input_vars = 5000
+EOF
 
 sudo systemctl restart apache2
 
@@ -107,7 +109,7 @@ sudo chown -R www-data /var/quarantine
 
 sudo a2enmod rewrite
 
-sudo nano /etc/apache2/sites-available/moodle.conf
+sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
 
 #########################################################################
 
@@ -127,6 +129,7 @@ sudo nano /etc/apache2/sites-available/moodle.conf
 </VirtualHost>
 
 #########################################################################
+EOF
 
 sudo a2ensite moodle.conf
 sudo apachectl configtest
