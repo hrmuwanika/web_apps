@@ -34,7 +34,7 @@ sudo service sshd restart
 #--------------------------------------------------
 echo -e "\n============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
-sudo apt autoremove && sudo apt autoclean-y
+sudo apt autoremove && sudo apt autoclean -y
 
 #--------------------------------------------------
 # Firewall
@@ -169,9 +169,6 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
 else
   echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
-
-a2enmod rewrite
-a2enmod ssl
 
 sudo systemctl restart apache2
 
