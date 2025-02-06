@@ -34,23 +34,24 @@ sudo service sshd restart
 #--------------------------------------------------
 echo -e "\n============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
-sudo apt autoremove -y
+sudo apt autoremove && sudo apt autoclean-y
 
 #--------------------------------------------------
 # Firewall
 #--------------------------------------------------
 sudo apt install ufw -y
-sudo ufw enable -y
-sudo ufw allow ssh
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw status
+ufw default allow outgoing
+ufw default deny incoming
+ufw allow 22
+ufw allow 80
+ufw allow 443
+ufw enable -y
+ufw status
 
 #--------------------------------------------------
 # Installation of Mariadb server
 #--------------------------------------------------
 sudo apt install -y mariadb-server mariadb-client
-sudo systemctl stop mariadb.service
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
@@ -76,19 +77,28 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
-php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz
+sudo apt install -y apache2 libapache2-mod-php php php-gmp php-bcmath php-gd php-json php-mysql php-curl php-mbstring php-intl php-imagick php-xml \
+php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
+
+sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+
+a2enconf php8.3-fpm
+a2dismod php8.3
+a2dismod mpm_prefork
+a2enmod mpm_event
 
 sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
+sudo systemctl enable php8.3-fpm
 
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
 
-   memory_limit = 256M
-   upload_max_filesize = 100M
    max_execution_time = 360
-   date.timezone = Africa/Kigali
    max_input_vars = 5000
+   memory_limit = 512M
+   post_max_size = 500M
+   upload_max_filesize = 500M
+   date.timezone = Africa/Kigali
 EOF
 
 sudo systemctl restart apache2
@@ -101,13 +111,13 @@ wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405
 tar xvf moodle-latest-405.tgz
 
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html/moodle /var/www/moodledata
-sudo chmod u+rwx /var/www/html/moodle /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/html
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo chmod -R 777 /var/www/moodledata 
+sudo chmod -R 777 /var/www/html/moodle
 
 sudo mkdir -p /var/quarantine
-sudo chown -R www-data /var/quarantine
-
-sudo a2enmod rewrite
+sudo chown -R www-data:www-data /var/quarantine
 
 sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
 
@@ -116,25 +126,28 @@ sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
 <VirtualHost *:80>
  DocumentRoot /var/www/html/moodle/
  ServerName $WEBSITE_NAME
- ServerAdmin admin@example.com
+ ServerAlias www.$WEBSITE_NAME
+ ServerAdmin admin@$WEBSITE_NAME
  
  <Directory /var/www/html/moodle/>
- Options +FollowSymlinks
+ Options -Indexes +FollowSymLinks +MultiViews
  AllowOverride All
  Require all granted
  </Directory>
 
- ErrorLog /var/log/apache2/moodle_error.log
- CustomLog /var/log/apache2/moodle_access.log combined
+ ErrorLog ${APACHE_LOG_DIR}/error.log
+ CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 
 #########################################################################
 EOF
 
+sudo a2dissite 000-default.conf
 sudo a2ensite moodle.conf
-sudo apachectl configtest
+sudo a2enmod rewrite
 
-sudo systemctl restart apache2
+apachectl -t
+sudo systemctl reload apache2
 
 #--------------------------------------------------
 # Enable ssl with certbot
@@ -157,6 +170,9 @@ else
   echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
+a2enmod rewrite
+a2enmod ssl
+
+sudo systemctl restart apache2
+
 echo -e "Access moodle https://$WEBSITE_NAME/moodle/install.php"
-
-
