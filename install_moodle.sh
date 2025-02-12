@@ -114,17 +114,15 @@ sudo systemctl restart apache2
 #--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
-cd /opt
-wget https://download.moodle.org/download.php/direct/stable405/moodle-4.5.2.tgz
-tar xvf moodle-4.5.2.tgz
-
-sudo cp -rf /opt/moodle/* /var/www/html/
+cd /var/www/html/
+wget https://download.moodle.org/download.php/direct/stable405/moodle-405.tgz
+tar xvf moodle-405.tgz
 
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html/
+sudo chown -R www-data:www-data /var/www/html/moodle
 sudo chown -R www-data:www-data /var/www/moodledata/
 sudo chmod -R 777 /var/www/moodledata/ 
-sudo chmod -R 777 /var/www/html/
+sudo chmod -R 777 /var/www/html/moodle
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -134,12 +132,12 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
 #########################################################################
 
 <VirtualHost *:80>
- DocumentRoot /var/www/html/
+ DocumentRoot /var/www/html/moodle/
  ServerName $WEBSITE_NAME
  ServerAlias www.$WEBSITE_NAME
  ServerAdmin admin@$WEBSITE_NAME
  
- <Directory /var/www/html/>
+ <Directory /var/www/html/moodle/>
  Options -Indexes +FollowSymLinks +MultiViews
  AllowOverride All
  Require all granted
