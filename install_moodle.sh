@@ -102,12 +102,12 @@ sudo systemctl start php8.3-fpm.service
 
 # Configure PHP
 echo "=== Configuring PHP... ==="
-sudo sed -i "s/.memory_limit =.*/memory_limit = 512M/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.max_execution_time =.*/max_execution_time = 360/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*memory_limit = 128M/memory_limit = 512M/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*max_execution_time =.*/max_execution_time = 360/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*max_input_vars =.*/max_input_vars = 7000/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*upload_max_filesize =.*/upload_max_filesize = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*post_max_size =.*/post_max_size = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/^date.timezone=.*/date.timezone = Africa/Kigali/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*date.timezone=.*/date.timezone = Africa/Kigali/" /etc/php/${PHP_VERSION}/apache2/php.ini
 
 sudo systemctl restart apache2
 
