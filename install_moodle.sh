@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.0 MariaDB, Nginx and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v4.5.1 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -44,8 +44,9 @@ sudo apt autoremove && sudo apt autoclean -y
 sudo apt install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
-sudo ufw allow OpenSSH
-sudo ufw allow 'Apache Full'
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 ufw enable -y
 
 #--------------------------------------------------
