@@ -44,10 +44,16 @@ sudo apt autoremove && sudo apt autoclean -y
 sudo apt install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
+sudo ufw allow OpenSSH
+sudo ufw allow 'Apache Full'
 ufw enable -y
+
+#--------------------------------------------------
+# Set up the timezones
+#--------------------------------------------------
+# set the correct timezone on ubuntu
+timedatectl set-timezone Africa/Kigali
+timedatectl
 
 #--------------------------------------------------
 # Install Debian default database MariaDB 
