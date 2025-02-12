@@ -12,18 +12,20 @@
 # ./install_moodle.sh
 #
 ################################################################################
-#
+
+# Variables
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
-#
-#
+PHP_VERSION="8.3"
+
 #----------------------------------------------------
-# Disable password authentication
+# Disabling password authentication
 #----------------------------------------------------
+echo "Disabling password authentication ... "
 sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
 sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
@@ -32,24 +34,23 @@ sudo service sshd restart
 #--------------------------------------------------
 # Update Server
 #--------------------------------------------------
-echo -e "\n============= Update Server ================"
+echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove && sudo apt autoclean -y
 
 #--------------------------------------------------
-# Firewall
+# Install and configure Firewall
 #--------------------------------------------------
 sudo apt install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
-ufw allow 22
-ufw allow 80
-ufw allow 443
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
 ufw enable -y
-ufw status
 
 #--------------------------------------------------
-# Installation of Mariadb server
+# Install Debian default database MariaDB 
 #--------------------------------------------------
 sudo apt install -y mariadb-server mariadb-client
 sudo systemctl start mariadb.service
@@ -57,13 +58,11 @@ sudo systemctl enable mariadb.service
 
 # sudo mysql_secure_installation
 
-sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
-# add the below statements
-# [mysqld] 
-# default_storage_engine = innodb
-# innodb_large_prefix = 1
-# innodb_file_per_table = 1
-# innodb_file_format = Barracuda
+# Configure Mariadb database
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 sudo systemctl restart mysql.service
 
@@ -77,6 +76,8 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
+sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https 
+
 sudo apt install -y apache2 libapache2-mod-php php php-gmp php-bcmath php-gd php-json php-mysql php-curl php-mbstring php-intl php-imagick php-xml \
 php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
 
@@ -91,45 +92,46 @@ sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
 sudo systemctl enable php8.3-fpm
 
-tee -a /etc/php/8.3/apache2/php.ini <<EOF
-
-   max_execution_time = 360
-   max_input_vars = 5000
-   memory_limit = 512M
-   post_max_size = 500M
-   upload_max_filesize = 500M
-   date.timezone = Africa/Kigali
-EOF
+# Configure PHP
+echo "=== Configuring PHP... ==="
+sudo sed -i "s/.memory_limit =.*/memory_limit = 512M/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.max_execution_time =.*/max_execution_time = 360/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*max_input_vars =.*/max_input_vars = 7000/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*upload_max_filesize =.*/upload_max_filesize = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*post_max_size =.*/post_max_size = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/^date.timezone=.*/date.timezone = Africa/Kigali/" /etc/php/${PHP_VERSION}/apache2/php.ini
 
 sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
-cd /var/www/html/
+cd /opt
 wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 tar xvf moodle-latest-405.tgz
 
+sudo cp -R /opt/moodle /var/www/html/
+
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html
-sudo chown -R www-data:www-data /var/www/moodledata
-sudo chmod -R 777 /var/www/moodledata 
-sudo chmod -R 777 /var/www/html/moodle
+sudo chown -R www-data:www-data /var/www/html/
+sudo chown -R www-data:www-data /var/www/moodledata/
+sudo chmod -R 777 /var/www/moodledata/ 
+sudo chmod -R 777 /var/www/html/
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
+sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf 
 
 #########################################################################
 
 <VirtualHost *:80>
- DocumentRoot /var/www/html/moodle/
+ DocumentRoot /var/www/html/
  ServerName $WEBSITE_NAME
  ServerAlias www.$WEBSITE_NAME
  ServerAdmin admin@$WEBSITE_NAME
  
- <Directory /var/www/html/moodle/>
+ <Directory /var/www/html/>
  Options -Indexes +FollowSymLinks +MultiViews
  AllowOverride All
  Require all granted
@@ -165,11 +167,14 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   
   sudo systemctl restart apache2
   
-  echo "\n============ SSL/HTTPS is enabled! ========================"
+  echo "============ SSL/HTTPS is enabled! ========================"
 else
-  echo "\n==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
 sudo systemctl restart apache2
 
-echo -e "Access moodle https://$WEBSITE_NAME/moodle/install.php"
+echo "Moodle installation is complete"
+echo "Access moodle on https://$WEBSITE_NAME/install.php"
+
+
