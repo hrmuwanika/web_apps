@@ -79,7 +79,8 @@ sudo systemctl restart mysql.service
 sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https 
 
 sudo apt install -y apache2 libapache2-mod-php php php-gmp php-bcmath php-gd php-json php-mysql php-curl php-mbstring php-intl php-imagick php-xml \
-php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
+php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell \
+php-mysqlnd
 
 sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
@@ -88,9 +89,10 @@ a2dismod php8.3
 a2dismod mpm_prefork
 a2enmod mpm_event
 
-sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
-sudo systemctl enable php8.3-fpm
+sudo systemctl start apache2.service
+sudo systemctl enable php8.3-fpm.service
+sudo systemctl start php8.3-fpm.service
 
 # Configure PHP
 echo "=== Configuring PHP... ==="
