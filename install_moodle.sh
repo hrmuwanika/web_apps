@@ -20,7 +20,6 @@ ENABLE_SSL="True"
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
-PHP_VERSION="8.3"
 
 #----------------------------------------------------
 # Disabling password authentication
@@ -36,7 +35,7 @@ sudo service sshd restart
 #--------------------------------------------------
 echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
-sudo apt autoremove && sudo apt autoclean -y
+sudo apt autoremove -y && sudo apt autoclean -y
 
 #--------------------------------------------------
 # Install and configure Firewall
@@ -102,12 +101,15 @@ sudo systemctl start php8.3-fpm.service
 
 # Configure PHP
 echo "=== Configuring PHP... ==="
-sudo sed -i "s/.*memory_limit =.*/memory_limit = 256M/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.*max_execution_time =.*/max_execution_time = 360/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.*max_input_vars =.*/max_input_vars = 5000/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.*upload_max_filesize =.*/upload_max_filesize = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.*post_max_size =.*/post_max_size = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/${PHP_VERSION}/apache2/php.ini
+tee -a /etc/php/8.3/apache2/php.ini <<EOF
+
+   max_execution_time = 360
+   max_input_vars = 7000
+   memory_limit = 512M
+   post_max_size = 500M
+   upload_max_filesize = 500M
+   date.timezone = Africa/Kigali
+EOF
 
 sudo systemctl restart apache2
 
