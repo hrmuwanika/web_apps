@@ -44,9 +44,9 @@ sudo apt autoremove && sudo apt autoclean -y
 sudo apt install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+ufw allow 22
+ufw allow 80
+ufw allow 443
 ufw enable -y
 
 #--------------------------------------------------
@@ -86,8 +86,7 @@ sudo systemctl restart mysql.service
 sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https 
 
 sudo apt install -y apache2 libapache2-mod-php php php-gmp php-bcmath php-gd php-json php-mysql php-curl php-mbstring php-intl php-imagick php-xml \
-php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell \
-php-mysqlnd
+php-zip php-fpm php-redis php-apcu php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
 
 sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
@@ -103,9 +102,9 @@ sudo systemctl start php8.3-fpm.service
 
 # Configure PHP
 echo "=== Configuring PHP... ==="
-sudo sed -i "s/.*memory_limit = 128M/memory_limit = 512M/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*memory_limit =.*/memory_limit = 256M/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*max_execution_time =.*/max_execution_time = 360/" /etc/php/${PHP_VERSION}/apache2/php.ini
-sudo sed -i "s/.*max_input_vars =.*/max_input_vars = 7000/" /etc/php/${PHP_VERSION}/apache2/php.ini
+sudo sed -i "s/.*max_input_vars =.*/max_input_vars = 5000/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*upload_max_filesize =.*/upload_max_filesize = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*post_max_size =.*/post_max_size = 500M/" /etc/php/${PHP_VERSION}/apache2/php.ini
 sudo sed -i "s/.*date.timezone=.*/date.timezone = Africa/Kigali/" /etc/php/${PHP_VERSION}/apache2/php.ini
@@ -116,21 +115,19 @@ sudo systemctl restart apache2
 # Installation of Moodle
 #--------------------------------------------------
 cd /var/www/html/
-wget https://download.moodle.org/download.php/direct/stable405/moodle-4.5.1.tgz
-tar xvf moodle-4.5.1.tgz
+wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
+tar xvf moodle-latest-405.tgz
 
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chown -R www-data:www-data /var/www/moodledata/
-sudo chmod -R 777 /var/www/moodledata/ 
+sudo chown -R www-data:www-data /var/www/html
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo chmod -R 777 /var/www/moodledata 
 sudo chmod -R 777 /var/www/html/moodle
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
 sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf 
-
-#########################################################################
 
 <VirtualHost *:80>
  DocumentRoot /var/www/html/moodle/
@@ -148,7 +145,6 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
  CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 
-#########################################################################
 EOF
 
 sudo a2dissite 000-default.conf
