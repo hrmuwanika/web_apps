@@ -42,9 +42,9 @@ sudo service sshd restart
 sudo apt install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
-ufw allow 22
-ufw allow 80
-ufw allow 443
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
 ufw enable -y
 
 #--------------------------------------------------
@@ -114,11 +114,11 @@ cd /var/www/html/
 wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 tar xvf moodle-latest-405.tgz
 
-sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html
+sudo mkdir -p /var/www/moodledata/
+sudo chown -R www-data:www-data /var/www/html/moodle/
 sudo chown -R www-data:www-data /var/www/moodledata
 sudo chmod -R 777 /var/www/moodledata 
-sudo chmod -R 777 /var/www/html/moodle
+sudo chmod -R 777 /var/www/html/moodle/
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
