@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.5.1 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v4.5.2 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -170,5 +170,4 @@ sudo systemctl restart apache2
 
 echo "Moodle installation is complete"
 echo "Access moodle on https://$WEBSITE_NAME/install.php"
-
 
