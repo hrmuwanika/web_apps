@@ -40,11 +40,12 @@ sudo service sshd restart
 # Install and configure Firewall
 #--------------------------------------------------
 sudo apt install ufw -y
-ufw default allow outgoing
-ufw default deny incoming
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
+sudo ufw enable -y
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw reload
+
 ufw enable -y
 
 #--------------------------------------------------
@@ -123,6 +124,8 @@ sudo chmod -R 777 /var/www/html/moodle/
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
+sudo a2enmod rewrite
+
 sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF 
 
 <VirtualHost *:80>
@@ -142,11 +145,6 @@ sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
 </VirtualHost>
 EOF
 
-sudo a2dissite 000-default.conf
-sudo a2ensite moodle.conf
-sudo a2enmod rewrite
-
-apachectl -t
 sudo systemctl reload apache2
 
 #--------------------------------------------------
