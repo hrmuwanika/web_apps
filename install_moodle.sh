@@ -13,13 +13,19 @@
 #
 ################################################################################
 
-# Variables
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
+
+#--------------------------------------------------
+# Update Server
+#--------------------------------------------------
+echo "============= Update Server ================"
+sudo apt update && sudo apt upgrade -y
+sudo apt autoremove -y && sudo apt autoclean -y
 
 #----------------------------------------------------
 # Disabling password authentication
@@ -29,13 +35,6 @@ sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthenticat
 sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sudo service sshd restart
-#
-#--------------------------------------------------
-# Update Server
-#--------------------------------------------------
-echo "============= Update Server ================"
-sudo apt update && sudo apt upgrade -y
-sudo apt autoremove -y && sudo apt autoclean -y
 
 #--------------------------------------------------
 # Install and configure Firewall
@@ -82,10 +81,8 @@ sudo systemctl restart mysql.service
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https 
-
 sudo apt install -y apache2 libapache2-mod-php php php-gmp php-bcmath php-gd php-json php-mysql php-curl php-mbstring php-intl php-imagick php-xml \
-php-zip php-fpm php-redis php-apcu php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
+php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagick ffmpeg libsodium23 php-common php-cli php-tidy php-pear php-pspell 
 
 sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
@@ -94,17 +91,14 @@ a2dismod php8.3
 a2dismod mpm_prefork
 a2enmod mpm_event
 
-sudo systemctl enable apache2.service
 sudo systemctl start apache2.service
-sudo systemctl enable php8.3-fpm.service
-sudo systemctl start php8.3-fpm.service
+sudo systemctl enable apache2.service
+sudo systemctl enable php8.3-fpm
 
-# Configure PHP
-echo "=== Configuring PHP... ==="
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
 
    max_execution_time = 360
-   max_input_vars = 7000
+   max_input_vars = 5000
    memory_limit = 512M
    post_max_size = 500M
    upload_max_filesize = 500M
@@ -129,7 +123,7 @@ sudo chmod -R 777 /var/www/html/moodle
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf 
+sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF 
 
 <VirtualHost *:80>
  DocumentRoot /var/www/html/moodle/
@@ -146,7 +140,6 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
  ErrorLog ${APACHE_LOG_DIR}/error.log
  CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
-
 EOF
 
 sudo a2dissite 000-default.conf
