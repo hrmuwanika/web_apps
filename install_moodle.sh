@@ -25,7 +25,7 @@ ADMIN_EMAIL="moodle@example.com"
 #--------------------------------------------------
 echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
-sudo apt autoremove -y && sudo apt autoclean -y
+sudo apt autoremove -y
 
 #----------------------------------------------------
 # Disabling password authentication
@@ -70,12 +70,13 @@ sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-se
 sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
 sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-sudo systemctl restart mysql.service
+sudo systemctl restart mariadb.service
 
 sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'm0d1fyth15';"
+sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
 sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
+sudo mysqladmin -uroot --password="" reload 2>/dev/null
 
 sudo systemctl restart mysql.service
 
@@ -87,20 +88,14 @@ php-zip php-fpm php-redis php-apcu php-opcache php-ldap php-soap bzip2 imagemagi
 
 sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
-a2enconf php8.3-fpm
-a2dismod php8.3
-a2dismod mpm_prefork
-a2enmod mpm_event
-
 sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
-sudo systemctl enable php8.3-fpm
 
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
 
    max_execution_time = 360
-   max_input_vars = 5000
-   memory_limit = 512M
+   max_input_vars = 6000
+   memory_limit = 256M
    post_max_size = 500M
    upload_max_filesize = 500M
    date.timezone = Africa/Kigali
@@ -126,7 +121,7 @@ sudo chown -R www-data:www-data /var/quarantine
 
 sudo a2enmod rewrite
 
-sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF 
+sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
 
 <VirtualHost *:80>
  DocumentRoot /var/www/html/moodle/
@@ -145,7 +140,10 @@ sudo tee -a /etc/apache2/sites-available/moodle.conf <<EOF
 </VirtualHost>
 EOF
 
-sudo systemctl reload apache2
+sudo a2ensite moodle.conf
+sudo apachectl configtest
+
+sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Enable ssl with certbot
