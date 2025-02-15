@@ -39,14 +39,11 @@ sudo service sshd restart
 #--------------------------------------------------
 # Install and configure Firewall
 #--------------------------------------------------
-sudo apt install ufw -y
-sudo ufw enable -y
-sudo ufw allow ssh
-sudo ufw allow http
-sudo ufw allow https
+sudo apt install -y ufw
+sudo ufw allow OpenSSH
+sudo ufw allow 'Apache Full'
+sudo ufw enable 
 sudo ufw reload
-
-ufw enable -y
 
 #--------------------------------------------------
 # Set up the timezones
