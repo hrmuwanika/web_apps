@@ -62,7 +62,7 @@ if [ $INSTALL_POSTGRESQL_SIXTEEN = "True" ]; then
     sudo apt -y install postgresql-16
 else
     echo -e "=== Installing the default postgreSQL version based on Linux version ... ==="
-    sudo apt -y install postgresql postgresql-server-dev-all postgres-contrib
+    sudo apt -y install postgresql postgresql-server-dev-all
 fi
 
 echo "=== Starting PostgreSQL service... ==="
@@ -70,14 +70,14 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 echo -e "=== Creating the Odoo PostgreSQL User ... ==="
-sudo su - postgres
-psql
+#sudo su - postgres
+#psql
 
-CREATE DATABASE moodledb;
-CREATE USER moodleuser WITH PASSWORD 'abc1234!';
-GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
-\q
-exit
+#CREATE DATABASE moodledb;
+#CREATE USER moodleuser WITH PASSWORD 'abc1234!';
+#GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+#\q
+#exit
 
 #--------------------------------------------------
 # Install Debian default database MariaDB 
@@ -107,13 +107,14 @@ exit
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-psql \
-php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
+php-bcmath php-fpm php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
-sudo systemctl start apache2.service
-sudo systemctl enable apache2.service
+sudo apt install -y nginx
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
 
-tee -a /etc/php/8.3/apache2/php.ini <<EOF
+tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
    max_execution_time = 360
    max_input_vars = 6000
@@ -123,7 +124,7 @@ tee -a /etc/php/8.3/apache2/php.ini <<EOF
    date.timezone = Africa/Kigali
 EOF
 
-sudo systemctl restart apache2
+sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
 # Installation of Moodle
@@ -143,31 +144,37 @@ sudo chmod -R 777 /var/www/html/
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo a2enmod rewrite
+#sudo a2enmod rewrite
 
-sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
+sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
-<VirtualHost *:80>
- DocumentRoot /var/www/html/
- ServerName $WEBSITE_NAME
- ServerAlias www.$WEBSITE_NAME
- ServerAdmin admin@$WEBSITE_NAME
- 
- <Directory /var/www/html/>
- Options -Indexes +FollowSymLinks +MultiViews
- AllowOverride All
- Require all granted
- </Directory>
+server {
+    listen 80;
+    root /var/www/html;
+    index  index.php index.html index.htm;
+    server_name  moodle.example.com;
 
- ErrorLog ${APACHE_LOG_DIR}/error.log
- CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
+    client_max_body_size 200M;
+    autoindex off;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /dataroot/ {
+      internal;
+      alias /var/www/moodledata/;
+    }
+
+    location ~ [^/].php(/|$) {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
 EOF
 
-sudo a2ensite moodle.conf
-sudo apachectl configtest
-
-sudo systemctl restart apache2
+sudo systemctl restart nginx
 
 #--------------------------------------------------
 # Enable ssl with certbot
@@ -181,7 +188,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo certbot --apache -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
   sudo systemctl restart apache2
   
@@ -190,7 +197,7 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-sudo systemctl restart apache2
+sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
 echo "Access moodle on https://$WEBSITE_NAME/install.php"
