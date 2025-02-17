@@ -62,22 +62,22 @@ if [ $INSTALL_POSTGRESQL_SIXTEEN = "True" ]; then
     sudo apt -y install postgresql-16
 else
     echo -e "=== Installing the default postgreSQL version based on Linux version ... ==="
-    sudo apt -y install postgresql postgresql-server-dev-all postgres-contrib
+    sudo apt -y install postgresql postgresql-server-dev-all
 fi
 
 echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
 sudo systemctl enable postgresql
 
-echo -e "=== Creating the Odoo PostgreSQL User ... ==="
-sudo su - postgres
-psql
+# echo -e "=== Creating the Odoo PostgreSQL User ... ==="
+# sudo su - postgres
+# psql
 
-CREATE DATABASE moodledb;
-CREATE USER moodleuser WITH PASSWORD 'abc1234!';
-GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
-\q
-exit
+# CREATE DATABASE moodledb;
+# CREATE USER moodleuser WITH PASSWORD 'abc1234!';
+# GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+# \q
+# exit
 
 #--------------------------------------------------
 # Install Debian default database MariaDB 
@@ -107,7 +107,7 @@ exit
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-psql \
+sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
 php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
 sudo systemctl start apache2.service
