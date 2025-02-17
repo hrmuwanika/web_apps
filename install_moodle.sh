@@ -53,34 +53,60 @@ timedatectl set-timezone Africa/Kigali
 timedatectl
 
 #--------------------------------------------------
+# Installing PostgreSQL Server
+#--------------------------------------------------
+echo -e "=== Install and configure PostgreSQL ... ==="
+if [ $INSTALL_POSTGRESQL_SIXTEEN = "True" ]; then
+    echo -e "=== Installing postgreSQL V16 due to the user it's choice ... ==="
+    sudo apt -y install postgresql-16
+else
+    echo -e "=== Installing the default postgreSQL version based on Linux version ... ==="
+    sudo apt -y install postgresql postgresql-server-dev-all postgres-contrib
+fi
+
+echo "=== Starting PostgreSQL service... ==="
+sudo systemctl start postgresql 
+sudo systemctl enable postgresql
+
+echo -e "=== Creating the Odoo PostgreSQL User ... ==="
+sudo su - postgres
+psql
+
+CREATE DATABASE moodledb;
+CREATE USER moodleuser WITH PASSWORD 'abc1234!';
+GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+\q
+exit
+
+#--------------------------------------------------
 # Install Debian default database MariaDB 
 #--------------------------------------------------
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
+#sudo apt install -y mariadb-server mariadb-client
+#sudo systemctl start mariadb.service
+#sudo systemctl enable mariadb.service
 
 # sudo mysql_secure_installation
 
 # Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+#sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+#sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+#sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+#sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-sudo systemctl restart mariadb.service
+#sudo systemctl restart mariadb.service
 
-sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
-sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
-sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
-sudo mysqladmin -uroot --password="" reload 2>/dev/null
+#sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+#sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
+#sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+#sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
+#sudo mysqladmin -uroot --password="" reload 2>/dev/null
 
-sudo systemctl restart mysql.service
+#sudo systemctl restart mysql.service
 
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
+sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-psql \
 php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
 sudo systemctl start apache2.service
