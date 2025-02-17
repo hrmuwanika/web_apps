@@ -144,9 +144,7 @@ sudo chmod -R 777 /var/www/html/
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-#sudo a2enmod rewrite
-
-sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
+sudo cat <<EOF > /etc/nginx/conf.d/moodle.conf
 
 server {
     listen 80;
