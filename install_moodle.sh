@@ -93,10 +93,14 @@ sudo systemctl enable nginx
 
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
+   file_uploads = On
+   allow_url_fopen = On
+   short_open_tag = On
    max_execution_time = 360
    max_input_vars = 6000
    memory_limit = 256M
    post_max_size = 500M
+   cgi.fix_pathinfo = 0
    upload_max_filesize = 500M
    date.timezone = Africa/Kigali
 EOF
@@ -129,19 +133,18 @@ server {
 
     client_max_body_size 200M;
     
-    location / {
-        try_files $uri $uri/ =404;
-    }
-
     location /dataroot/ {
       internal;
       alias /var/www/moodledata/;
     }
 
-    location ~ ^(.+\.php)(.*)$ {
+    location / {
+    try_files $uri $uri/ =404;        
+    }
+
+    location ~ [^/]\.php(/|$) {
         include snippets/fastcgi-php.conf;
-        fastcgi_index index.php;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
