@@ -128,7 +128,6 @@ server {
     listen 80;
     listen [::]:80;
     root /var/www/html;
-    index  index.php;
     server_name  $WEBSITE_NAME;
 
     client_max_body_size 200M;
@@ -138,21 +137,27 @@ server {
       alias /var/www/moodledata/;
     }
 
+    rewrite ^/(.*\.php)(/)(.*)$ /$1?file=/$3 last;
+
     location / {
-    try_files $uri $uri/ =404;        
+        index index.php index.html index.htm;
+        try_files $uri $uri/ /index.php;
     }
 
-    location ~ [^/]\.php(/|$) {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+    fastcgi_intercept_errors on;
+
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_index index.php;
+
         include fastcgi_params;
     }
 
-    # Improve Moodle performance
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires max;
-        log_not_found off;
+    location ~ /\.ht {
+        deny all;
     }
 }
 
