@@ -151,14 +151,14 @@ server {
 
     # Improve Moodle performance
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        try_files $uri =404;
         expires max;
         log_not_found off;
     }
 }
+
 EOF
 
-#sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 sudo systemctl restart nginx.service
 sudo nginx -t
 
