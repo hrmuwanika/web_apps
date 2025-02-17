@@ -154,7 +154,7 @@ server {
 }
 EOF
 
-sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
+#sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 sudo systemctl restart nginx.service
 sudo nginx -t
 
