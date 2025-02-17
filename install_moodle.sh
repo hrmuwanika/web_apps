@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.5.2 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v4.5.2 Postgres, Nginx and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -172,7 +172,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
   sudo certbot --nginx -d $WEBSITE_NAME -d www.$WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
-  sudo systemctl restart apache2
+  sudo systemctl restart nginx
   
   echo "============ SSL/HTTPS is enabled! ========================"
 else
