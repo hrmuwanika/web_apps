@@ -86,7 +86,7 @@ sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysq
 php-bcmath php-fpm php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
 # Install Nginx
-sudo apt install -y nginx
+sudo apt install -y nginx-full
 sudo systemctl stop nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
@@ -138,8 +138,9 @@ server {
       alias /var/www/moodledata/;
     }
 
-    location ~ [^/].php(/|$) {
+    location ~ ^(.+\.php)(.*)$ {
         include snippets/fastcgi-php.conf;
+        fastcgi_index index.php;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
