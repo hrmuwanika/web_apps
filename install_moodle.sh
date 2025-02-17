@@ -41,7 +41,8 @@ sudo service sshd restart
 #--------------------------------------------------
 sudo apt install -y ufw
 sudo ufw allow OpenSSH
-sudo ufw allow 'Apache Full'
+sudo ufw allow http
+sudo ufw allow https
 sudo ufw enable 
 sudo ufw reload
 
