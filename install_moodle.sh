@@ -131,33 +131,34 @@ server {
     server_name  $WEBSITE_NAME;
 
     client_max_body_size 200M;
+
+    access_log /var/log/nginx/moodle.access.log main;
+    error_log  /var/log/nginx/moodle.error.log;
     
-    location /dataroot/ {
-      internal;
-      alias /var/www/moodledata/;
-    }
-
-    rewrite ^/(.*\.php)(/)(.*)$ /$1?file=/$3 last;
-
     location / {
-        index index.php index.html index.htm;
-        try_files $uri $uri/ /index.php;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
-    fastcgi_intercept_errors on;
-
-    location ~ \.php$ {
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+    location ~ ^(.+\.php)(.*)$ {
+        fastcgi_split_path_info ^(.+\.php)(.*)$;
         fastcgi_index index.php;
-
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        include /etc/nginx/mime.types;
         include fastcgi_params;
+        fastcgi_param  PATH_INFO  $fastcgi_path_info;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
-    location ~ /\.ht {
+    # Hide all dot files but allow "Well-Known URIs" as per RFC 5785
+    location ~ /\.(?!well-known).* {
+        return 404;
+    }
+
+    # This should be after the php fpm rule and very close to the last nginx ruleset.
+    # Don't allow direct access to various internal files. See MDL-69333
+    location ~ (/vendor/|/node_modules/|composer\.json|/readme|/README|readme\.txt|/upgrade\.txt|db/install\.xml|/fixtures/|/behat/|phpunit\.xml|\.lock|environment\.xml) {
         deny all;
+        return 404;
     }
 }
 
