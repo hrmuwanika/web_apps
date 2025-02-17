@@ -80,39 +80,16 @@ echo -e "=== Creating the Odoo PostgreSQL User ... ==="
 #exit
 
 #--------------------------------------------------
-# Install Debian default database MariaDB 
-#--------------------------------------------------
-#sudo apt install -y mariadb-server mariadb-client
-#sudo systemctl start mariadb.service
-#sudo systemctl enable mariadb.service
-
-# sudo mysql_secure_installation
-
-# Configure Mariadb database
-#sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-#sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-#sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-#sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
-#sudo systemctl restart mariadb.service
-
-#sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-#sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
-#sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
-#sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
-#sudo mysqladmin -uroot --password="" reload 2>/dev/null
-
-#sudo systemctl restart mysql.service
-
-#--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
 sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
 php-bcmath php-fpm php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
+# Install Nginx
 sudo apt install -y nginx
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
+sudo systemctl stop nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
 
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
@@ -124,7 +101,7 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
    date.timezone = Africa/Kigali
 EOF
 
-sudo systemctl restart php8.3-fpm
+sudo systemctl reload php8.3-fpm
 
 #--------------------------------------------------
 # Installation of Moodle
@@ -134,26 +111,24 @@ wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405
 tar xvf moodle-latest-405.tgz
 
 cp -rf /opt/moodle/* /var/www/html/
+sudo chmod 775 -R /var/www/html/
+sudo chown nginx:nginx -R /var/www/html/
 
-sudo mkdir -p /var/www/moodledata/
-sudo chown -R www-data:www-data /var/www/html/
-sudo chown -R www-data:www-data /var/www/moodledata/
-sudo chmod -R 777 /var/www/moodledata/
-sudo chmod -R 777 /var/www/html/
+mkdir -p /var/www/moodledata
+sudo chmod 770 -R /var/www/moodledata
+sudo chown :nginx -R /var/www/moodledata
 
-sudo mkdir -p /var/quarantine
-sudo chown -R www-data:www-data /var/quarantine
-
-sudo cat <<EOF > /etc/nginx/conf.d/moodle.conf
+sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
 server {
     listen 80;
+    listen [::]:80;
     root /var/www/html;
-    index  index.php index.html index.htm;
-    server_name  moodle.example.com;
+    index  index.php;
+    server_name  $WEBSITE_NAME;
 
     client_max_body_size 200M;
-    autoindex off;
+    
     location / {
         try_files $uri $uri/ =404;
     }
@@ -163,13 +138,9 @@ server {
       alias /var/www/moodledata/;
     }
 
-    location / {
-        try_files $uri $uri/ =404;
-    }
-
-    location ~ [^/]\.php(/|$) {
+    location ~ [^/].php(/|$) {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -183,7 +154,9 @@ server {
 }
 EOF
 
-sudo systemctl restart nginx
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
+sudo systemctl restart nginx.service
+sudo nginx -t
 
 #--------------------------------------------------
 # Enable ssl with certbot
@@ -197,7 +170,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $W
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo certbot --nginx -d $WEBSITE_NAME -d www.$WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
   sudo systemctl restart apache2
   
