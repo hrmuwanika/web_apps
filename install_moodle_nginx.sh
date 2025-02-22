@@ -139,9 +139,9 @@ server {
     }
 
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php-fpm.sock; # Adjust PHP-FPM socket path as needed
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock; # Adjust PHP-FPM socket path as needed
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
