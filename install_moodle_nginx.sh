@@ -74,79 +74,19 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# Function to handle errors
-error_exit() {
-  echo "Error: $1"
-  exit 1
-}
-
-# Function to prompt for password securely
-read_password() {
-  local prompt="$1"
-  local password
-  while IFS= read -r -s -p "$prompt" password; do
-    if [[ -n "$password" ]]; then
-      break
-    else
-      echo "Password cannot be empty. Please try again."
-    fi
-  done
-  echo
-  echo "$password"
-}
-
-# Check if psql is available
-if ! command -v psql &> /dev/null; then
-  error_exit "psql is not installed. Please install PostgreSQL client."
-fi
-
-# Prompt for PostgreSQL superuser password
-PGPASSWORD=$(read_password "Enter PostgreSQL superuser password: ")
-
-# Prompt for Moodle user password
-MOODLE_PASSWORD=$(read_password "Enter Moodle user password: ")
-
-# Create Moodle user with superuser privileges
-echo "Creating user $MOODLE_USER..."
-sudo -u "$PGUSER" PGPASSWORD="$PGPASSWORD" psql -v ON_ERROR_STOP=1 <<-EOSQL
-  CREATE ROLE "$MOODLE_USER" WITH LOGIN PASSWORD '$MOODLE_PASSWORD' SUPERUSER;
-EOSQL
-
-if [ $? -ne 0 ]; then
-  error_exit "Failed to create user $MOODLE_USER."
-fi
-
-echo "User $MOODLE_USER created successfully."
-
-# Create Moodle database
-echo "Creating database $MOODLE_DB..."
-sudo -u "$PGUSER" PGPASSWORD="$PGPASSWORD" psql -v ON_ERROR_STOP=1 <<-EOSQL
-  CREATE DATABASE "$MOODLE_DB" WITH OWNER="$MOODLE_USER";
-EOSQL
-
-if [ $? -ne 0 ]; then
-  echo "Failed to create database $MOODLE_DB."
-  sudo -u "$PGUSER" PGPASSWORD="$PGPASSWORD" psql -v ON_ERROR_STOP=1 <<-EOSQL
-    DROP ROLE "$MOODLE_USER";
-  EOSQL
-  error_exit "Database creation failed, user $MOODLE_USER has been removed."
-fi
-
-echo "Database $MOODLE_DB created successfully."
-
-# Grant all privileges on the database to the Moodle user
-echo "Granting privileges..."
-sudo -u "$PGUSER" PGPASSWORD="$PGPASSWORD" psql -v ON_ERROR_STOP=1 <<-EOSQL
-  GRANT ALL PRIVILEGES ON DATABASE "$MOODLE_DB" TO "$MOODLE_USER";
-EOSQL
-
-if [ $? -ne 0 ]; then
-    error_exit "Failed to grant privileges to $MOODLE_USER"
-fi
-
-echo "Privileges granted."
-echo "PostgreSQL setup complete."
-
+sudo su - postgres
+psql
+CREATE DATABASE moodledb
+    OWNER = moodleuser
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.UTF-8'
+    LC_CTYPE = 'en_US.UTF-8'
+    TABLESPACE = pg_default;
+    
+CREATE USER moodleuser WITH PASSWORD 'abc1234!';
+GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+\q
+exit
 
 #--------------------------------------------------
 # Installation of PHP
