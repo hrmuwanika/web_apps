@@ -19,10 +19,6 @@ ENABLE_SSL="True"
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
-# PostgreSQL configuration
-PGUSER="postgres"
-MOODLE_USER="moodle_user"
-MOODLE_DB="moodledb"
 
 #--------------------------------------------------
 # Update Server
