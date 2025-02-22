@@ -160,6 +160,8 @@ server {
 EOF
 
 sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
+
+sudo apt autoremove apache2
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
