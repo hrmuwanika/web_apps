@@ -92,7 +92,8 @@ sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
-
+   
+   cgi.fix_pathinfo = 0
    max_execution_time = 360
    max_input_vars = 6000
    memory_limit = 256M
