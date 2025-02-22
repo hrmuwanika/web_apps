@@ -174,20 +174,29 @@ server {
     # Handle large file uploads
     client_max_body_size 100M; # Adjust as needed
 
-    # HTTPS configuration (if using HTTPS)
-    # listen 443 ssl http2;
-    # server_name moodle.example.com;
+    # Prevent access to moodledata (crucial security measure)
+    location /moodledata/ {
+        internal; #Or deny all, but internal allows php to access it.
+    }
 
-    # ssl_certificate /etc/letsencrypt/live/moodle.example.com/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/moodle.example.com/privkey.pem;
+    # Deny access to backup directory (if applicable)
+    location /backup/ {
+        deny all;
+    }
 
-    # ssl_protocols TLSv1.2 TLSv1.3;
-    # ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
-    # ssl_prefer_server_ciphers off;
+    # Other sensitive directories
+    location /admin/cli/ {
+        deny all;
+    }
+    location /config.php {
+        deny all;
+    }
 
-    # location / {
-    #     try_files $uri $uri/ /index.php?$args;
-    # }
+    # prevent access to install.php after install.
+    location /install.php {
+        deny all;
+    }
+
 }
 EOF
 
