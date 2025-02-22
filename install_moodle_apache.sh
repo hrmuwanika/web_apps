@@ -128,7 +128,7 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
  ServerAdmin admin@$WEBSITE_NAME
  
  <Directory /var/www/html/>
- Options -Indexes +FollowSymLinks +MultiViews
+ Options +FollowSymlinks
  AllowOverride All
  Require all granted
  </Directory>
