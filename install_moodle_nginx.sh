@@ -85,7 +85,7 @@ echo -e "=== Creating the Odoo PostgreSQL User ... ==="
 #--------------------------------------------------
 sudo apt install php php-fpm php-intl php-mysql php-curl php-cli php-zip php-xml php-gd php-common php-mbstring php-xmlrpc php-json php-sqlite3 php-soap php-zip php-pgsql \
 php-bcmath php-pspell php-ldap -y
-sudo unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+sudo apt install unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav -y
 
 sudo apt install nginx -y
 sudo systemctl start nginx.service
