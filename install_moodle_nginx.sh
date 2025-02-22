@@ -19,6 +19,15 @@ ENABLE_SSL="True"
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
+# Set PostgreSQL variables
+# Default PostgreSQL superuser
+PGUSER="postgres"  
+# Replace with your PostgreSQL password
+PGPASSWORD="abc1234!"  
+NEWUSER="moodleuser"
+# Replace with your desired password
+NEWUSER_PASSWORD="abc1234!" 
+DATABASE_NAME="moodledb"
 
 #--------------------------------------------------
 # Update Server
@@ -69,15 +78,35 @@ echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
 sudo systemctl enable postgresql
 
-echo -e "=== Creating the Odoo PostgreSQL User ... ==="
-#sudo su - postgres
-#psql
+# Create the new user with superuser privileges
+echo "Creating user $NEWUSER with superuser privileges..."
+sudo -u "$PGUSER" psql -v ON_ERROR_STOP=1 <<-EOSQL
+  CREATE ROLE "$NEWUSER" WITH LOGIN PASSWORD '$NEWUSER_PASSWORD' SUPERUSER;
+EOSQL
 
-#CREATE DATABASE moodledb;
-#CREATE USER moodleuser WITH PASSWORD 'abc1234!';
-#GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
-#\q
-#exit
+if [ $? -ne 0 ]; then
+  echo "Failed to create user $NEWUSER."
+  exit 1
+fi
+
+echo "User $NEWUSER created successfully."
+
+# Create the database
+echo "Creating database $DATABASE_NAME..."
+sudo -u "$PGUSER" psql -v ON_ERROR_STOP=1 <<-EOSQL
+  CREATE DATABASE "$DATABASE_NAME" WITH OWNER="$NEWUSER";
+EOSQL
+
+if [ $? -ne 0 ]; then
+  echo "Failed to create database $DATABASE_NAME."
+  #Attempt to remove the user if database creation fails.
+  sudo -u "$PGUSER" psql -v ON_ERROR_STOP=1 <<-EOSQL
+      DROP ROLE "$NEWUSER";
+  EOSQL
+  exit 1
+fi
+
+echo "Database $DATABASE_NAME created successfully."
 
 
 #--------------------------------------------------
