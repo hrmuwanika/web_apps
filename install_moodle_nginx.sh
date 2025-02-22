@@ -120,6 +120,8 @@ sudo chown -R www-data:www-data /var/www/moodledata/
 sudo chmod -R 755 /var/www/moodledata/
 sudo chmod -R 755 /var/www/html/
 
+rm -rf /etc/nginx/sites-available/*
+rm -rf /etc/nginx/sites-enabled/*
 sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
 server {
