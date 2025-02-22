@@ -124,8 +124,8 @@ sudo chmod -R 755 /var/www/html/
 sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
 server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
+        listen 80;
+        listen [::]:80;
 
         root /var/www/html;
 
