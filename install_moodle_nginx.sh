@@ -127,35 +127,64 @@ sudo chmod -R 755 /var/www/html/
 rm -rf /etc/nginx/sites-available/*
 rm -rf /etc/nginx/sites-enabled/*
 sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
-
 server {
-        listen 80;
-        listen [::]:80;
+    listen 80;
+    server_name moodle.example.com;
 
-        root /var/www/html;
+    root /var/www/html/moodle;
+    index index.php;
 
-        # Add index.php to the list if you are using PHP
-        index index.php;
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
 
-        server_name example.com;
-
-        location / {
-                # First attempt to serve request as file, then
-                # as directory, then fall back to displaying a 404.
-                # try_files  / =404;
-               try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        #include fastcgi_params;
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php-fpm.sock; # Adjust PHP-FPM socket path as needed
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
     }
 
     location ~ /\.ht {
         deny all;
     }
+
+    # Static file caching
+    location ~* \.(jpg|jpeg|gif|png|ico|css|js)$ {
+        expires 30d; # Adjust caching duration as needed
+        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+    }
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()"; # Adjust as needed
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+
+    # Prevent access to sensitive files
+    location ~ /(config.php|version.php|admin/cli/|backupdata/) {
+        deny all;
+    }
+
+    # Handle large file uploads
+    client_max_body_size 100M; # Adjust as needed
+
+    # HTTPS configuration (if using HTTPS)
+    # listen 443 ssl http2;
+    # server_name moodle.example.com;
+
+    # ssl_certificate /etc/letsencrypt/live/moodle.example.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/moodle.example.com/privkey.pem;
+
+    # ssl_protocols TLSv1.2 TLSv1.3;
+    # ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+    # ssl_prefer_server_ciphers off;
+
+    # location / {
+    #     try_files $uri $uri/ /index.php?$args;
+    # }
 }
 EOF
 
