@@ -10,7 +10,8 @@
 # sudo chmod +x install_moodle.sh
 # Execute the script to install Moodle:
 # ./install_moodle.sh
-#
+# crontab -e
+# ***** /usr/bin/php /var/www/html/admin/cli/cron.php
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
