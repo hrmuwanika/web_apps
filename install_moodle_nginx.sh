@@ -7,9 +7,9 @@
 # Make a new file:
 # sudo nano install_moodle.sh
 # Place this content in it and then make the file executable:
-# sudo chmod +x install_moodle.sh
+# sudo chmod +x install_moodle_nginx.sh
 # Execute the script to install Moodle:
-# ./install_moodle.sh
+# ./install_moodle_nginx.sh
 #
 ################################################################################
 
@@ -84,7 +84,7 @@ echo -e "=== Creating the Odoo PostgreSQL User ... ==="
 # Installation of PHP
 #--------------------------------------------------
 sudo apt install php php-fpm php-intl php-mysql php-curl php-cli php-zip php-xml php-gd php-common php-mbstring php-xmlrpc php-json php-sqlite3 php-soap php-zip php-pgsql \
-php-bcmmath php-pspell php-ldap -y
+php-bcmath php-pspell php-ldap -y
 sudo unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
 
 sudo apt install nginx -y
