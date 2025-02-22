@@ -129,9 +129,9 @@ rm -rf /etc/nginx/sites-enabled/*
 sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 server {
     listen 80;
-    server_name moodle.example.com;
+    server_name example.com;
 
-    root /var/www/html/moodle;
+    root /var/www/html;
     index index.php;
 
     location / {
