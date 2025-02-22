@@ -70,19 +70,19 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-sudo su - postgres
-psql
-CREATE DATABASE moodledb
-    OWNER = moodleuser
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8'
-    TABLESPACE = pg_default;
+# sudo su - postgres
+# psql
+# CREATE DATABASE moodledb
+#    OWNER = moodleuser
+#    ENCODING = 'UTF8'
+#    LC_COLLATE = 'en_US.UTF-8'
+#    LC_CTYPE = 'en_US.UTF-8'
+#    TABLESPACE = pg_default;
     
-CREATE USER moodleuser WITH PASSWORD 'abc1234!';
-GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
-\q
-exit
+# CREATE USER moodleuser WITH PASSWORD 'abc1234!';
+# GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+# \q
+# exit
 
 #--------------------------------------------------
 # Installation of PHP
