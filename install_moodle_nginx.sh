@@ -120,7 +120,6 @@ sudo chown -R www-data:www-data /var/www/moodledata/
 sudo chmod -R 755 /var/www/moodledata/
 sudo chmod -R 755 /var/www/html/
 
-
 sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
 
 server {
@@ -137,19 +136,26 @@ server {
         location / {
                 # First attempt to serve request as file, then
                 # as directory, then fall back to displaying a 404.
-                try_files $uri $uri/ =404;
+                #  try_files  / =404;
+               try_files $uri $uri/ /index.php?$query_string;
         }
 
         location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
     }
 }
-
 EOF
 
 sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 sudo systemctl restart nginx.service
+sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
 # Enable ssl with certbot
