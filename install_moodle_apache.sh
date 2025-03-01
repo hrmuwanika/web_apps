@@ -41,10 +41,12 @@ sudo service sshd restart
 # Install and configure Firewall
 #--------------------------------------------------
 sudo apt install -y ufw
-sudo ufw allow OpenSSH
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw enable 
+sudo ufw allow 22/tcp
+sudo ufw --force enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow www 
+sudo ufw allow 'Apache Full'
 sudo ufw reload
 
 #--------------------------------------------------
@@ -61,7 +63,7 @@ sudo apt install -y mariadb-server mariadb-client
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
-# sudo mysql_secure_installation
+# sudo mariadb-secure-installation
 
 # Configure Mariadb database
 sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
@@ -71,28 +73,29 @@ sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/
 
 sudo systemctl restart mariadb.service
 
-sudo mysql -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
-sudo mysql -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
-sudo mysql -uroot --password="" -e "FLUSH PRIVILEGES;"
-sudo mysqladmin -uroot --password="" reload 2>/dev/null
+sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
-sudo systemctl restart mysql.service
+sudo systemctl restart mariadb.service
 
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
 sudo apt install -y apache2 php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
-php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav
+php-bcmath libapache2-mod-php php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix \
+php-gmp php-imagick php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23
 
 sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
 
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
-   max_execution_time = 360
-   memory_limit = 256M
+   max_execution_time = 600
+   memory_limit = 512M
    post_max_size = 500M
    upload_max_filesize = 500M
+   max_input_time = 1000
    date.timezone = Africa/Kigali
 EOF
 
@@ -116,12 +119,11 @@ sudo find /var/www/moodledata -type d -exec chmod 700 {} \;
 sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
 
 sudo chown -R www-data:www-data /var/www/html/
-sudo chmod -R 777 /var/www/html/
+sudo find /var/www/html/moodle -type d -exec chmod 755 {} \; 
+sudo find /var/www/html/moodle -type f -exec chmod 644 {} \;
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
-
-sudo a2enmod rewrite
 
 sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
 
@@ -132,7 +134,7 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
  ServerAdmin admin@$WEBSITE_NAME
  
  <Directory /var/www/html/>
- Options -Indexes +FollowSymLinks
+ Options -Indexes +FollowSymLinks +MultiViews
  AllowOverride All
  Require all granted
  </Directory>
@@ -142,12 +144,14 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
 </VirtualHost>
 EOF
 
+a2dissite 000-default.conf
 sudo a2ensite moodle.conf
 sudo apachectl configtest
-
 sudo systemctl restart apache2
 
-echo "* * * * * www-data /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo tee -a /etc/crontab
+sudo a2enmod rewrite
+sudo a2enmod ssl
+sudo systemctl restart apache2
 
 #--------------------------------------------------
 # Enable ssl with certbot
