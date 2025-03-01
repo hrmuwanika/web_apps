@@ -11,7 +11,7 @@
 # Execute the script to install Moodle:
 # ./install_moodle.sh
 # crontab -e
-# ***** /usr/bin/php /var/www/html/admin/cli/cron.php
+# * * * * * /usr/bin/php /var/www/html/admin/cli/cron.php
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -89,14 +89,15 @@ sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
 
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
-
    max_execution_time = 360
-   max_input_vars = 6000
    memory_limit = 256M
    post_max_size = 500M
    upload_max_filesize = 500M
    date.timezone = Africa/Kigali
 EOF
+
+sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 6000/' /etc/php/8.3/apache2/php.ini
+sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 6000/' /etc/php/8.3/cli/php.ini
 
 sudo systemctl restart apache2
 
@@ -109,10 +110,12 @@ tar xvf moodle-latest-405.tgz
 
 cp -rf /opt/moodle/* /var/www/html/
 
-sudo mkdir -p /var/www/moodledata/
+sudo mkdir -p /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo find /var/www/moodledata -type d -exec chmod 700 {} \; 
+sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
+
 sudo chown -R www-data:www-data /var/www/html/
-sudo chown -R www-data:www-data /var/www/moodledata/
-sudo chmod -R 777 /var/www/moodledata/
 sudo chmod -R 777 /var/www/html/
 
 sudo mkdir -p /var/quarantine
@@ -143,6 +146,8 @@ sudo a2ensite moodle.conf
 sudo apachectl configtest
 
 sudo systemctl restart apache2
+
+echo "* * * * * www-data /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo tee -a /etc/crontab
 
 #--------------------------------------------------
 # Enable ssl with certbot
