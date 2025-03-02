@@ -111,16 +111,16 @@ cd /opt/
 wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 tar xvf moodle-latest-405.tgz
 
-cp -rf /opt/moodle/* /var/www/html/
+cp -rf /opt/moodle/* /var/www/html
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
 sudo find /var/www/moodledata -type d -exec chmod 700 {} \; 
 sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
 
-sudo chown -R www-data:www-data /var/www/html/
-sudo find /var/www/html/moodle -type d -exec chmod 755 {} \; 
-sudo find /var/www/html/moodle -type f -exec chmod 644 {} \;
+sudo chown -R www-data:www-data /var/www/html
+sudo find /var/www/html -type d -exec chmod 755 {} \; 
+sudo find /var/www/html -type f -exec chmod 644 {} \;
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -128,12 +128,12 @@ sudo chown -R www-data:www-data /var/quarantine
 sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
 
 <VirtualHost *:80>
- DocumentRoot /var/www/html/
+ DocumentRoot /var/www/html
  ServerName $WEBSITE_NAME
  ServerAlias www.$WEBSITE_NAME
  ServerAdmin admin@$WEBSITE_NAME
  
- <Directory /var/www/html/>
+ <Directory /var/www/html>
  Options -Indexes +FollowSymLinks +MultiViews
  AllowOverride All
  Require all granted
@@ -174,6 +174,7 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
+rm /var/www/html/index.html
 sudo systemctl restart apache2
 
 echo "Moodle installation is complete"
