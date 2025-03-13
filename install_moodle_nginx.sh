@@ -37,21 +37,32 @@ sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/
 sudo service sshd restart
 
 #--------------------------------------------------
-# Install and configure Firewall
-#--------------------------------------------------
-sudo apt install -y ufw
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable 
-sudo ufw reload
-
-#--------------------------------------------------
 # Set up the timezones
 #--------------------------------------------------
 # set the correct timezone on ubuntu
 timedatectl set-timezone Africa/Kigali
 timedatectl
+
+#--------------------------------------------------
+# Installation of PHP
+#--------------------------------------------------
+sudo apt install software-properties-common ca-certificates lsb-release apt-transport-https -y
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt install -y php php-fpm php-common php-pgsql php-gmp php-curl php-intl php-mbstring php-soap php-xmlrpc php-gd php-xml php-cli php-zip unzip git curl \
+php-json php-sqlite3 php-bcmath php-pspell php-ldap libpcre3 libpcre3-dev graphviz aspell ghostscript clamav 
+
+sudo apt install nginx -y
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
+
+sudo sed -i 's,^memory_limit =.*$,memory_limit = 256M,' /etc/php/8.3/fpm/php.ini
+sudo sed -i 's,^;max_input_vars =.*$,max_input_vars = 6000,' /etc/php8.3/fpm/php.ini
+sudo sed -i 's,^;cgi.fix_pathinfo=.*$,cgi.fix_pathinfo = 0,' /etc/php/8.3/fpm/php.ini
+sudo sed -i 's,^upload_max_filesize =.*$,upload_max_filesize = 100M,' /etc/php/8.3/fpm/php.ini
+sudo sed -i 's,^max_execution_time =.*$,max_execution_time = 360,' /etc/php/8.3/fpm/php.ini
+sudo sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+
+sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
 # Installing PostgreSQL Server
@@ -85,30 +96,6 @@ sudo systemctl enable postgresql
 # exit
 
 #--------------------------------------------------
-# Installation of PHP
-#--------------------------------------------------
-sudo apt install php php-fpm php-intl php-mysql php-curl php-cli php-zip php-xml php-gd php-common php-mbstring php-xmlrpc php-json php-sqlite3 php-soap php-zip php-pgsql \
-php-bcmath php-pspell php-ldap -y
-sudo apt install unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav -y
-
-sudo apt install nginx -y
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
-
-tee -a /etc/php/8.3/fpm/php.ini <<EOF
-   
-   cgi.fix_pathinfo = 0
-   max_execution_time = 360
-   max_input_vars = 6000
-   memory_limit = 256M
-   post_max_size = 500M
-   upload_max_filesize = 500M
-   date.timezone = Africa/Kigali
-EOF
-
-sudo systemctl restart php8.3-fpm
-
-#--------------------------------------------------
 # Installation of Moodle
 #--------------------------------------------------
 cd /opt/
@@ -119,92 +106,54 @@ rm -rf /var/www/html/*
 cp -rf /opt/moodle/* /var/www/html/
 
 sudo mkdir -p /var/www/moodledata/
+sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chmod -R 755 /var/www/html/*
+sudo chmod -R 755 /var/www/moodledata/
+
 sudo chown -R www-data:www-data /var/www/html/
 sudo chown -R www-data:www-data /var/www/moodledata/
-sudo chmod -R 755 /var/www/moodledata/
-sudo chmod -R 755 /var/www/html/
 
-rm -rf /etc/nginx/sites-available/*
-rm -rf /etc/nginx/sites-enabled/*
-sudo cat <<EOF > /etc/nginx/sites-available/moodle.conf
+sudo cat >/etc/nginx/conf.d/moodle.conf <<'NGINX'
 server {
     listen 80;
-    server_name example.com;
+    root /var/www/html/moodle;
+    index  index.php index.html index.htm;
+    server_name  moodle.example.com;
 
-    root /var/www/html;
-    index index.php;
-
+    client_max_body_size 100M;
+    autoindex off;
     location / {
-                # First attempt to serve request as file, then
-                # as directory, then fall back to displaying a 404.    
-                # try_files  / =404;
-        try_files $uri $uri/ /index.php?$query_string;
+        try_files $uri $uri/ =404;
     }
 
-    location ~ \.php$ {
+    location /dataroot/ {
+      internal;
+      alias /var/www/moodledata/;
+    }
+
+    location ~ [^/].php(/|$) {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        #include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
     }
-
-    location ~ /\.ht {
-        deny all;
-    }
-
-    # Static file caching
-    location ~* \.(jpg|jpeg|gif|png|ico|css|js)$ {
-        expires 30d; # Adjust caching duration as needed
-        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
-    }
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
-    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()"; # Adjust as needed
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
-
-    # Prevent access to sensitive files
-    location ~ /(config.php|version.php|admin/cli/|backupdata/) {
-        deny all;
-    }
-
-    # Handle large file uploads
-    client_max_body_size 100M; # Adjust as needed
-
-    # Prevent access to moodledata (crucial security measure)
-    location /moodledata/ {
-        internal; #Or deny all, but internal allows php to access it.
-    }
-
-    # Deny access to backup directory (if applicable)
-    location /backup/ {
-        deny all;
-    }
-
-    # Other sensitive directories
-    location /admin/cli/ {
-        deny all;
-    }
-    location /config.php {
-        deny all;
-    }
-
-    # prevent access to install.php after install.
-    location /install.php {
-        deny all;
-    }
-
 }
-EOF
+NGINX
 
-sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
+nginx -t
 
-sudo apt autoremove apache2
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
+
+#--------------------------------------------------
+# Install and configure Firewall
+#--------------------------------------------------
+sudo apt install -y ufw
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable 
+sudo ufw reload
 
 #--------------------------------------------------
 # Enable ssl with certbot
