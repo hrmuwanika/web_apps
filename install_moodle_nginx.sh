@@ -47,12 +47,14 @@ timedatectl
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install software-properties-common ca-certificates lsb-release apt-transport-https -y
+sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https
 sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+
 sudo apt install -y php php-fpm php-common php-pgsql php-gmp php-curl php-intl php-mbstring php-soap php-xmlrpc php-gd php-xml php-cli php-zip unzip git curl \
 php-json php-sqlite3 php-bcmath php-pspell php-ldap libpcre3 libpcre3-dev graphviz aspell ghostscript clamav 
 
-sudo apt install nginx -y
+sudo apt install -y nginx-full 
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
@@ -62,6 +64,7 @@ sudo sed -i 's,^;cgi.fix_pathinfo=.*$,cgi.fix_pathinfo = 0,' /etc/php/8.3/fpm/ph
 sudo sed -i 's,^upload_max_filesize =.*$,upload_max_filesize = 100M,' /etc/php/8.3/fpm/php.ini
 sudo sed -i 's,^max_execution_time =.*$,max_execution_time = 360,' /etc/php/8.3/fpm/php.ini
 sudo sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 6000/' /etc/php/8.3/fpm/php.ini
 
 sudo systemctl restart php8.3-fpm
 
@@ -118,33 +121,29 @@ sudo find /var/www/html -type f -exec chmod 644 {} \;
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo cat >/etc/nginx/conf.d/moodle.conf <<'NGINX'
+sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
+    listen [::]:80;
     root /var/www/html;
     index  index.php index.html index.htm;
-    server_name  moodle.example.com;
+    server_name  example.com www.example.com;
 
-    client_max_body_size 100M;
-    autoindex off;
     location / {
-        try_files $uri $uri/ =404;
+    try_files $uri $uri/ =404;        
     }
 
-    location /dataroot/ {
-      internal;
-      alias /var/www/moodledata/;
-    }
-
-    location ~ [^/].php(/|$) {
+    location ~ [^/]\.php(/|$) {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
+
 }
 NGINX
 
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
