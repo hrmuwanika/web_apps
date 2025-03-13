@@ -48,18 +48,16 @@ timedatectl
 # Installation of PHP
 #--------------------------------------------------
 sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https
-sudo add-apt-repository ppa:ondrej/php -y
-sudo apt update
-
 sudo apt install -y php php-fpm php-common php-gmp php-curl php-intl php-mbstring php-soap php-xmlrpc php-gd php-xml php-cli php-zip unzip git curl \
 php-json php-sqlite3 php-bcmath php-pspell php-ldap libpcre3 libpcre3-dev graphviz aspell ghostscript clamav 
 
-sudo apt install -y nginx-full 
+sudo apt autoremove apache2 -y
+sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
 sudo sed -i 's,^memory_limit =.*$,memory_limit = 256M,' /etc/php/8.3/fpm/php.ini
-sudo sed -i 's,^;max_input_vars =.*$,max_input_vars = 7000,' /etc/php8.3/fpm/php.ini
+sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 7000/' /etc/php8.3/fpm/php.ini
 sudo sed -i 's,^;cgi.fix_pathinfo=.*$,cgi.fix_pathinfo = 0,' /etc/php/8.3/fpm/php.ini
 sudo sed -i 's,^upload_max_filesize =.*$,upload_max_filesize = 100M,' /etc/php/8.3/fpm/php.ini
 sudo sed -i 's,^max_execution_time =.*$,max_execution_time = 600,' /etc/php/8.3/fpm/php.ini
@@ -71,10 +69,7 @@ sudo systemctl restart php8.3-fpm
 # Installing PostgreSQL Server
 #--------------------------------------------------
 echo -e "=== Install and configure PostgreSQL ... ==="
-if [ $INSTALL_POSTGRESQL_SIXTEEN = "True" ]; then
-    echo -e "=== Installing postgreSQL V16 due to the user it's choice ... ==="
-    sudo apt -y install postgresql-16 postgresql-contrib php-pgsql
-fi
+sudo apt -y install postgresql-16 php-pgsql
 
 echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
@@ -85,6 +80,7 @@ sudo systemctl enable postgresql
 # psql
 # CREATE USER moodleuser WITH PASSWORD 'abc1234';
 # CREATE DATABASE moodledb;
+# ALTER DATABASE moodledb OWNER TO moodleuser;
 # GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
 # \q
 # exit
