@@ -47,9 +47,9 @@ timedatectl
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y software-properties-common ca-certificates lsb-release apt-transport-https
-sudo apt install -y php php-fpm php-common php-gmp php-curl php-intl php-mbstring php-soap php-xmlrpc php-gd php-xml php-cli php-zip unzip git curl \
-php-json php-sqlite3 php-bcmath php-pspell php-ldap libpcre3 libpcre3-dev graphviz aspell ghostscript clamav 
+sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
+php-bcmath php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-gmp php-imagick \
+php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23
 
 sudo apt autoremove apache2 -y
 sudo apt install -y nginx
@@ -68,12 +68,12 @@ sudo systemctl restart php8.3-fpm
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------
-echo -e "=== Install and configure PostgreSQL ... ==="
-sudo apt -y install postgresql-16 php-pgsql
+# echo -e "=== Install and configure PostgreSQL ... ==="
+# sudo apt -y install postgresql-16 php-pgsql
 
-echo "=== Starting PostgreSQL service... ==="
-sudo systemctl start postgresql 
-sudo systemctl enable postgresql
+# echo "=== Starting PostgreSQL service... ==="
+# sudo systemctl start postgresql 
+# sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
 # sudo su - postgres
@@ -84,6 +84,30 @@ sudo systemctl enable postgresql
 # GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
 # \q
 # exit
+
+#--------------------------------------------------
+# Install Debian default database MariaDB 
+#--------------------------------------------------
+sudo apt install -y mariadb-server mariadb-client
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
+
+# sudo mariadb-secure-installation
+
+# Configure Mariadb database
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+
+sudo systemctl restart mariadb.service
+
+sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+
+sudo systemctl restart mariadb.service
 
 #--------------------------------------------------
 # Installation of Moodle
@@ -133,8 +157,8 @@ server {
     location ~ [^/]\.php(/|$) {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
+       #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       #include fastcgi_params;
     }
 
 }
