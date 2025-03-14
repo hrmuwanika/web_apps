@@ -56,12 +56,17 @@ sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-sudo sed -i 's,^memory_limit =.*$,memory_limit = 256M,' /etc/php/8.3/fpm/php.ini
-sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 7000/' /etc/php8.3/fpm/php.ini
-sudo sed -i 's,^;cgi.fix_pathinfo=.*$,cgi.fix_pathinfo = 0,' /etc/php/8.3/fpm/php.ini
-sudo sed -i 's,^upload_max_filesize =.*$,upload_max_filesize = 100M,' /etc/php/8.3/fpm/php.ini
-sudo sed -i 's,^max_execution_time =.*$,max_execution_time = 600,' /etc/php/8.3/fpm/php.ini
-sudo sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+tee -a /etc/php/8.3/fpm/php.ini <<EOF
+   file_uploads = On
+   allow_url_fopen = On
+   max_execution_time = 600
+   memory_limit = 512M
+   post_max_size = 500M
+   upload_max_filesize = 500M
+   max_input_time = 1000
+   date.timezone = Africa/Kigali
+   max_input_vars = 7000
+EOF
 
 sudo systemctl restart php8.3-fpm
 
@@ -97,7 +102,7 @@ sudo systemctl enable mariadb.service
 # Configure Mariadb database
 sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
 sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = ON' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
 sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 sudo systemctl restart mariadb.service
@@ -121,12 +126,10 @@ cp -rf /opt/moodle/* /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
-sudo find /var/www/moodledata -type d -exec chmod 700 {} \; 
-sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
+sudo chmod -R 775 /var/www/moodledata
 
 sudo chown -R www-data:www-data /var/www/html
-sudo find /var/www/html -type d -exec chmod 755 {} \; 
-sudo find /var/www/html -type f -exec chmod 644 {} \;
+sudo chmod -R 775 /var/www/html
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -136,8 +139,8 @@ server {
     listen 80;
     listen [::]:80;
     root /var/www/html;
-    index  index.php index.html index.htm;
-    server_name  example.com www.example.com;
+    index  index.php;
+    server_name  moodle.example.com;
 
     client_max_body_size 100M;
 
