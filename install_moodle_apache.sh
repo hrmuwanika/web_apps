@@ -91,6 +91,9 @@ sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
 
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
+   file_uploads = On
+   allow_url_fopen = On
+   short_open_tag = On
    max_execution_time = 600
    memory_limit = 512M
    post_max_size = 500M
