@@ -97,7 +97,7 @@ sudo systemctl enable mariadb.service
 # Configure Mariadb database
 sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
 sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = ON' /etc/mysql/mariadb.conf.d/50-server.cnf
 sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 sudo systemctl restart mariadb.service
@@ -139,26 +139,36 @@ server {
     index  index.php index.html index.htm;
     server_name  example.com www.example.com;
 
-    access_log /var/log/nginx/moodle.access.log;
-    error_log  /var/log/nginx/moodle.error.log  warn;
-
     client_max_body_size 100M;
-    autoindex off;
+
     location / {
-     try_files $uri $uri/ =404;
+        try_files $uri $uri/ =404;
     }
+	
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }	
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }	
 
     location /dataroot/ {
       internal;
       alias /var/www/moodledata/;
     }
 
-
-    location ~ [^/]\.php(/|$) {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-       #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-       #include fastcgi_params;
+    location ~ [^/].php(/|$) {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
     }
 
 }
@@ -176,8 +186,9 @@ sudo systemctl restart php8.3-fpm
 # Install and configure Firewall
 #--------------------------------------------------
 sudo apt install -y ufw
-sudo ufw allow 22/tcp
-sudo ufw allow "Nginx Full"
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
 sudo ufw enable 
 sudo ufw reload
 
@@ -193,6 +204,7 @@ sudo apt-get remove certbot
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo apt install -y python3-certbot-nginx
   sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
   sudo systemctl restart nginx
