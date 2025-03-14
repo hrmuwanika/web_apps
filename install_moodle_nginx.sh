@@ -144,7 +144,7 @@ server {
     server_name  moodle.example.com;
 
     client_max_body_size 100M;
-
+    autoindex off;
     location / {
        # try_files $uri $uri/ =404;
        try_files $uri $uri/ /index.php?$query_string; 
