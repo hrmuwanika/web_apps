@@ -59,6 +59,7 @@ sudo systemctl enable nginx.service
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
    file_uploads = On
    allow_url_fopen = On
+   short_open_tag = On
    max_execution_time = 600
    memory_limit = 512M
    post_max_size = 500M
@@ -126,10 +127,10 @@ cp -rf /opt/moodle/* /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
-sudo chmod -R 775 /var/www/moodledata
+sudo chmod -R 0770 /var/www/moodledata
 
 sudo chown -R www-data:www-data /var/www/html
-sudo chmod -R 775 /var/www/html
+sudo chmod -R 755 /var/www/html
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -145,7 +146,8 @@ server {
     client_max_body_size 100M;
 
     location / {
-        try_files $uri $uri/ =404;
+       # try_files $uri $uri/ =404;
+       try_files $uri $uri/ /index.php?$query_string; 
     }
 	
     location = /favicon.ico {
