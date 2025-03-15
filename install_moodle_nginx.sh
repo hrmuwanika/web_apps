@@ -142,7 +142,7 @@ sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html;
+    root /var/www/html/;
     server_name  moodle.example.com;
     
     index  index.php;
@@ -171,7 +171,7 @@ server {
     location ~ [^/].php(/|$) {
     include snippets/fastcgi-php.conf;
     fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
     #include fastcgi_params;
     }
 
