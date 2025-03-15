@@ -139,15 +139,14 @@ sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html;
+    root /var/www/html/;
     index  index.php;
     server_name  moodle.example.com;
 
     client_max_body_size 100M;
     autoindex off;
     location / {
-        try_files $uri $uri/ =404;
-       #try_files $uri $uri/ /index.php?$query_string; 
+       try_files $uri $uri/ /index.php index.php; 
     }
 	
     location = /favicon.ico {
@@ -166,18 +165,19 @@ server {
         access_log off;
     }	
 
+    location ~ [^/]\.php(/|$) {
+    fastcgi_split_path_info  ^(.+\.php)(/.+)$;
+    fastcgi_index            index.php;
+    fastcgi_pass             unix:/var/run/php/php8.3-fpm.sock;
+    include                  fastcgi_params;
+    fastcgi_param   PATH_INFO       $fastcgi_path_info;
+    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
     location /dataroot/ {
-      internal;
-      alias /var/www/moodledata/;
+    internal;
+    alias /var/www/moodledata/;                # ensure the path ends with /
     }
-
-    location ~ [^/].php(/|$) {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    #fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    #include fastcgi_params;
-    }
-
 }
 NGINX
 
