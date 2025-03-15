@@ -127,12 +127,10 @@ cp -rf /opt/moodle/* /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
-sudo find /var/www/moodledata -type d -exec chmod 700 {} \; 
-sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
+sudo chmod -R 775 /var/www/moodledata
 
 sudo chown -R www-data:www-data /var/www/html
-sudo find /var/www/html -type d -exec chmod 755 {} \; 
-sudo find /var/www/html -type f -exec chmod 644 {} \;
+sudo chmod -R 775 /var/www/html
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -148,7 +146,7 @@ server {
     client_max_body_size 100M;
     autoindex off;
     location / {
-       try_files \$uri \$uri/ \/index.php?\$query_string; 
+       try_files \$uri \$uri/ /index.php?$query_string; 
     }
 	
     location = /favicon.ico {
