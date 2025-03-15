@@ -130,10 +130,13 @@ sudo chown -R www-data:www-data /var/www/moodledata
 sudo chmod -R 775 /var/www/moodledata
 
 sudo chown -R www-data:www-data /var/www/html
-sudo chmod -R 775 /var/www/html
+sudo chmod -R 755 /var/www/html
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
+
+rm -rf /etc/nginx/sites-available/*
+rm -rf /etc/nginx/sites-enabled/*
 
 sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
 server {
