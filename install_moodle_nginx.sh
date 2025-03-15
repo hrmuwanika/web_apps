@@ -142,7 +142,8 @@ server {
     root /var/www/html;
     index  index.php;
     server_name  moodle.example.com;
-    
+
+    # Log files
     access_log /var/log/nginx/moodle.access.log;
     error_log /var/log/nginx/moodle.error.log;
     
@@ -179,15 +180,15 @@ server {
         access_log off;
     }	
     
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires max;
         log_not_found off;
     }	  
 }
 NGINX
 
-sudo rm -rf /etc/nginx/sites-available/*
-sudo rm -rf /etc/nginx/sites-enabled/*
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
 nginx -t
