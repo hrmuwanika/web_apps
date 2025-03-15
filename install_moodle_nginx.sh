@@ -172,8 +172,8 @@ server {
     fastcgi_index            index.php;
     fastcgi_pass             unix:/var/run/php/php8.3-fpm.sock;
     include                  fastcgi_params;
-    fastcgi_param   PATH_INFO       $fastcgi_path_info;
-    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #fastcgi_param   PATH_INFO       $fastcgi_path_info;
+    #fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
     location /dataroot/ {
