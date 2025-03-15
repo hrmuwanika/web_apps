@@ -135,54 +135,59 @@ sudo chmod -R 755 /var/www/html
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-rm -rf /etc/nginx/sites-available/*
-rm -rf /etc/nginx/sites-enabled/*
-
 sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/;
+    root /var/www/html;
+    index  index.php;
     server_name  moodle.example.com;
     
-    index  index.php;
+    access_log /var/log/nginx/moodle.access.log;
+    error_log /var/log/nginx/moodle.error.log;
+    
     client_max_body_size 100M;
-    autoindex off;
+    
     location / {
-       try_files \$uri \$uri/ /index.php?$query_string; 
+       try_files \$uri \$uri/ /index.php?$args; 
     }
-	
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-        expires max;
-        log_not_found off;
-    }	
-
-    location = /robots.txt {
-        allow all;
-        log_not_found off;
-        access_log off;
-    }	
-
-    location ~ [^/].php(/|$) {
+    
+    location ~ \.php$ {
     include snippets/fastcgi-php.conf;
     fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    #fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-    #include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    include fastcgi_params;
     }
 
     location /dataroot/ {
       internal;
       alias /var/www/moodledata/;
     }
+
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }	
+    
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }	  
 }
 NGINX
 
-sudo rm /etc/nginx/sites-enabled/default
+sudo rm -rf /etc/nginx/sites-available/*
+sudo rm -rf /etc/nginx/sites-enabled/*
 sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
 nginx -t
