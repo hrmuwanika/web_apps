@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.5.2 Mariadb, Nginx and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v4.5.2 Postgresql, Nginx and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -74,42 +74,20 @@ sudo systemctl restart php8.3-fpm
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------
-# echo -e "=== Install and configure PostgreSQL ... ==="
-# sudo apt -y install postgresql postgres-contrib php-pgsql
+echo -e "=== Install and configure PostgreSQL ... ==="
+sudo apt -y install postgresql postgres-contrib php-pgsql
 
-# echo "=== Starting PostgreSQL service... ==="
-# sudo systemctl start postgresql 
-# sudo systemctl enable postgresql
+echo "=== Starting PostgreSQL service... ==="
+sudo systemctl start postgresql 
+sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234!';"
-# sudo -u postgres psql -c "CREATE DATABASE moodledb;"
-# sudo -u postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
-# sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
+sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234!';"
+sudo -u postgres psql -c "CREATE DATABASE moodledb;"
+sudo -u postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
 
-#--------------------------------------------------
-# Install Debian default database MariaDB 
-#--------------------------------------------------
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
-
-# sudo mariadb-secure-installation
-
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
-sudo systemctl restart mariadb.service
-
-sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
-sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
-
-sudo systemctl restart mariadb.service
+sudo systemctl restart postgresql
 
 #--------------------------------------------------
 # Installation of Moodle
