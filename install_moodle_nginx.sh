@@ -75,19 +75,20 @@ sudo systemctl restart php8.3-fpm
 # Installing PostgreSQL Server
 #--------------------------------------------------
 # echo -e "=== Install and configure PostgreSQL ... ==="
-# sudo apt -y install postgresql-16 php-pgsql
+# sudo apt -y install postgresql postgres-contrib php-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
 # sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo su - postgres
+# sudo -i -u postgres
 # psql
-# CREATE USER moodleuser WITH PASSWORD 'abc1234';
+# CREATE USER moodleuser WITH PASSWORD 'abc1234!';
 # CREATE DATABASE moodledb;
 # ALTER DATABASE moodledb OWNER TO moodleuser;
-# GRANT ALL PRIVILEGES ON DATABASE moodledb to moodleuser;
+# \l
+# GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;
 # \q
 # exit
 
