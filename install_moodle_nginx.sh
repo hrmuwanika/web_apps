@@ -77,7 +77,7 @@ sudo systemctl restart php8.3-fpm
 # Installing PostgreSQL Server
 #--------------------------------------------------
 echo -e "=== Install and configure PostgreSQL ... ==="
-sudo apt -y install postgresql php-pgsql
+sudo apt -y install postgresql postgresql-contrib php-pgsql
 
 echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
