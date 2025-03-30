@@ -225,6 +225,10 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
+
+nano /var/www/html/config.php
+# $CFG->slasharguments = 0; 
+
 sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
