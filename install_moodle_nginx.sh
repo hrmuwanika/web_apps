@@ -146,6 +146,10 @@ server {
     error_log /var/log/nginx/moodle.error.log;
     
     client_max_body_size 100M;
+
+    if (!-e $request_filename) {
+       rewrite ^(.*\.php)(/)(.*)$ $1?file=/$3 last;
+    }
     
     location / {
        try_files \$uri \$uri/ /index.php?$args; 
