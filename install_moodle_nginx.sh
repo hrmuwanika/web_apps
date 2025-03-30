@@ -47,7 +47,7 @@ timedatectl
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-mysql php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
+sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear \
 php-bcmath php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-gmp php-imagick \
 php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23
 
@@ -74,37 +74,37 @@ sudo systemctl restart php8.3-fpm
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------
-# echo -e "=== Install and configure PostgreSQL ... ==="
-# sudo apt -y install postgresql postgres-contrib php-pgsql
+echo -e "=== Install and configure PostgreSQL ... ==="
+sudo apt -y install postgresql postgres-contrib php-pgsql
 
-# echo "=== Starting PostgreSQL service... ==="
-# sudo systemctl start postgresql 
-# sudo systemctl enable postgresql
+echo "=== Starting PostgreSQL service... ==="
+sudo systemctl start postgresql 
+sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234!';"
-# sudo -u postgres psql -c "CREATE DATABASE moodledb;"
-# sudo -u postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
-# sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
+sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234!';"
+sudo -u postgres psql -c "CREATE DATABASE moodledb;"
+sudo -u postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
 
-# sudo systemctl restart postgresql
+sudo systemctl restart postgresql
 
 #--------------------------------------------------
 # Install Debian default database MariaDB 
 #--------------------------------------------------
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
+# sudo apt install -y mariadb-server mariadb-client
+# sudo systemctl start mariadb.service
+# sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
 # Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-sudo systemctl restart mariadb.service
+# sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
