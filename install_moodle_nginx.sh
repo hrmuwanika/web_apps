@@ -84,7 +84,7 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234\!';"
+sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234@';"
 sudo -su postgres psql -c "CREATE DATABASE moodledb;"
 sudo -su postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
 sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
