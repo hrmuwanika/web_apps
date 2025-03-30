@@ -67,6 +67,7 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
    max_input_time = 1000
    date.timezone = Africa/Kigali
    max_input_vars = 7000
+   extension=pdo_pgsql
 EOF
 
 sudo systemctl restart php8.3-fpm
