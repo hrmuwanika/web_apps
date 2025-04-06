@@ -1535,6 +1535,7 @@ require_once(__DIR__ . '/lib/setup.php'); // Do not edit
 
 EOF
 
+sudo chmod -R 644 /var/www/html/config.php
 sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
