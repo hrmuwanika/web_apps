@@ -49,7 +49,7 @@ timedatectl
 #--------------------------------------------------
 sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
 php-bcmath php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-gmp php-imagick \
-php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23
+php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23 fail2ban
 
 sudo apt autoremove apache2 -y
 sudo apt install -y nginx
@@ -175,10 +175,13 @@ sudo systemctl restart php8.3-fpm
 # Install and configure Firewall
 #--------------------------------------------------
 sudo apt install -y ufw
-sudo ufw allow ssh
+
+sudo ufw allow 22/tcp
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
 sudo ufw allow http
 sudo ufw allow https
-sudo ufw enable 
+sudo ufw --force enable
 sudo ufw reload
 
 #--------------------------------------------------
