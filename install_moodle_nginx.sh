@@ -1538,6 +1538,10 @@ require_once(__DIR__ . '/lib/setup.php'); // Do not edit
 
 EOF
 
+sudo apt install -y cron 
+sudo systemctl enable cron
+sudo systemctl start cron
+
 sudo chmod -R 644 /var/www/html/config.php
 sudo systemctl restart nginx
 
