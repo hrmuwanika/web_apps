@@ -41,12 +41,13 @@ sudo service sshd restart
 # Install and configure Firewall
 #--------------------------------------------------
 sudo apt install -y ufw
+
 sudo ufw allow 22/tcp
-sudo ufw --force enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow www 
-sudo ufw allow 'Apache Full'
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw --force enable
 sudo ufw reload
 
 #--------------------------------------------------
