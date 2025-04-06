@@ -75,7 +75,7 @@ sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234!';"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234@';"
 sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
@@ -230,7 +230,7 @@ $CFG->dbuser    = 'moodleuser';   // your database username
 $CFG->dbpass    = 'abc1234@';     // your database password
 $CFG->prefix    = 'mdl_';         // prefix to use for all table names
 $CFG->slasharguments = 0; 
-$CFG->preventexcpath = true;
+$CFG->preventexecpath = true;
 $CFG->dboptions = array(
     'dbpersist' => false,       // should persistent database connections be
                                 //  used? set to 'false' for the most stable
