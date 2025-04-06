@@ -203,8 +203,8 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
+sudo cat <<EOF > /var/www/html/config.php
 
-cat <<EOF > /var/www/html/config.php
 <?php
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
@@ -245,7 +245,7 @@ $CFG = new stdClass();
 // will be stored.  This database must already have been created         //
 // and a username/password created to access it.                         //
 
-$CFG->dbtype    = 'pgsql';        // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', or 'sqlsrv'
+$CFG->dbtype    = 'pgsql';        // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
 $CFG->dblibrary = 'native';       // 'native' only at the moment
 $CFG->dbhost    = 'localhost';    // eg 'localhost' or 'db.isp.com' or IP
 $CFG->dbname    = 'moodledb';     // database name, eg moodle
@@ -318,46 +318,45 @@ $CFG->dboptions = array(
                                 // Currently supported only with mysqli, mariadb, and aurora drivers.
     /*
     'connecttimeout' => null, // Set connect timeout in seconds. Not all drivers support it.
-    'readonly' => [          // Set to read-only replica details, to get safe reads
-                             // from there instead of the primary node. Optional.
+    'readonly' => [          // Set to read-only slave details, to get safe reads
+                             // from there instead of the master node. Optional.
                              // Currently supported by pgsql and mysqli variety classes.
                              // If not supported silently ignored.
-      'instance' => [        // Readonly replica connection parameters
+      'instance' => [        // Readonly slave connection parameters
         [
-          'dbhost' => 'replica.dbhost',
-          'dbport' => '',    // Defaults to primary port
-          'dbuser' => '',    // Defaults to primary user
-          'dbpass' => '',    // Defaults to primary password
+          'dbhost' => 'slave.dbhost',
+          'dbport' => '',    // Defaults to master port
+          'dbuser' => '',    // Defaults to master user
+          'dbpass' => '',    // Defaults to master password
         ],
         [...],
       ],
 
     Instance(s) can alternatively be specified as:
 
-      'instance' => 'replica.dbhost',
-      'instance' => ['replica.dbhost1', 'replica.dbhost2'],
-      'instance' => ['dbhost' => 'replica.dbhost', 'dbport' => '', 'dbuser' => '', 'dbpass' => ''],
+      'instance' => 'slave.dbhost',
+      'instance' => ['slave.dbhost1', 'slave.dbhost2'],
+      'instance' => ['dbhost' => 'slave.dbhost', 'dbport' => '', 'dbuser' => '', 'dbpass' => ''],
 
-      'connecttimeout' => 2, // Set read-only replica connect timeout in seconds. See above.
-      'latency' => 0.5,      // Set read-only replica sync latency in seconds.
+      'connecttimeout' => 2, // Set read-only slave connect timeout in seconds. See above.
+      'latency' => 0.5,      // Set read-only slave sync latency in seconds.
                              // When 'latency' seconds have lapsed after an update to a table
-                             // it is deemed safe to use readonly replica for reading from the table.
+                             // it is deemed safe to use readonly slave for reading from the table.
                              // It is optional, defaults to 1 second. If you want once written to a table
-                             // to always use primary handle for reading set it to something ridiculosly big,
+                             // to always use master handle for reading set it to something ridiculosly big,
                              // eg 10.
                              // Lower values increase the performance, but setting it too low means
-                             // missing the primary-replica sync.
-      'exclude_tables' => [  // Tables to exclude from read-only replica feature.
+                             // missing the master-slave sync.
+      'exclude_tables' => [  // Tables to exclude from read-only slave feature.
           'table1',          // Should not be used, unless in rare cases when some area of the system
           'table2',          // is malfunctioning and you still want to use readonly feature.
       ],                     // Then one can exclude offending tables while investigating.
 
-    More info available in lib/dml/moodle_read_replica_trait.php where the feature is implemented.
+    More info available in lib/dml/moodle_read_slave_trait.php where the feature is implemented.
     ]
      */
 // For all database config settings see https://docs.moodle.org/en/Database_settings
 );
-
 
 //=========================================================================
 // 2. WEB SITE LOCATION
@@ -409,6 +408,23 @@ $CFG->routerconfigured = false;
 // NOTE: the prefixed 0 is important, and don't use quotes.
 
 $CFG->directorypermissions = 0777;
+
+
+//=========================================================================
+// 5. ADMIN DIRECTORY LOCATION  (deprecated)
+//=========================================================================
+// Please note: Support from this feature has been deprecated and it will be
+// removed after Moodle 4.2.
+//
+// A very few webhosts use /admin as a special URL for you to access a
+// control panel or something.  Unfortunately this conflicts with the
+// standard location for the Moodle admin pages.  You can work around this
+// by renaming the admin directory in your installation, and putting that
+// new name here.  eg "moodleadmin".  This should fix all admin links in Moodle.
+// After any change you need to visit your new admin directory
+// and purge all caches.
+
+$CFG->admin = 'admin';
 
 
 //=========================================================================
@@ -815,7 +831,7 @@ $CFG->admin = 'admin';
 //
 // Moodle 2.7 introduces a locking api for critical tasks (e.g. cron).
 // The default locking system to use is DB locking for Postgres, MySQL, MariaDB and
-// file locking for SQLServer. If $CFG->preventfilelocking is set, then the
+// file locking for Oracle and SQLServer. If $CFG->preventfilelocking is set, then the
 // default will always be DB locking. It can be manually set to one of the lock
 // factory classes listed below, or one of your own custom classes implementing the
 // \core\lock\lock_factory interface.
@@ -1001,29 +1017,20 @@ $CFG->admin = 'admin';
 //
 //      $CFG->progresspollinterval = 5;
 //
-// Default question bank module
-//
-//      $CFG->corequestion_defaultqbankmod = 'qbank'
-//
-// Question banks are only stored at activity module context and this setting defines which module type will
-// be used for creating question banks by default. This is in circumstances such as quiz backup & restores when
-// no target context can be found and the system needs to create a question bank to store the categories and questions.
-//
 // Set limit for grade items that can be shown on a single page of the grader
 // report. Browsers struggle when the number of grade items is very large and
 // one tries to view all students.
 //
 //      $CFG->maxgradesperpage = 200000;
 //
-//
 //=========================================================================
 // 7. SETTINGS FOR DEVELOPMENT SERVERS - not intended for production use!!!
 //=========================================================================
 //
 // Force a debugging mode regardless the settings in the site administration
-// @error_reporting(E_ALL); // NOT FOR PRODUCTION SERVERS!
+// @error_reporting(E_ALL | E_STRICT); // NOT FOR PRODUCTION SERVERS!
 // @ini_set('display_errors', '1');    // NOT FOR PRODUCTION SERVERS!
-// $CFG->debug = (E_ALL);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
+// $CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
 // $CFG->debugdisplay = 1;             // NOT FOR PRODUCTION SERVERS!
 //
 // Display exceptions using the 'pretty' Whoops! utility.
@@ -1089,11 +1096,8 @@ $CFG->admin = 'admin';
 // $CFG->langstringcache = false; // NOT FOR PRODUCTION SERVERS!
 //
 // When working with production data on test servers, no emails or other messages
-// should ever be sent to real users
+// should ever be send to real users
 // $CFG->noemailever = true;    // NOT FOR PRODUCTION SERVERS!
-//
-// To stop sending SMS to users in test servers
-// $CFG->nosmsever = true;    // NOT FOR PRODUCTION SERVERS!
 //
 // Divert all outgoing emails to this address to test and debug emailing features
 // $CFG->divertallemailsto = 'root@localhost.local'; // NOT FOR PRODUCTION SERVERS!
@@ -1117,15 +1121,6 @@ $CFG->admin = 'admin';
 //
 // Force result of checks used to determine whether a site is considered "public" or not (such as for site registration).
 // $CFG->site_is_public = false;
-//
-// The mod_subsection feature has been added in 4.5 but is disabled by default. For new 5.0 sites, however, it will be enabled
-// by default. When upgrading from an earlier version to 5.0 or later, mod_subsection will also be enabled unless the
-// 'keepsubsectiondisabled' setting is set to true. In that case, the status of mod_subsection will remain unchanged during the
-// upgrade process.
-// This setting applies only to upgrades from version 4.5 where subsections already exist. It does not affect other upgrades or
-// new installations.
-// Note that the 'keepsubsectiondisabled' setting will be removed in version 6.0. (MDL-83791)
-// $CFG->keepsubsectiondisabled = false;
 //
 //=========================================================================
 // 8. FORCED SETTINGS
@@ -1536,6 +1531,7 @@ require_once(__DIR__ . '/lib/setup.php'); // Do not edit
 
 // There is no php closing tag in this file,
 // it is intentional because it prevents trailing whitespace problems!
+
 EOF
 
 sudo systemctl restart nginx
