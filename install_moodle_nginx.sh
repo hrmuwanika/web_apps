@@ -253,6 +253,7 @@ $CFG->dbuser    = 'moodleuser';   // your database username
 $CFG->dbpass    = 'abc1234@';     // your database password
 $CFG->prefix    = 'mdl_';         // prefix to use for all table names
 $CFG->slasharguments = 0; 
+$CFG->preventexcpath = true;
 $CFG->dboptions = array(
     'dbpersist' => false,       // should persistent database connections be
                                 //  used? set to 'false' for the most stable
