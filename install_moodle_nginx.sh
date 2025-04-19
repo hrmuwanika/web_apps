@@ -200,30 +200,30 @@ sudo ufw --force enable
 sudo ufw reload
 
 # sudo cp /var/www/html/config-dist.php /var/www/html/config.php
-sudo tee -a /var/www/html/config.php <<EOF
+sudo cat <<EOF > /var/www/html/config.php 
 <?PHP
 unset($CFG);                                // Ignore this line
 global $CFG;                                // This is necessary here for PHPUnit execution
-$CFG = new stdClass();
-$CFG->dbtype    = 'pgsql';
-$CFG->dblibrary = 'native';
-$CFG->dbhost    = 'localhost';
-$CFG->dbname    = 'moodledb';
-$CFG->dbuser    = 'moodleuser';
-$CFG->dbpass    = 'abc1234@';
-$CFG->prefix    = 'mdl_';
-$CFG->dboptions = array(
+\$CFG = new stdClass();
+\$CFG->dbtype    = 'pgsql';
+\$CFG->dblibrary = 'native';
+\$CFG->dbhost    = 'localhost';
+\$CFG->dbname    = 'moodledb';
+\$CFG->dbuser    = 'moodleuser';
+\$CFG->dbpass    = 'abc1234@';
+\$CFG->prefix    = 'mdl_';
+\$CFG->dboptions = array(
     'dbpersist' => false,
     'dbsocket'  => false,
     'dbport'    => '',   
 );
 
-$CFG->slasharguments = 0; 
-$CFG->preventexecpath = true;
-$CFG->wwwroot   = 'http://$WEBSITE_NAME';
-$CFG->dataroot  = '/var/www/moodledata';
-$CFG->directorypermissions = 0777;
-$CFG->admin = 'admin';
+\$CFG->slasharguments = 0; 
+\$CFG->preventexecpath = true;
+\$CFG->wwwroot   = 'http://$WEBSITE_NAME';
+\$CFG->dataroot  = '/var/www/moodledata';
+\$CFG->directorypermissions = 0777;
+\$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
