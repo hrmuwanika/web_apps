@@ -11,7 +11,8 @@
 # Execute the script to install Moodle:
 # ./install_moodle_nginx.sh
 # crontab -e
-# * * * * * /usr/bin/php /var/www/html/admin/cli/cron.php
+# Add the following line, which will run the cron script every ten minutes 
+#  */10 * * * * /usr/bin/php -q -f /var/www/html/admin/cli/cron.php
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -220,10 +221,34 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-sudo cp /var/www/html/config-dist.php /var/www/html/config.php
-sudo nano /var/www/html/config.php
-# $CFG->slasharguments = 0; 
-# $CFG->preventexecpath = true;
+# sudo cp /var/www/html/config-dist.php /var/www/html/config.php
+sudo tee -a /var/www/html/config.php <<EOF
+<?PHP
+unset($CFG);                                // Ignore this line
+global $CFG;                                // This is necessary here for PHPUnit execution
+$CFG = new stdClass();
+$CFG->dbtype    = 'pgsql';
+$CFG->dblibrary = 'native';
+$CFG->dbhost    = 'localhost';
+$CFG->dbname    = 'moodledb';
+$CFG->dbuser    = 'moodleuser';
+$CFG->dbpass    = 'abc1234@';
+$CFG->prefix    = 'mdl_';
+$CFG->dboptions = array(
+    'dbpersist' => false,
+    'dbsocket'  => false,
+    'dbport'    => '',   
+);
+
+$CFG->slasharguments = 0; 
+$CFG->preventexecpath = true;
+$CFG->wwwroot   = 'http://$website_name';
+$CFG->dataroot  = '/var/www/moodledata';
+$CFG->directorypermissions = 0777;
+$CFG->admin = 'admin';
+require_once(dirname(__FILE__) . '/lib/setup.php');
+?>
+EOF
 
 sudo apt install -y cron 
 sudo systemctl enable cron
