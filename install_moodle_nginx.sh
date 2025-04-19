@@ -52,14 +52,18 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
-php-bcmath php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-gmp php-imagick \
-php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23 fail2ban
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-soap php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
+php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-pgsql \
+php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick ffmpeg libsodium23 fail2ban
 
 sudo apt autoremove apache2 -y
+
 sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
+
+sudo systemctl start fail2ban.service
+sudo systemctl enable fail2ban.service
 
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
    file_uploads = On
