@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
