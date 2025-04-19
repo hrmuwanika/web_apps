@@ -202,8 +202,8 @@ sudo ufw reload
 # sudo cp /var/www/html/config-dist.php /var/www/html/config.php
 sudo cat <<EOF > /var/www/html/config.php 
 <?PHP
-unset($CFG);                                // Ignore this line
-global $CFG;                                // This is necessary here for PHPUnit execution
+unset(\$CFG);                                // Ignore this line
+global \$CFG;                                // This is necessary here for PHPUnit execution
 \$CFG = new stdClass();
 \$CFG->dbtype    = 'pgsql';
 \$CFG->dblibrary = 'native';
