@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v4.5.2 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v5.0 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
