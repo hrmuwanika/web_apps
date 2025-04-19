@@ -47,7 +47,7 @@ timedatectl
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release 
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
 apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
@@ -82,7 +82,11 @@ sudo systemctl restart php8.3-fpm
 # Installing PostgreSQL Server
 #--------------------------------------------------
 echo -e "=== Install and configure PostgreSQL ... ==="
-sudo apt -y install postgresql postgresql-contrib php-pgsql
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+sudo apt update
+
+sudo apt -y install postgresql-16 postgresql-contrib php-pgsql
 
 echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
