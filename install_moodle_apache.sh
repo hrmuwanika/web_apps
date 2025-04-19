@@ -198,7 +198,7 @@ sudo apt install -y cron
 sudo systemctl enable cron
 sudo systemctl start cron
 
-sudo chmod -R 644 /var/www/html/config.php
+sudo chmod -R 444 /var/www/html/config.php
 
 sudo systemctl restart apache2
 
