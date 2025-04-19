@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v5.0 MariaDB, Apache2 and Php 8.3 on Ubuntu 24.04
+# Script for installing Moodle v5.0 MariaDB, Apache2 and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -60,6 +60,10 @@ timedatectl
 #--------------------------------------------------
 # Install Debian default database MariaDB 
 #--------------------------------------------------
+sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
+sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] https://mariadb.mirror.liquidtelecom.com/repo/10.11/ubuntu focal main'
+sudo update
+
 sudo apt install -y mariadb-server mariadb-client
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
