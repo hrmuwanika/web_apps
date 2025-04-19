@@ -47,6 +47,11 @@ timedatectl
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release 
+apt -y install software-properties-common
+add-apt-repository ppa:ondrej/php
+sudo apt update -y
+
 sudo apt install -y php php-common php-cli php-intl php-xmlrpc php-soap php-zip php-gd php-tidy php-mbstring php-curl php-xml php-pear php-pgsql \
 php-bcmath php-pspell php-curl php-ldap php-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-gmp php-imagick \
 php-fpm php-redis php-apcu php-opcache bzip2 zip unzip imagemagick ffmpeg libsodium23 fail2ban
