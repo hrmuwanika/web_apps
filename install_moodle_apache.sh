@@ -7,10 +7,11 @@
 # Make a new file:
 # sudo nano install_moodle.sh
 # Place this content in it and then make the file executable:
-# sudo chmod +x install_moodle.sh
+# sudo chmod +x install_moodle_apache.sh
 # Execute the script to install Moodle:
-# ./install_moodle.sh
+# ./install_moodle_apache.sh
 # crontab -e
+# Add the following line, which will run the cron script every ten minutes 
 # */10 * * * * /usr/bin/php /var/www/html/admin/cli/cron.php
 ################################################################################
 
