@@ -229,7 +229,6 @@ require_once(dirname(__FILE__) . '/lib/setup.php');
 EOF
 
 sudo chmod -R 444 /var/www/html/config.php
-
 sudo systemctl restart apache2
 
 echo "Moodle installation is complete"
