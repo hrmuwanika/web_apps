@@ -199,6 +199,33 @@ sudo ufw allow https
 sudo ufw --force enable
 sudo ufw reload
 
+
+sudo apt install -y cron 
+sudo systemctl enable cron
+sudo systemctl start cron
+
+#--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------
+
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+  sudo apt install -y snapd
+  sudo apt-get remove certbot
+  
+  sudo snap install core
+  sudo snap refresh core
+  sudo snap install --classic certbot
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo apt install -y python3-certbot-nginx
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  
+  sudo systemctl restart nginx
+  
+  echo "============ SSL/HTTPS is enabled! ========================"
+else
+  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+fi
+
 # sudo cp /var/www/html/config-dist.php /var/www/html/config.php
 sudo cat <<EOF > /var/www/html/config.php 
 <?PHP
@@ -227,32 +254,6 @@ global \$CFG;                                // This is necessary here for PHPUn
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
-
-sudo apt install -y cron 
-sudo systemctl enable cron
-sudo systemctl start cron
-
-#--------------------------------------------------
-# Enable ssl with certbot
-#--------------------------------------------------
-
-if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
-  sudo apt install -y snapd
-  sudo apt-get remove certbot
-  
-  sudo snap install core
-  sudo snap refresh core
-  sudo snap install --classic certbot
-  sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo apt install -y python3-certbot-nginx
-  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
-  
-  sudo systemctl restart nginx
-  
-  echo "============ SSL/HTTPS is enabled! ========================"
-else
-  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
-fi
 
 sudo chmod -R 444 /var/www/html/config.php
 sudo systemctl restart nginx
