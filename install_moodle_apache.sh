@@ -104,20 +104,34 @@ sudo systemctl enable apache2.service
 sudo systemctl start fail2ban.service
 sudo systemctl enable fail2ban.service
 
+sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/apache2/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/apache2/php.ini
+sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/apache2/php.ini
+sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/apache2/php.ini
+sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/apache2/php.ini
+sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/apache2/php.ini
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 448M/" /etc/php/8.3/apache2/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = 448M/" /etc/php/8.3/apache2/php.ini
+sed -i "s/memory_limit = 128M/memory_limit = 448M/" /etc/php/8.3/apache2/php.ini
+sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/cli/php.ini
+sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/cli/php.ini
+sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/cli/php.ini
+sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/cli/php.ini
+sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/cli/php.ini
+sed -i "s/memory_limit = 128M/memory_limit = 448M/" /etc/php/8.3/cli/php.ini
+sed -i 's/;opcache.enable=1/opcache.enable=1/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=128/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.interned_strings_buffer=8/opcache.interned_strings_buffer=16/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.max_accelerated_files=10000/opcache.max_accelerated_files=20000/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.max_wasted_percentage=5/opcache.max_wasted_percentage=5/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.validate_timestamps=1/opcache.validate_timestamps=1/g' /etc/php/8.3/apache2/php.ini
+sed -i 's/;opcache.revalidate_freq=2/opcache.revalidate_freq=10/g' /etc/php/8.3/apache2/php.ini
+
 tee -a /etc/php/8.3/apache2/php.ini <<EOF
    file_uploads = On
    allow_url_fopen = On
-   short_open_tag = On
-   max_execution_time = 600
-   memory_limit = 512M
-   post_max_size = 500M
-   upload_max_filesize = 500M
-   max_input_time = 1000
-   date.timezone = Africa/Kigali
 EOF
-
-sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 6000/' /etc/php/8.3/apache2/php.ini
-sudo sed -i 's/.*max_input_vars =.*/max_input_vars = 6000/' /etc/php/8.3/cli/php.ini
 
 sudo systemctl restart apache2
 
