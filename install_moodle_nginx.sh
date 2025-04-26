@@ -66,17 +66,19 @@ sudo systemctl enable nginx.service
 sudo systemctl start fail2ban.service
 sudo systemctl enable fail2ban.service
 
+sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
+sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
+sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
+sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
+sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
+sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
+
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
    file_uploads = On
    allow_url_fopen = On
-   short_open_tag = On
-   max_execution_time = 600
-   memory_limit = 512M
-   post_max_size = 500M
-   upload_max_filesize = 500M
-   max_input_time = 1000
-   date.timezone = Africa/Kigali
-   max_input_vars = 7000
    extension=pdo_pgsql
    extension=pgsql
 EOF
