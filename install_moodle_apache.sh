@@ -107,7 +107,7 @@ sudo systemctl enable fail2ban.service
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/apache2/php.ini
 sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/apache2/php.ini
 sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/apache2/php.ini
-sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/apache2/php.ini
+sed -i "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/apache2/php.ini
 sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/apache2/php.ini
 sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/apache2/php.ini
 sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 448M/" /etc/php/8.3/apache2/php.ini
@@ -116,7 +116,7 @@ sed -i "s/memory_limit = 128M/memory_limit = 448M/" /etc/php/8.3/apache2/php.ini
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
 sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/cli/php.ini
 sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/cli/php.ini
-sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/cli/php.ini
+sed -i "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/cli/php.ini
 sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/cli/php.ini
 sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/cli/php.ini
 sed -i "s/memory_limit = 128M/memory_limit = 448M/" /etc/php/8.3/cli/php.ini
