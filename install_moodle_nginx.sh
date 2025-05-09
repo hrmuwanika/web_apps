@@ -54,7 +54,7 @@ add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-soap php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php-pgsql \
+php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php8.3-pgsql \
 php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick ffmpeg libsodium23 fail2ban
 
 sudo apt autoremove apache2 -y
@@ -69,7 +69,7 @@ sudo systemctl enable fail2ban.service
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
 sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
 sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
-sed -i "s/; max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
+sed -i "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
 sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
 sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
 sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
@@ -77,10 +77,12 @@ sed -i "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
 sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 
 tee -a /etc/php/8.3/fpm/php.ini <<EOF
+
    file_uploads = On
    allow_url_fopen = On
    extension=pdo_pgsql
    extension=pgsql
+   
 EOF
 
 sudo systemctl restart php8.3-fpm
