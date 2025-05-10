@@ -95,7 +95,7 @@ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 sudo apt update
 
-sudo apt -y install postgresql-16 postgresql-contrib php-pgsql
+sudo apt -y install postgresql-16 postgresql-contrib
 
 echo "=== Starting PostgreSQL service... ==="
 sudo systemctl start postgresql 
