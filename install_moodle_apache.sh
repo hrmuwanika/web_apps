@@ -96,7 +96,7 @@ sudo apt update -y
 
 sudo apt install -y apache2 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
 php8.3-bcmath libapache2-mod-php8.3 php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix \
-php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 unzip imagemagick ffmpeg libsodium23 fail2ban
+php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 unzip imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
 
 sudo systemctl start apache2.service
 sudo systemctl enable apache2.service
