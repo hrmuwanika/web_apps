@@ -89,11 +89,6 @@ server {
     include fastcgi_params;
     }
 
-    location /dataroot/ {
-      internal;
-      alias /var/www/moodledata/;
-    }
-
     location ~ /\.ht {
         deny all;
     }
