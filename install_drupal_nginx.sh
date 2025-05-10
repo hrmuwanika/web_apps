@@ -112,11 +112,11 @@ server {
     autoindex off;
 
     location / {
-        try_files \$uri /index.php?$query_string;
+        try_files \$uri /index.php?\$query_string;
     }
 
     location @rewrite {
-        rewrite ^/(.*)$ /index.php?q=$1;
+        rewrite ^/(.*)$ /index.php?q=\$1;
     }
 
     location ~ '\.php$|^/update.php' {
