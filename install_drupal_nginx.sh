@@ -57,20 +57,20 @@ sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
 
-cd /usr/src && wget https://ftp.drupal.org/files/projects/drupal-11.1.2.tar.gz 
-tar -zxvf drupal-11.1.2.tar.gz
-sudo mv drupal-11.1.2 /var/www/html/drupal
+cd /usr/src && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
+tar -zxvf drupal-11.1.7.tar.gz
+sudo mv drupal-11.1.7 /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
-sudo cat << EOF > /etc/apache2/sites-available/drupal.conf <<NGINX
+sudo cat << EOF > /etc/nginx/sites-available/drupal.conf
 
 server {
     listen 80;
     listen [::]:80;
     root /var/www/html/drupal;
     index  index.php index.html index.htm;
-    server_name  $WEBSITE_NAME;
+    server_name  \$WEBSITE_NAME;
 
     client_max_body_size 100M;
     autoindex off;
@@ -110,7 +110,7 @@ server {
         log_not_found off;
     }	  
 }
-NGINX
+EOF
 
 ln -s /etc/nginx/sites-available/drupal.conf /etc/nginx/sites-enabled/
 
