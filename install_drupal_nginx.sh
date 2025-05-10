@@ -12,7 +12,7 @@ sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
 
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu postfix php8.3-mysql \
+php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu postfix php8.3-mysql  php8.3-pgsql \
  bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
 
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
@@ -30,33 +30,59 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
    file_uploads = On
    allow_url_fopen = On
    cgi.fix_pathinfo=0
+   extension=pdo_pgsql
+   extension=pgsql
    
 EOF
 
 systemctl restart nginx
 systemctl restart php8.3-fpm
 
-sudo apt install -y mariadb-server mariadb-client
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
+#--------------------------------------------------
+# Installing PostgreSQL Server
+#--------------------------------------------------
+echo -e "=== Install and configure PostgreSQL ... ==="
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+sudo apt update
+
+sudo apt -y install postgresql-16 postgresql-contrib php-pgsql
+
+echo "=== Starting PostgreSQL service... ==="
+sudo systemctl start postgresql 
+sudo systemctl enable postgresql
+
+# Create the new user with superuser privileges
+sudo -su postgres psql -c "CREATE USER drupaluser WITH PASSWORD 'abc1234@';"
+sudo -su postgres psql -c "CREATE DATABASE drupaldb;"
+sudo -su postgres psql -c "ALTER DATABASE drupaldb OWNER TO drupaluser;"
+sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE drupaldb TO drupaluser;"
+
+sudo systemctl restart postgresql
+
+# Mariadb Installation
+# sudo apt install -y mariadb-server mariadb-client
+# sudo systemctl start mariadb.service
+# sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
 # Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-sudo systemctl restart mariadb.service
+# sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE drupaldb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON drupaldb.* TO 'drupaluser'@'localhost';"
-sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+# sudo mariadb -uroot --password="" -e "CREATE DATABASE drupaldb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# sudo mariadb -uroot --password="" -e "CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';"
+# sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON drupaldb.* TO 'drupaluser'@'localhost';"
+# sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
-sudo systemctl restart mariadb.service
+# sudo systemctl restart mariadb.service
 
+# Drupal installation
 cd /usr/src && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
 tar -zxvf drupal-11.1.7.tar.gz
 sudo mv drupal-11.1.7 /var/www/html/drupal
