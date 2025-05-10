@@ -112,7 +112,7 @@ server {
     autoindex off;
 
     location / {
-        try_files $uri /index.php?$query_string;
+        try_files \$uri /index.php?$query_string;
     }
 
     location @rewrite {
@@ -127,11 +127,11 @@ server {
     }
 
     location ~* /sites/.*/files/styles/ {
-        try_files $uri @rewrite;
+        try_files \$uri @rewrite;
     }
 
     location ~ ^/sites/.*/files/ {
-        try_files $uri @rewrite;
+        try_files \$uri @rewrite;
     }
 
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
