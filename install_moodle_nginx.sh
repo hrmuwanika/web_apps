@@ -119,14 +119,14 @@ wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500
 tar xvf moodle-latest-500.tgz
 
 rm -rf /var/www/html/*
-cp -rf /opt/moodle/* /var/www/html/
+mv moodle/ /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
 sudo chmod -R 775 /var/www/moodledata
 
-sudo chown -R www-data:www-data /var/www/html
-sudo chmod -R 755 /var/www/html
+sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chmod -R 755 /var/www/html/moodle
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -135,7 +135,7 @@ sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html;
+    root /var/www/html/moodle;
     index  index.php;
     server_name  $WEBSITE_NAME;
 
@@ -232,7 +232,7 @@ else
 fi
 
 # sudo cp /var/www/html/config-dist.php /var/www/html/config.php
-sudo cat <<EOF > /var/www/html/config.php 
+sudo cat <<EOF > /var/www/html/moodle/config.php 
 <?PHP
 unset(\$CFG);                                // Ignore this line
 global \$CFG;                                // This is necessary here for PHPUnit execution
@@ -260,7 +260,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod -R 444 /var/www/html/config.php
+sudo chmod -R 444 /var/www/html/moodle/config.php
 sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
