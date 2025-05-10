@@ -104,48 +104,41 @@ sudo cat << EOF > /etc/nginx/sites-available/drupal.conf
 server {
     listen 8080;
     listen [::]:8080;
+    server_name \$WEBSITE_NAME;
     root /var/www/html/drupal;
-    index  index.php index.html index.htm;
-    server_name  \$WEBSITE_NAME;
+    index index.php;
 
     client_max_body_size 100M;
     autoindex off;
 
-    # Log files
-    access_log /var/log/nginx/drupal.access.log;
-    error_log /var/log/nginx/drupal.error.log;
-    
     location / {
-       try_files \$uri \$uri/ /index.php?$args; 
-    }
-    
-    location ~ \.php$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-    include fastcgi_params;
+        try_files $uri /index.php?$query_string;
     }
 
-    location ~ /\.ht {
-        deny all;
-    }
-    
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
+    location @rewrite {
+        rewrite ^/(.*)$ /index.php?q=$1;
     }
 
-    location = /robots.txt {
-        allow all;
-        log_not_found off;
-        access_log off;
-    }	
-    
+    location ~ '\.php$|^/update.php' {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~* /sites/.*/files/styles/ {
+        try_files $uri @rewrite;
+    }
+
+    location ~ ^/sites/.*/files/ {
+        try_files $uri @rewrite;
+    }
+
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires max;
         log_not_found off;
-    }	  
-}
+     }
+ }
 EOF
 
 ln -s /etc/nginx/sites-available/drupal.conf /etc/nginx/sites-enabled/
