@@ -21,6 +21,9 @@ sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc ph
 php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu postfix php8.3-mysql  php8.3-pgsql \
  bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
 
+sudo apt install -y php8.3-dev php-pear build-essential
+sudo pecl install uploadprogress
+
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
 sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
 sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
@@ -38,7 +41,7 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
    cgi.fix_pathinfo=0
    extension=pdo_pgsql
    extension=pgsql
-   
+   extension=uploadprogress.so
 EOF
 
 systemctl restart nginx
@@ -161,4 +164,9 @@ sudo ufw allow https
 sudo ufw --force enable
 sudo ufw reload
 
+tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
+
+$settings['trusted_host_patterns'] = ['^localhost$'];
+
+EOF
 
