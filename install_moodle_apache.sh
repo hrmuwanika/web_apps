@@ -94,7 +94,7 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y apache2 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-soap php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
+sudo apt install -y apache2 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
 php8.3-bcmath libapache2-mod-php8.3 php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix \
 php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 unzip imagemagick ffmpeg libsodium23 fail2ban
 
@@ -144,16 +144,16 @@ cd /opt/
 wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
 tar xvf moodle-latest-500.tgz
 
-cp -rf /opt/moodle/* /var/www/html
+mv moodle/ /var/www/html
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
 sudo find /var/www/moodledata -type d -exec chmod 700 {} \; 
 sudo find /var/www/moodledata -type f -exec chmod 600 {} \;
 
-sudo chown -R www-data:www-data /var/www/html
-sudo find /var/www/html -type d -exec chmod 755 {} \; 
-sudo find /var/www/html -type f -exec chmod 644 {} \;
+sudo chown -R www-data:www-data /var/www/html/moodle
+sudo find /var/www/html/moodle -type d -exec chmod 755 {} \; 
+sudo find /var/www/html/moodle -type f -exec chmod 644 {} \;
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -171,7 +171,7 @@ sudo cat <<EOF > /etc/apache2/sites-available/moodle.conf
         ServerName \$WEBSITE_NAME
 
         ServerAdmin webmaster@localhost
-        DocumentRoot /var/www/html
+        DocumentRoot /var/www/html/moodle
 
         # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
         # error, crit, alert, emerg.
@@ -228,8 +228,8 @@ sudo apt install -y cron
 sudo systemctl enable cron
 sudo systemctl start cron
 
-# sudo cp /var/www/html/config-dist.php /var/www/html/config.php
-sudo cat <<EOF > /var/www/html/config.php 
+# sudo cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+sudo cat <<EOF > /var/www/html/moodle/config.php 
 <?PHP
 unset(\$CFG);                                // Ignore this line
 global \$CFG;                                // This is necessary here for PHPUnit execution
@@ -257,7 +257,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod -R 444 /var/www/html/config.php
+sudo chmod -R 444 /var/www/html/moodle/config.php
 sudo systemctl restart apache2
 
 echo "Moodle installation is complete"
