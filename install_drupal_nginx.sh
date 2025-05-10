@@ -29,8 +29,7 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
    file_uploads = On
    allow_url_fopen = On
-   extension=pdo_pgsql
-   extension=pgsql
+   cgi.fix_pathinfo=0
    
 EOF
 
@@ -70,14 +69,16 @@ server {
     listen 80;
     listen [::]:80;
     root /var/www/html/drupal;
-    index  index.php;
+    index  index.php index.html index.htm;
     server_name  $WEBSITE_NAME;
+
+    client_max_body_size 100M;
+    autoindex off;
 
     # Log files
     access_log /var/log/nginx/drupal.access.log;
     error_log /var/log/nginx/drupal.error.log;
     
-    client_max_body_size 100M;
     location / {
        try_files \$uri \$uri/ /index.php?$args; 
     }
