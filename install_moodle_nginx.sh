@@ -114,6 +114,7 @@ sudo systemctl restart postgresql
 #--------------------------------------------------
 cd /opt/
 # wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
+# tar xvf moodle-latest-405.tgz
 wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
 tar xvf moodle-latest-500.tgz
 
