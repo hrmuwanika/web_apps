@@ -92,8 +92,8 @@ sudo chmod -R 755 /var/www/html/drupal/
 sudo cat << EOF > /etc/nginx/sites-available/drupal.conf
 
 server {
-    listen 80;
-    listen [::]:80;
+    listen 8080;
+    listen [::]:8080;
     root /var/www/html/drupal;
     index  index.php index.html index.htm;
     server_name  \$WEBSITE_NAME;
