@@ -127,7 +127,7 @@ sudo mv drupal-11.1.7 /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
-sudo cat << EOF > /etc/nginx/sites-available/drupal.conf
+sudo cat <<EOF > /etc/nginx/sites-available/drupal.conf
 
 server {
     listen 8080;
