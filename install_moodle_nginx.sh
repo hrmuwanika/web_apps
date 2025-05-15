@@ -209,13 +209,11 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y ufw
 
-sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow nginx full
-sudo ufw enable
-sudo ufw reload
-
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw allow 3306/tcp
 
 sudo apt install -y cron 
 sudo systemctl enable cron
