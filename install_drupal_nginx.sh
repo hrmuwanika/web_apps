@@ -1,34 +1,38 @@
 #!/bin/bash
 
+echo "
 #--------------------------------------------------
 # Update system
-#--------------------------------------------------
-echo "============= Update Server ================"
+#--------------------------------------------------"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
+echo "
 #--------------------------------------------------
 # Disable root login via SSH
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
 sudo systemctl restart sshd
 
+echo "
 #--------------------------------------------------
 # Generate SSH key pairs
-#--------------------------------------------------
+#--------------------------------------------------"
 ssh-keygen -t rsa -b 4096
 
+echo "
 #--------------------------------------------------
 # Nginx installation
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y nginx
 sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
 
+echo "
 #--------------------------------------------------
 # # PHP 8.3 installation
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
 php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-mysql php8.3-pgsql php8.3-xml \
 php-pear
@@ -66,10 +70,10 @@ EOF
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
 
+echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
-#--------------------------------------------------
-echo -e "=== Install and configure PostgreSQL ... ==="
+#--------------------------------------------------"
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 sudo apt update
@@ -88,9 +92,10 @@ sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE drupaldb TO drupalus
 
 sudo systemctl restart postgresql
 
+echo "
 #--------------------------------------------------
 # Mariadb Installation
-#--------------------------------------------------
+#--------------------------------------------------"
 # sudo apt install -y mariadb-server mariadb-client
 # sudo systemctl start mariadb.service
 # sudo systemctl enable mariadb.service
@@ -112,9 +117,10 @@ sudo systemctl restart postgresql
 
 # sudo systemctl restart mariadb.service
 
+echo "
 #--------------------------------------------------
 # Drupal installation
-#--------------------------------------------------
+#--------------------------------------------------"
 cd /usr/src && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
 tar -zxvf drupal-11.1.7.tar.gz
 sudo mv drupal-11.1.7 /var/www/html/drupal
@@ -170,9 +176,10 @@ nginx -t
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
+echo "
 #--------------------------------------------------
 #  Configure UFW to allow web traffic and SSH
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y ufw
 
 sudo ufw default deny incoming
