@@ -22,32 +22,42 @@ WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="moodle@example.com"
 
+echo "
 #--------------------------------------------------
 # Update Server
-#--------------------------------------------------
+#--------------------------------------------------"
 echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
+echo "
 #----------------------------------------------------
 # Disabling password authentication
-#----------------------------------------------------
+#----------------------------------------------------"
 echo "Disabling password authentication ... "
 sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
 sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sudo service sshd restart
 
+echo "
+#--------------------------------------------------
+# Generate SSH key pairs
+#--------------------------------------------------"
+ssh-keygen -t rsa -b 4096
+
+echo "
 #--------------------------------------------------
 # Set up the timezones
-#--------------------------------------------------
+#--------------------------------------------------"
 # set the correct timezone on ubuntu
 timedatectl set-timezone Africa/Kigali
 timedatectl
 
+echo "
 #--------------------------------------------------
 # Installation of PHP
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
 apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
@@ -87,9 +97,10 @@ EOF
 
 sudo systemctl restart php8.3-fpm
 
+echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
-#--------------------------------------------------
+#--------------------------------------------------"
 echo -e "=== Install and configure PostgreSQL ... ==="
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
@@ -109,9 +120,10 @@ sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleus
 
 sudo systemctl restart postgresql
 
+echo "
 #--------------------------------------------------
 # Installation of Moodle
-#--------------------------------------------------
+#--------------------------------------------------"
 cd /opt/
 # wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 # tar xvf moodle-latest-405.tgz
@@ -191,17 +203,17 @@ nginx -t
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
+echo "
 #--------------------------------------------------
 # Install and configure Firewall
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y ufw
 
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw --force enable
+sudo ufw allow nginx full
+sudo ufw enable
 sudo ufw reload
 
 
@@ -209,9 +221,10 @@ sudo apt install -y cron
 sudo systemctl enable cron
 sudo systemctl start cron
 
+echo "
 #--------------------------------------------------
 # Enable ssl with certbot
-#--------------------------------------------------
+#--------------------------------------------------"
 
 if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
   sudo apt install -y snapd
