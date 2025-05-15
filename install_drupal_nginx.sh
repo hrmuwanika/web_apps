@@ -1,27 +1,46 @@
 #!/bin/bash
 
 #--------------------------------------------------
-# Update Server
+# Update system
 #--------------------------------------------------
 echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
 #--------------------------------------------------
+# Disable root login via SSH
+#--------------------------------------------------
+sudo apt install -y openssh-server
+sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+#--------------------------------------------------
+# Generate SSH key pairs
+#--------------------------------------------------
+ssh-keygen -t rsa -b 4096
+
+#--------------------------------------------------
 # Nginx installation
 #--------------------------------------------------
-sudo apt install nginx -y
+sudo apt install -y nginx
 sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
 
 #--------------------------------------------------
-# Php installation
+# # PHP 8.3 installation
 #--------------------------------------------------
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu postfix php8.3-mysql  php8.3-pgsql \
- bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
+php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-mysql php8.3-pgsql php8.3-xml \
+php-pear
 
-sudo apt install -y php8.3-dev php-pear build-essential
+sudo systemctl start php8.3-fpm
+sudo systemctl enable php8.3-fpm
+
+sudo apt install -y build-essential  bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev postfix curl unzip git
+
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
+
 sudo pecl install uploadprogress
 
 sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
@@ -35,7 +54,7 @@ sed -i "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
 sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -i 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
 
-tee -a /etc/php/8.3/fpm/php.ini <<EOF
+sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
    file_uploads = On
    allow_url_fopen = On
@@ -44,8 +63,8 @@ tee -a /etc/php/8.3/fpm/php.ini <<EOF
    extension=uploadprogress.so
 EOF
 
-systemctl restart nginx
-systemctl restart php8.3-fpm
+sudo systemctl restart nginx
+sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
 # Installing PostgreSQL Server
@@ -152,16 +171,18 @@ sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
 #--------------------------------------------------
-# Install and configure Firewall
+#  Configure UFW to allow web traffic and SSH
 #--------------------------------------------------
 sudo apt install -y ufw
 
-sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw --force enable
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw allow 3306/tcp
+
+# Enable UFW
+sudo ufw enable
 sudo ufw reload
 
 tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
