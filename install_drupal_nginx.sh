@@ -198,3 +198,8 @@ $settings['trusted_host_patterns'] = ['^localhost$'];
 
 EOF
 
+echo "Drupal setup completed successfully."
+
+
+
+
