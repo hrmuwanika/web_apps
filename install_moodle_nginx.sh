@@ -143,7 +143,7 @@ sudo chmod -R 755 /var/www/html/moodle
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo cat > /etc/nginx/sites-available/moodle.conf <<NGINX
+cat <<EOF > /etc/nginx/sites-available/moodle.conf 
 server {
     listen 80;
     listen [::]:80;
@@ -192,7 +192,7 @@ server {
         log_not_found off;
     }	  
 }
-NGINX
+EOF
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
