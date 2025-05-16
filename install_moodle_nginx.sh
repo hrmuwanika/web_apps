@@ -212,7 +212,7 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
-sudo ufw allow 3306/tcp
+sudo ufw reload
 
 sudo apt install -y cron 
 sudo systemctl enable cron
