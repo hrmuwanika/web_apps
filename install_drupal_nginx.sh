@@ -137,8 +137,8 @@ server {
     server_name  $WEBSITE_NAME;
 
     # Log files
-    access_log /var/log/nginx/moodle.access.log;
-    error_log /var/log/nginx/moodle.error.log;
+    access_log /var/log/nginx/drupal.access.log;
+    error_log /var/log/nginx/drupal.error.log;
 
     client_max_body_size 100M;
     autoindex off;
