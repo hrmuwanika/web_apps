@@ -132,9 +132,13 @@ sudo cat <<EOF > /etc/nginx/sites-available/drupal.conf
 server {
     listen 8080;
     listen [::]:8080;
-    server_name \$WEBSITE_NAME;
     root /var/www/html/drupal;
-    index index.php;
+    index  index.php;
+    server_name  $WEBSITE_NAME;
+
+    # Log files
+    access_log /var/log/nginx/moodle.access.log;
+    error_log /var/log/nginx/moodle.error.log;
 
     client_max_body_size 100M;
     autoindex off;
