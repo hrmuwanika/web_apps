@@ -69,7 +69,7 @@ php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick 
 
 sudo apt autoremove apache2 -y
 
-sudo apt install -y nginx
+sudo apt install -y nginx-full
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
