@@ -192,7 +192,7 @@ sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
 
 # Enable UFW
-sudo ufw enable
+sudo ufw --force enable
 sudo ufw reload
 
 tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
