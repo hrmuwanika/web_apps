@@ -19,14 +19,14 @@ echo "
 # Disable root login via SSH
 #--------------------------------------------------"
 sudo apt install -y openssh-server
-sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 sudo systemctl restart sshd
 
 echo "
 #--------------------------------------------------
 # Generate SSH key pairs
 #--------------------------------------------------"
-ssh-keygen -t rsa -b 4096
+# ssh-keygen -t rsa -b 4096
 
 echo "
 #--------------------------------------------------
