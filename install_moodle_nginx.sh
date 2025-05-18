@@ -267,7 +267,7 @@ global \$CFG;                                // This is necessary here for PHPUn
 
 \$CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
-\$CFG->wwwroot   = "https://<^>example.com<^>";
+\$CFG->wwwroot   = "\$WEBSITE_NAME";
 \$CFG->dataroot  = '/var/www/moodledata';
 \$CFG->directorypermissions = 0777;
 \$CFG->admin = 'admin';
