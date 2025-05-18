@@ -140,7 +140,7 @@ server {
     
     root /var/www/html/drupal;
     index  index.php;
-    server_name  \$WEBSITE_NAME;
+    server_name \$WEBSITE_NAME;
 
     client_max_body_size 100M;
     autoindex off;
