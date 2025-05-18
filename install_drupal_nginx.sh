@@ -57,13 +57,13 @@ sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm
 sed -i "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
 sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -i 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
+sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
+sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
 
 sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
    ;file_uploads = On
    ;allow_url_fopen = On
-   ;extension=pdo_pgsql
-   ;extension=pgsql
    extension=uploadprogress.so
 EOF
 
@@ -193,11 +193,9 @@ sudo ufw allow 'Nginx Full'
 sudo ufw --force enable
 sudo ufw reload
 
-tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-
-$settings['trusted_host_patterns'] = ['^localhost$'];
-
-EOF
+# tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
+# $settings['trusted_host_patterns'] = ['^localhost$'];
+# EOF
 
 echo "Drupal setup completed successfully."
 
