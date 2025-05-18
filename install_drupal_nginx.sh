@@ -47,7 +47,7 @@ php-pear
 sudo systemctl start php8.3-fpm
 sudo systemctl enable php8.3-fpm
 
-sudo apt install -y build-essential  bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev postfix curl unzip git
+sudo apt install -y build-essential  bzip2 imagemagick composer libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev postfix curl unzip git
 
 sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
@@ -226,7 +226,7 @@ sudo ufw --force enable
 sudo ufw reload
 
 # tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-# $settings['trusted_host_patterns'] = ['^localhost$'];
+# $settings['trusted_host_patterns'] = ['192\.168\.150\.100'];
 # EOF
 
 echo "Drupal setup completed successfully."
