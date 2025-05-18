@@ -33,8 +33,8 @@ echo "
 #--------------------------------------------------
 # # PHP 8.3 installation
 #--------------------------------------------------"
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-mysql php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
-php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-mysql php8.3-pgsql php8.3-xml \
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
+php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-pgsql php8.3-xml \
 php-pear
 
 sudo systemctl start php8.3-fpm
@@ -60,10 +60,10 @@ sed -i 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
 
 sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
 
-   file_uploads = On
-   allow_url_fopen = On
-   extension=pdo_pgsql
-   extension=pgsql
+   ;file_uploads = On
+   ;allow_url_fopen = On
+   ;extension=pdo_pgsql
+   ;extension=pgsql
    extension=uploadprogress.so
 EOF
 
@@ -92,7 +92,7 @@ sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE drupaldb TO drupalus
 
 sudo systemctl restart postgresql
 
-echo "
+#echo "
 #--------------------------------------------------
 # Mariadb Installation
 #--------------------------------------------------"
@@ -121,9 +121,10 @@ echo "
 #--------------------------------------------------
 # Drupal installation
 #--------------------------------------------------"
-cd /usr/src && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
+cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
 tar -zxvf drupal-11.1.7.tar.gz
-sudo mv drupal-11.1.7 /var/www/html/drupal
+mkdir /var/www/html/drupal
+sudo mv drupal-11.1.7/* /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
