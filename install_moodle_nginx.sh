@@ -147,7 +147,7 @@ cat <<EOF > /etc/nginx/sites-available/moodle.conf
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html;
+    root /var/www/html/moodle;
     index  index.php;
     server_name  \$WEBSITE_NAME;
 
