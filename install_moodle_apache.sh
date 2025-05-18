@@ -32,11 +32,9 @@ sudo apt autoremove -y
 #----------------------------------------------------
 # Disabling password authentication
 #----------------------------------------------------
-echo "Disabling password authentication ... "
-sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
-sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sudo service sshd restart
+sudo apt install -y openssh-server
+sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+sudo systemctl restart sshd
 
 #--------------------------------------------------
 # Install and configure Firewall
