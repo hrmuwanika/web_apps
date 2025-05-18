@@ -147,30 +147,25 @@ cat <<EOF > /etc/nginx/sites-available/moodle.conf
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/moodle;
+    root /var/www/html;
     index  index.php;
-    server_name  $WEBSITE_NAME;
+    server_name  \$WEBSITE_NAME;
 
     # Log files
     access_log /var/log/nginx/moodle.access.log;
     error_log /var/log/nginx/moodle.error.log;
-
+    
     client_max_body_size 100M;
-    autoindex off;
-
+    
     location / {
-        try_files \$uri /index.php?\$query_string;
-    }
-
-    location @rewrite {
-        rewrite ^/(.*)$ /index.php?q=\$1;
+       try_files \$uri \$uri/ /index.php?$args; 
     }
     
-    location ~ '\.php$|^/update.php' {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include fastcgi_params;
+    location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    include fastcgi_params;
     }
 
     location /dataroot/ {
@@ -178,19 +173,26 @@ server {
       alias /var/www/moodledata/;
     }
 
-    location ~* /sites/.*/files/styles/ {
-        try_files \$uri @rewrite;
+    location ~ /\.ht {
+        deny all;
+    }
+    
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
     }
 
-    location ~ ^/sites/.*/files/ {
-        try_files \$uri @rewrite;
-    }
-
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }	
+    
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires max;
         log_not_found off;
-     }
- }
+    }	  
+}
 EOF
 
 sudo rm /etc/nginx/sites-available/default
