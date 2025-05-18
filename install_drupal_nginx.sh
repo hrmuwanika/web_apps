@@ -187,6 +187,29 @@ sudo systemctl restart php8.3-fpm
 
 echo "
 #--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------"
+
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+  sudo apt install -y snapd
+  sudo apt-get remove certbot
+  
+  sudo snap install core
+  sudo snap refresh core
+  sudo snap install --classic certbot
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo apt install -y python3-certbot-nginx
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  
+  sudo systemctl restart nginx
+  
+  echo "============ SSL/HTTPS is enabled! ========================"
+else
+  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+fi
+
+echo "
+#--------------------------------------------------
 #  Configure UFW to allow web traffic and SSH
 #--------------------------------------------------"
 sudo apt install -y ufw
