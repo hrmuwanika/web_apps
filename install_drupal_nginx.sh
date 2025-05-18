@@ -54,16 +54,16 @@ sudo systemctl enable fail2ban
 
 sudo pecl install uploadprogress
 
-sed -i "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -i "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
-sed -i "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
-sed -i "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
-sed -i "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
-sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
-sed -i "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
-sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
-sed -i 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
+sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
 
@@ -231,6 +231,6 @@ sudo ufw reload
 
 echo "Drupal setup completed successfully."
 
-
+composer create-project drupal/cms
 
 
