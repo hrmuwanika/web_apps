@@ -32,7 +32,7 @@ echo "
 #--------------------------------------------------
 # Nginx installation
 #--------------------------------------------------"
-sudo apt install -y nginx
+sudo apt install -y nginx-full
 sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
 
