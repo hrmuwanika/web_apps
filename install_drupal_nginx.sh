@@ -68,9 +68,6 @@ sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
 
 sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
-
-   ;file_uploads = On
-   ;allow_url_fopen = On
    extension=uploadprogress.so
 EOF
 
