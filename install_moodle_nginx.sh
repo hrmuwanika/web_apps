@@ -140,7 +140,7 @@ server {
     listen [::]:80;
     root /var/www/html/moodle;
     index  index.php;
-    server_name  \$WEBSITE_NAME;
+    server_name \$WEBSITE_NAME;
 
     # Log files
     access_log /var/log/nginx/moodle.access.log;
