@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Set to "True" to install certbot and have ssl enabled, "False" to use http
+ENABLE_SSL="True"
+# Set the website name
+WEBSITE_NAME="example.com"
+# Provide Email to register ssl certificate
+ADMIN_EMAIL="moodle@example.com"
+
 echo "
 #--------------------------------------------------
 # Update system
