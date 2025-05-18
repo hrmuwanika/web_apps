@@ -86,13 +86,6 @@ sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
-tee -a /etc/php/8.3/fpm/php.ini <<EOF
-
-   file_uploads = On
-   allow_url_fopen = On
-   
-EOF
-
 sudo systemctl restart php8.3-fpm
 
 echo "
