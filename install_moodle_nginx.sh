@@ -62,7 +62,7 @@ add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php8.3-pgsql \
+php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php8.3-mysql \
 php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
 
 sudo apt autoremove apache2 -y
@@ -110,6 +110,35 @@ echo "
 # sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
 
 # sudo systemctl restart postgresql
+
+#--------------------------------------------------
+# Install Debian default database MariaDB 
+#--------------------------------------------------
+sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
+sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] https://mariadb.mirror.liquidtelecom.com/repo/10.11/ubuntu focal main'
+sudo update
+
+sudo apt install -y mariadb-server mariadb-client mariadb-backup
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
+
+# sudo mariadb-secure-installation
+
+# Configure Mariadb database
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+
+sudo systemctl restart mariadb.service
+
+sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+
+sudo systemctl restart mariadb.service
+
 
 echo "
 #--------------------------------------------------
@@ -244,7 +273,7 @@ sudo cat <<EOF > /var/www/html/moodle/config.php
 unset(\$CFG);                                // Ignore this line
 global \$CFG;                                // This is necessary here for PHPUnit execution
 \$CFG = new stdClass();
-\$CFG->dbtype    = 'pgsql';
+\$CFG->dbtype    = 'mariadb';
 \$CFG->dblibrary = 'native';
 \$CFG->dbhost    = 'localhost';
 \$CFG->dbname    = 'moodledb';
