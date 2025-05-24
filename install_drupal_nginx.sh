@@ -41,7 +41,7 @@ echo "
 # # PHP 8.3 installation
 #--------------------------------------------------"
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
-php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-pgsql php8.3-xml \
+php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml \
 php-pear
 
 sudo systemctl start php8.3-fpm
@@ -74,52 +74,52 @@ EOF
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
 
-echo "
+# echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------"
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
-sudo apt update
+# sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+# curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+# sudo apt update
 
-sudo apt -y install postgresql-16 postgresql-contrib 
+# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
 
-echo "=== Starting PostgreSQL service... ==="
-sudo systemctl start postgresql 
-sudo systemctl enable postgresql
+# echo "=== Starting PostgreSQL service... ==="
+# sudo systemctl start postgresql 
+# sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-sudo -su postgres psql -c "CREATE USER drupaluser WITH PASSWORD 'abc1234@';"
-sudo -su postgres psql -c "CREATE DATABASE drupaldb;"
-sudo -su postgres psql -c "ALTER DATABASE drupaldb OWNER TO drupaluser;"
-sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE drupaldb TO drupaluser;"
+# sudo -su postgres psql -c "CREATE USER drupaluser WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE drupaldb;"
+# sudo -su postgres psql -c "ALTER DATABASE drupaldb OWNER TO drupaluser;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE drupaldb TO drupaluser;"
 
-sudo systemctl restart postgresql
+# sudo systemctl restart postgresql
 
-#echo "
+echo "
 #--------------------------------------------------
 # Mariadb Installation
 #--------------------------------------------------"
-# sudo apt install -y mariadb-server mariadb-client
-# sudo systemctl start mariadb.service
-# sudo systemctl enable mariadb.service
+sudo apt install -y mariadb-server mariadb-client
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
 # Configure Mariadb database
-# sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-# sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-# sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-# sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-# sudo systemctl restart mariadb.service
+sudo systemctl restart mariadb.service
 
-# sudo mariadb -uroot --password="" -e "CREATE DATABASE drupaldb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-# sudo mariadb -uroot --password="" -e "CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';"
-# sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON drupaldb.* TO 'drupaluser'@'localhost';"
-# sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE drupaldb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON drupaldb.* TO 'drupaluser'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
-# sudo systemctl restart mariadb.service
+sudo systemctl restart mariadb.service
 
 echo "
 #--------------------------------------------------
