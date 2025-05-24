@@ -92,24 +92,24 @@ echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------"
-echo -e "=== Install and configure PostgreSQL ... ==="
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
-sudo apt update
+# echo -e "=== Install and configure PostgreSQL ... ==="
+# sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+# curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+# sudo apt update
 
-sudo apt -y install postgresql-16 postgresql-contrib
+# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
 
-echo "=== Starting PostgreSQL service... ==="
-sudo systemctl start postgresql 
-sudo systemctl enable postgresql
+# echo "=== Starting PostgreSQL service... ==="
+# sudo systemctl start postgresql 
+# sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234@';"
-sudo -su postgres psql -c "CREATE DATABASE moodledb;"
-sudo -su postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
-sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
+# sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE moodledb;"
+# sudo -su postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
 
-sudo systemctl restart postgresql
+# sudo systemctl restart postgresql
 
 echo "
 #--------------------------------------------------
