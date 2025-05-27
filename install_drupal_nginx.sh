@@ -125,10 +125,14 @@ echo "
 #--------------------------------------------------
 # Drupal installation
 #--------------------------------------------------"
+cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-10.1.1.tar.gz
+tar -zxvf drupal-10.1.1.tar.gz
 cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
-tar -zxvf drupal-11.1.7.tar.gz
+# tar -zxvf drupal-11.1.7.tar.gz
+
 mkdir /var/www/html/drupal
-sudo mv drupal-11.1.7/* /var/www/html/drupal
+#sudo mv drupal-11.1.7/* /var/www/html/drupal
+sudo mv drupal-10.1.1/* /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
