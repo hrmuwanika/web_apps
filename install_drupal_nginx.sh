@@ -125,8 +125,8 @@ echo "
 #--------------------------------------------------
 # Drupal installation
 #--------------------------------------------------"
-cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-10.1.1.tar.gz
-tar -zxvf drupal-10.1.1.tar.gz
+cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-10.4.7.tar.gz
+tar -zxvf drupal-10.4.7.tar.gz
 cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
 # tar -zxvf drupal-11.1.7.tar.gz
 
