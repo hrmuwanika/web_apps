@@ -143,7 +143,8 @@ cd /opt/
 wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
 tar xvf moodle-latest-500.tgz
 
-mv moodle/ /var/www/html
+rm /var/www/html/index.html
+cp -rf moodle/ /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
 sudo chown -R www-data:www-data /var/www/moodledata
