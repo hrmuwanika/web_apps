@@ -133,7 +133,7 @@ cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz
 
 mkdir /var/www/html/drupal
 #sudo mv drupal-11.1.7/* /var/www/html/drupal
-sudo mv drupal-10.4.7/* /var/www/html/drupal
+sudo cp -rf drupal-10.4.7/* /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
