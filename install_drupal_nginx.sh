@@ -64,11 +64,12 @@ sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fp
 sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
-sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
-sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
+#sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
+#sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
 
 sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
-   extension=uploadprogress.so
+   extension=uploadprogress
+   extension=php_openssl
 EOF
 
 sudo systemctl restart nginx
@@ -132,7 +133,7 @@ cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz
 
 mkdir /var/www/html/drupal
 #sudo mv drupal-11.1.7/* /var/www/html/drupal
-sudo mv drupal-10.1.1/* /var/www/html/drupal
+sudo mv drupal-10.4.7/* /var/www/html/drupal
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
