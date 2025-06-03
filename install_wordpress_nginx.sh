@@ -104,10 +104,10 @@ echo "
 # sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234@';"
-# sudo -su postgres psql -c "CREATE DATABASE moodledb;"
-# sudo -su postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
-# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
+# sudo -su postgres psql -c "CREATE USER wp_admin WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE wordpress_db;"
+# sudo -su postgres psql -c "ALTER DATABASE wordpress_db OWNER TO wp_admin;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE wordpress_db TO wp_admin;"
 
 # sudo systemctl restart postgresql
 
@@ -128,9 +128,9 @@ sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/
 
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpressdb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'wpadmin'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpressdb.* TO 'wpadmin'@'localhost';"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpress_db;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'wp_admin'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpress_db.* TO 'wp_admin'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
@@ -145,12 +145,13 @@ tar -zvf latest.tar.gz
 
 rm /var/www/html/index.html
 cp -rf wordpress/ /var/www/html/
+
 mkdir /var/www/html/wordpress/wp-content/uploads
 
 sudo chown -R www-data:www-data /var/www/html/wordpress/
 sudo chmod -R 755 /var/www/html/wordpress/
 
-cat <<EOF > /etc/nginx/sites-available/moodle.conf 
+cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
 server {
     listen 80;
     listen [::]:80;
@@ -231,7 +232,7 @@ echo "
 # Enable ssl with certbot
 #--------------------------------------------------"
 
-if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
   sudo apt install -y snapd
   sudo apt-get remove certbot
   
@@ -251,8 +252,8 @@ fi
 
 sudo systemctl restart nginx
 
-echo "Moodle installation is complete"
-echo "Access wordpress on https://$WEBSITE_NAME/install.php"
+echo "Wordpress installation is complete"
+echo "Access wordpress on https://$WEBSITE_NAME"
 
 
 
