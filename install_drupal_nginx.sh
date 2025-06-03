@@ -5,7 +5,7 @@ ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
-ADMIN_EMAIL="moodle@example.com"
+ADMIN_EMAIL="info@example.com"
 
 echo "
 #--------------------------------------------------
@@ -192,7 +192,7 @@ echo "
 # Enable ssl with certbot
 #--------------------------------------------------"
 
-if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
   sudo apt install -y snapd
   sudo apt-get remove certbot
   
