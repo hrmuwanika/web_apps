@@ -61,18 +61,14 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php8.3-mysql \
-php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-snmp php8.3-mbstring php8.3-curl php8.3-xml php-pear php8.3-mysqli \
+php8.3-bcmath php8.3-ldap php8.3-soap unzip git curl php8.3-mysqli php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu imagemagick libpng-dev libjpeg-dev libtiff-dev 
 
 sudo apt autoremove apache2 -y
 
 sudo apt install -y nginx-full
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
-
-sudo systemctl start fail2ban.service
-sudo systemctl enable fail2ban.service
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
@@ -155,10 +151,13 @@ cat <<EOF > /etc/nginx/sites-available/wordpress.conf
 server {
     listen 80;
     listen [::]:80;
+    server_name \$WEBSITE_NAME;
+    
     root /var/www/html/wordpress;
     index  index.php;
-    server_name \$WEBSITE_NAME;
-
+    
+    server_tokens off;
+   
     # Log files
     access_log /var/log/nginx/wordpress.access.log;
     error_log /var/log/nginx/wordpress.error.log;
