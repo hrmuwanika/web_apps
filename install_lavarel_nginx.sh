@@ -186,26 +186,23 @@ sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
 cd /var/www/html/myproject
-# php artisan serve --host 0.0.0.0 --port 8000
 php artisan key:generate
 
-sudo cat <<EOF > /var/www/html/myproject/.env
-APP_URL=http://example.com
-LOG_CHANNEL=stack
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=laravel_db
-DB_USERNAME=lv_admin
-DB_PASSWORD=abc1234@
-EOF
+sudo nano /var/www/html/myproject/.env
+# APP_URL=http://example.com
+# LOG_CHANNEL=stack
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=laravel_db
+# DB_USERNAME=lv_admin
+# DB_PASSWORD=abc1234@
 
 php artisan migrate
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
-php artisan serve
+php artisan serve --host 0.0.0.0 --port 8000
 
 echo "
 #--------------------------------------------------
