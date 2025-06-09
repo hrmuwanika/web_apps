@@ -140,30 +140,44 @@ composer create-project laravel/laravel myproject
 
 cd myproject 
 sudo chown -R www-data:www-data /var/www/html/myproject 
-sudo chmod -R 775 /var/www/html/myproject/storage /var/www/html/myproject/bootstrap/cache
+sudo chmod -R 775 /var/www/html/myproject/storage 
+sudo chmod -R 775 /var/www/html/myproject/bootstrap/cache
 
 sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
-upstream remote_fpm {
-    server 127.0.0.1:8000;
-}
-
 server {
     listen 80;
-    server_name localhost;
+    server_name example.com;                            # Replace with your domain(s)
 
-    # must same as php-fpm folder.
-    root /var/www/html/myproject/public;
-    
+    root /var/www/html/myproject/public;                # Path to your Laravel public directory
+
+    index index.php;
+
     location / {
-        rewrite ^ /index.php break;
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
 
-        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-        fastcgi_pass remote_fpm;
-        fastcgi_index index.php;
-
-        include fastcgi_params;
+    location ~ \.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock; # Use your PHP-FPM socket path
+        # OR fastcgi_pass 127.0.0.1:8000; # If using TCP port
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_param PATH_INFO \$fastcgi_path_info;
+        include fastcgi_params;
+    }
+
+    # Optional: Deny access to .env file for security
+    location ~ /\.env {
+        deny all;
+    }
+
+    # Optional: Deny access to other sensitive files/directories
+    location ~ /storage/logs/laravel\.log {
+        deny all;
+    }
+
+    # Optional: Serve static assets directly from Nginx
+    location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
+        expires 5M;
+        log_not_found off;
     }
 }
 EOF
@@ -178,9 +192,10 @@ cd /var/www/html/myproject
 php artisan key:generate
 
 sudo nano /var/www/html/myproject/.env
+# paste the following
 # APP_URL=http://example.com
 # LOG_CHANNEL=stack
-# DB_CONNECTION=mysql
+# DB_CONNECTION=mysql/pgsql
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
 # DB_DATABASE=laravel_db
@@ -191,7 +206,27 @@ php artisan migrate
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
-php artisan serve --host 0.0.0.0 --port 8000
+# php artisan serve 
+
+# Laravel queue worker using systemd
+sudo cat<<EOF > /etc/systemd/system/laravel.service
+[Unit]
+Description=Laravel queue worker
+
+[Service]
+User=www-data
+Group=www-data
+Restart=on-failure
+ExecStart=/usr/bin/php /var/www/html/myproject/artisan queue:work --daemon --env=production
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# start laravel as a service
+systemctl daemon-reload
+sudo systemctl enable laravel.service
+sudo systemctl start laravel.service
 
 echo "
 #--------------------------------------------------
