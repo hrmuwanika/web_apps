@@ -54,12 +54,11 @@ echo "
 # Installation of PHP
 #--------------------------------------------------"
 sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
-apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-snmp php8.3-mbstring php8.3-curl php8.3-xml php-pear php8.3-mysqli \
-php8.3-bcmath php8.3-ldap php8.3-soap unzip git curl php8.3-mysqli php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu imagemagick libpng-dev libjpeg-dev libtiff-dev 
+php8.3-bcmath php8.3-ldap php8.3-soap unzip wget git curl php8.3-mysqli php8.3-json php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu imagemagick libpng-dev libjpeg-dev libtiff-dev 
 
 sudo apt autoremove apache2 -y
 
@@ -133,23 +132,22 @@ echo "
 #--------------------------------------------------
 # Installation of Laravel
 #--------------------------------------------------"
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
-chmod +x /usr/local/bin/composer
+sudo apt install -y composer
+composer --version
 
 cd /var/www/html
-composer create-project --prefer-dist laravel/laravel laravel
+composer create-project laravel/laravel myproject
 
-chown -R :www-data /var/www/html/laravel
+chown -R -R www-data:www-data /var/www/html/myproject
 chmod -R 775 /var/www/html/laravel
 
-cd laravel
+cd myproject
+# php artisan serve --host 0.0.0.0 --port 8000
 php artisan key:generate
-
 php artisan migrate
 
-sudo cat <<EOF > /var/www/html/laravel/.env
-APP_URL=http://laravel.example.com
+sudo cat <<EOF > /var/www/html/myproject/.env
+APP_URL=http://example.com
 LOG_CHANNEL=stack
 
 DB_CONNECTION=mysql
@@ -160,24 +158,24 @@ DB_USERNAME=lv_admin
 DB_PASSWORD=abc1234@
 EOF
 
-sudo cat <<EOF > /etc/nginx/conf.d/laravel.conf
+sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
 server {
     listen 80;
     listen [::]:80;
     
-    server_name laravel.example.com;
-    root /var/www/html/laravel/public;
+    server_name example.com;
+    root /var/www/html/myproject/public;
     
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Content-Type-Options "nosniff";
 
-    index index.html index.htm index.php;
+    index index.php;
 
     charset utf-8;
     
     location / {
-       try_files \$uri \$uri/ /index.php?$args; 
+       try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
     location = /favicon.ico { access_log off; log_not_found off; }
@@ -192,29 +190,15 @@ server {
     include fastcgi_params;
     }
 
-    location ~ /\.ht {
+    location ~ /\.(?!well-known).* {
         deny all;
     }
-    
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
-    }
-
-    location = /robots.txt {
-        allow all;
-        log_not_found off;
-        access_log off;
-    }	
-    
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires max;
-        log_not_found off;
-    }	  
 }
 EOF
 
 nginx -t
+
+sudo ln -s /etc/nginx/sites-available/lavarel.conf /etc/nginx/sites-enabled/
 
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
