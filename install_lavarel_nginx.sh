@@ -138,25 +138,9 @@ composer --version
 cd /var/www/html
 composer create-project laravel/laravel myproject
 
-chown -R -R www-data:www-data /var/www/html/myproject
-chmod -R 775 /var/www/html/laravel
-
-cd myproject
-# php artisan serve --host 0.0.0.0 --port 8000
-php artisan key:generate
-php artisan migrate
-
-sudo cat <<EOF > /var/www/html/myproject/.env
-APP_URL=http://example.com
-LOG_CHANNEL=stack
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=laravel_db
-DB_USERNAME=lv_admin
-DB_PASSWORD=abc1234@
-EOF
+cd myproject 
+sudo chown -R www-data:www-data /var/www/html/myproject 
+sudo chmod -R 775 /var/www/html/myproject/storage /var/www/html/myproject/bootstrap/cache
 
 sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
 server {
@@ -164,14 +148,13 @@ server {
     listen [::]:80;
     
     server_name example.com;
-    root /var/www/html/myproject/public;
+    root /var/www/html/myproject/public;                            #replace with your document root
     
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Content-Type-Options "nosniff";
 
     index index.php;
-
     charset utf-8;
     
     location / {
@@ -196,12 +179,33 @@ server {
 }
 EOF
 
-nginx -t
-
 sudo ln -s /etc/nginx/sites-available/lavarel.conf /etc/nginx/sites-enabled/
+nginx -t
 
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
+
+cd /var/www/html/myproject
+# php artisan serve --host 0.0.0.0 --port 8000
+php artisan key:generate
+
+sudo cat <<EOF > /var/www/html/myproject/.env
+APP_URL=http://example.com
+LOG_CHANNEL=stack
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_db
+DB_USERNAME=lv_admin
+DB_PASSWORD=abc1234@
+EOF
+
+php artisan migrate
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan serve
 
 echo "
 #--------------------------------------------------
