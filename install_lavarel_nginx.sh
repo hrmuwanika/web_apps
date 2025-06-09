@@ -143,38 +143,27 @@ sudo chown -R www-data:www-data /var/www/html/myproject
 sudo chmod -R 775 /var/www/html/myproject/storage /var/www/html/myproject/bootstrap/cache
 
 sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
+upstream remote_fpm {
+    server 127.0.0.1:8000;
+}
+
 server {
     listen 80;
-    listen [::]:80;
-    
-    server_name example.com;
-    root /var/www/html/myproject/public;                            #replace with your document root
-    
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
+    server_name localhost;
 
-    index index.php;
-    charset utf-8;
+    # must same as php-fpm folder.
+    root /var/www/html/myproject/public;
     
     location / {
-       try_files \$uri \$uri/ /index.php?\$query_string;
-    }
+        rewrite ^ /index.php break;
 
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_pass remote_fpm;
+        fastcgi_index index.php;
 
-    error_page 404 /index.php;
-    
-    location ~ \.php$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-    include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
     }
 }
 EOF
