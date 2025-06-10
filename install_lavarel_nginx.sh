@@ -126,7 +126,7 @@ sudo chown -R www-data:www-data /var/www/html/myproject
 sudo chmod -R 775 /var/www/html/myproject/storage 
 sudo chmod -R 775 /var/www/html/myproject/bootstrap/cache
 
-sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
+sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
     listen [::]:80;
@@ -174,7 +174,7 @@ server {
 }
 EOF
 
-sudo ln -s /etc/nginx/sites-available/lavarel.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
