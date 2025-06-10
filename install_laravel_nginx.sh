@@ -121,19 +121,64 @@ sudo apt install -y composer
 composer --version
 
 cd /var/www/html
-composer create-project laravel/laravel myproject
+composer create-project bagisto/bagisto 
+cd bagisto 
+sudo chown -R www-data:www-data /var/www/html/bagisto
+sudo chmod -R 775 /var/www/html/bagisto/storage 
+sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
-cd myproject 
-sudo chown -R www-data:www-data /var/www/html/myproject 
-sudo chmod -R 775 /var/www/html/myproject/storage 
-sudo chmod -R 775 /var/www/html/myproject/bootstrap/cache
+cd /var/www/html/bagisto
+php artisan bagisto:install
+
+cp .env.example .env
+
+sudo nano .env
+# paste the following
+# APP_URL=http://example.com
+# LOG_CHANNEL=stack
+# DB_CONNECTION=mysql | pgsql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306 | 5432
+# DB_DATABASE=laravel_db
+# DB_USERNAME=lv_admin
+# DB_PASSWORD=abc1234@
+
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan storage:link
+
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+# php artisan serve 
+
+# Laravel queue worker using systemd
+sudo cat<<EOF > /etc/systemd/system/bagisto.service
+[Unit]
+Description=Laravel queue worker
+
+[Service]
+User=www-data
+Group=www-data
+Restart=on-failure
+ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --daemon --env=production
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# start laravel as a service
+systemctl daemon-reload
+sudo systemctl enable bagisto.service
+sudo systemctl start bagisto.service
 
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
     listen [::]:80;
     server_name example.com;
-    root /var/www/html/myproject/public;                       # Path to your Laravel public directory
+    root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -181,46 +226,6 @@ nginx -t
 
 sudo systemctl restart nginx.service
 
-cd /var/www/html/myproject
-php artisan key:generate
-
-sudo nano /var/www/html/myproject/.env
-# paste the following
-# APP_URL=http://example.com
-# LOG_CHANNEL=stack
-# DB_CONNECTION=mysql | pgsql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306 | 5432
-# DB_DATABASE=laravel_db
-# DB_USERNAME=lv_admin
-# DB_PASSWORD=abc1234@
-
-php artisan migrate
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-# php artisan serve 
-
-# Laravel queue worker using systemd
-sudo cat<<EOF > /etc/systemd/system/laravel.service
-[Unit]
-Description=Laravel queue worker
-
-[Service]
-User=www-data
-Group=www-data
-Restart=on-failure
-ExecStart=/usr/bin/php /var/www/html/myproject/artisan queue:work --daemon --env=production
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# start laravel as a service
-systemctl daemon-reload
-sudo systemctl enable laravel.service
-sudo systemctl start laravel.service
-
 echo "
 #--------------------------------------------------
 # Install and configure Firewall
@@ -236,10 +241,6 @@ sudo ufw allow https
 # Enable UFW
 sudo ufw --force enable
 sudo ufw reload
-
-sudo apt install -y cron 
-sudo systemctl enable cron
-sudo systemctl start cron
 
 echo "
 #--------------------------------------------------
@@ -267,6 +268,6 @@ fi
 sudo systemctl restart nginx
 
 echo "Laravel installation is complete"
-echo "Access wordpress on https://$WEBSITE_NAME"
+echo "Access Laravel on https://$WEBSITE_NAME"
 
 
