@@ -123,11 +123,7 @@ composer --version
 cd /var/www/html
 composer create-project bagisto/bagisto 
 cd bagisto 
-sudo chown -R www-data:www-data /var/www/html/bagisto
-sudo chmod -R 775 /var/www/html/bagisto/storage 
-sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
-cd /var/www/html/bagisto
 php artisan bagisto:install
 
 cp .env.example .env
@@ -152,6 +148,10 @@ php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 # php artisan serve --host=74.55.34.34 --port=8000
+
+sudo chown -R www-data:www-data /var/www/html/bagisto
+sudo chmod -R 775 /var/www/html/bagisto/storage 
+sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
 # Laravel queue worker using systemd
 sudo cat<<EOF > /etc/systemd/system/bagisto.service
