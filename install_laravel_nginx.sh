@@ -151,7 +151,7 @@ php artisan storage:link
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
-# php artisan serve 
+# php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
 sudo cat<<EOF > /etc/systemd/system/bagisto.service
