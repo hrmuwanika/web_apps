@@ -111,6 +111,8 @@ sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
 
+sudo apt install -y nodejs npm
+
 echo "
 #--------------------------------------------------
 # Installation of Laravel
