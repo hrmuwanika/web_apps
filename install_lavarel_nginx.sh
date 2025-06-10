@@ -129,18 +129,26 @@ sudo chmod -R 775 /var/www/html/myproject/bootstrap/cache
 sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
 server {
     listen 80;
-    listen 80
-    server_name example.com;                            # Replace with your domain(s)
+    listen [::]:80;
+    server_name example.com;
+    root /var/www/html/myproject/public;                       # Path to your Laravel public directory
 
-    root /var/www/html/myproject/public;                # Path to your Laravel public directory
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
 
     index index.php;
+    charset utf-8;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location ~ \.php\$ {
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+ 
+    error_page 404 /index.php;
+    
+    location ~ ^/index\.php(/|\$) {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;                                 # Use your PHP-FPM socket path
         # OR fastcgi_pass 127.0.0.1:8000;                                           # If using TCP port
