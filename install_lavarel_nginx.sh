@@ -57,8 +57,8 @@ sudo apt install -y ca-certificates apt-transport-https software-properties-comm
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-snmp php8.3-mbstring php8.3-curl php8.3-xml php-pear php8.3-mysqli \
-php8.3-bcmath php8.3-ldap php8.3-soap unzip wget git curl php8.3-mysqli php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu imagemagick libpng-dev libjpeg-dev libtiff-dev 
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-mbstring php8.3-curl php8.3-xml php-pear  \
+php8.3-bcmath php8.3-ldap php8.3-soap unzip wget git curl php8.3-mysqli php8.3-imagick php8.3-redis php8.3-apcu imagemagick 
 
 sudo apt autoremove apache2 -y
 
@@ -66,19 +66,9 @@ sudo apt install -y nginx-full
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
-sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
-sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
-
-sudo systemctl restart php8.3-fpm
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
+sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/cli/php.ini
+sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/cli/php.ini
 
 echo "
 #--------------------------------------------------
@@ -112,12 +102,6 @@ sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE laravel_db;"
@@ -126,7 +110,6 @@ sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON laravel_db.* TO 'l
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
-
 
 echo "
 #--------------------------------------------------
@@ -146,6 +129,7 @@ sudo chmod -R 775 /var/www/html/myproject/bootstrap/cache
 sudo cat <<EOF > /etc/nginx/sites-available/lavarel.conf
 server {
     listen 80;
+    listen 80
     server_name example.com;                            # Replace with your domain(s)
 
     root /var/www/html/myproject/public;                # Path to your Laravel public directory
@@ -158,8 +142,8 @@ server {
 
     location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock; # Use your PHP-FPM socket path
-        # OR fastcgi_pass 127.0.0.1:8000; # If using TCP port
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;                                 # Use your PHP-FPM socket path
+        # OR fastcgi_pass 127.0.0.1:8000;                                           # If using TCP port
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -186,7 +170,6 @@ sudo ln -s /etc/nginx/sites-available/lavarel.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.3-fpm
 
 cd /var/www/html/myproject
 php artisan key:generate
@@ -195,9 +178,9 @@ sudo nano /var/www/html/myproject/.env
 # paste the following
 # APP_URL=http://example.com
 # LOG_CHANNEL=stack
-# DB_CONNECTION=mysql/pgsql
+# DB_CONNECTION=mysql | pgsql
 # DB_HOST=127.0.0.1
-# DB_PORT=3306
+# DB_PORT=3306 | 5432
 # DB_DATABASE=laravel_db
 # DB_USERNAME=lv_admin
 # DB_PASSWORD=abc1234@
