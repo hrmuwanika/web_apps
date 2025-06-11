@@ -89,10 +89,10 @@ echo "
 # sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -su postgres psql -c "CREATE USER lv_admin WITH PASSWORD 'abc1234@';"
-# sudo -su postgres psql -c "CREATE DATABASE laravel_db;"
-# sudo -su postgres psql -c "ALTER DATABASE laravel_db OWNER TO lv_admin;"
-# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE laravel_db TO lv_admin;"
+# sudo -su postgres psql -c "CREATE USER bagisto_user WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE bagisto_db;"
+# sudo -su postgres psql -c "ALTER DATABASE bagisto_db OWNER TO bagisto_user;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE bagisto_db TO bagisto_user;"
 
 # sudo systemctl restart postgresql
 
@@ -107,9 +107,9 @@ sudo systemctl enable mariadb.service
 
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE laravel_db;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'lv_admin'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON laravel_db.* TO 'lv_admin'@'localhost';"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE bagisto_db;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'bagisto_user'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON bagisto_db.* TO 'bagisto_user'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
