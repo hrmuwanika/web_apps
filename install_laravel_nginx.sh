@@ -177,8 +177,8 @@ systemctl daemon-reload
 sudo systemctl enable bagisto.service
 sudo systemctl start bagisto.service
 
-sudo rm /etc/nginx/sites-available/default.conf
-sudo rm /etc/nginx/sites-enabled/default.conf
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
 
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
