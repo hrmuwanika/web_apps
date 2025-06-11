@@ -70,6 +70,9 @@ sudo systemctl start php8.3-fpm.service
 sudo systemctl enable php8.3-fpm.service
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/cli/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 1G/" /etc/php/8.3/cli/php.ini
+sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/cli/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/cli/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/cli/php.ini
 
@@ -185,33 +188,26 @@ server {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
+    location ~* ^\/(?!cache).*\.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|webp|woff|woff2)$ {
+      expires max;
+      access_log off;
+      add_header Cache-Control "public";
+    }
+    
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
  
     error_page 404 /index.php;
-    
+
     location ~ ^/index\.php(/|\$) {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;                                 # Use your PHP-FPM socket path
-        # OR fastcgi_pass 127.0.0.1:8000;                                           # If using TCP port
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
     }
 
-    # Optional: Deny access to .env file for security
-    location ~ /\.env {
+    location ~ /\.(?!well-known).* {
         deny all;
-    }
-
-    # Optional: Deny access to other sensitive files/directories
-    location ~ /storage/logs/laravel\.log {
-        deny all;
-    }
-
-    # Optional: Serve static assets directly from Nginx
-    location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
-        expires 5M;
-        log_not_found off;
     }
 }
 EOF
