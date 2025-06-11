@@ -117,29 +117,34 @@ sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
 
-sudo apt install -y nodejs npm
-
 echo "
 #--------------------------------------------------
-# Installation of Laravel
+# Installation of Nodejs, Npm and composer
 #--------------------------------------------------"
-sudo apt install -y composer
-composer --version
+sudo apt install -y nodejs npm composer
 
 cd /var/www/html
 rm index*
-composer create-project bagisto/bagisto 
-cd bagisto 
 
+echo "
+#--------------------------------------------------
+# Installation of Bagisto
+#--------------------------------------------------"
+composer create-project bagisto/bagisto 
+
+sudo chown -R www-data:www-data /var/www/html/bagisto
+sudo chmod -R 775 /var/www/html/bagisto/storage 
+sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
+
+cd bagisto 
 cp .env.example .env
+
 # sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 # sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
 # sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 php artisan bagisto:install
-# php artisan key:generate
 php artisan migrate
-php artisan db:seed
 php artisan vendor:publish
 php artisan storage:link
 # php artisan serve --host=74.55.34.34 --port=8000
@@ -158,10 +163,6 @@ ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --daemon --env=p
 [Install]
 WantedBy=multi-user.target
 EOF
-
-sudo chown -R www-data:www-data /var/www/html/bagisto
-sudo chmod -R 775 /var/www/html/bagisto/storage 
-sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
 # start laravel as a service
 systemctl daemon-reload
