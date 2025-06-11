@@ -139,9 +139,9 @@ sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 cd bagisto 
 cp .env.example .env
 
-# sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
-# sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
-# sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
+sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
+sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
+sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 php artisan bagisto:install
 php artisan migrate
