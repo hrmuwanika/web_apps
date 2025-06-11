@@ -136,7 +136,7 @@ sudo chown -R www-data:www-data /var/www/html/velstore
 sudo chmod -R 775 /var/www/html/velstore/storage 
 sudo chmod -R 775 /var/www/html/velstore/bootstrap/cache
 
-cd bagisto 
+cd velstore
 cp .env.example .env
 
 sed -i 's/DB_DATABASE=/DB_DATABASE=velstore_db/g' .env
