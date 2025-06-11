@@ -143,10 +143,7 @@ sed -i 's/DB_DATABASE=/DB_DATABASE=velstore_db/g' .env
 sed -i 's/DB_USERNAME=/DB_USERNAME=velstore_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
-php artisan bagisto:install
-php artisan migrate
-php artisan vendor:publish
-php artisan storage:link
+php artisan install:velstore --with-import
 # php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
