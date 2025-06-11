@@ -127,30 +127,18 @@ cd /var/www/html
 rm index*
 composer create-project bagisto/bagisto 
 cd bagisto 
-
 php artisan bagisto:install
 
 cp .env.example .env
-
 sudo nano .env
-# paste the following
-# APP_URL=http://example.com
-# LOG_CHANNEL=stack
-# DB_CONNECTION=mysql | pgsql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306 | 5432
-# DB_DATABASE=laravel_db
-# DB_USERNAME=lv_admin
-# DB_PASSWORD=abc1234@
+sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
+sed -i 's/DB_USERNAME=/DB_DATABASE=bagisto_user/g' .env
+sed -i 's/DB_PASSWORD=/DB_DATABASE=abc1234@/g' .env
 
 php artisan key:generate
 php artisan migrate
 php artisan db:seed
 php artisan storage:link
-
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
 # php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
