@@ -135,9 +135,10 @@ sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 sed -i 's/DB_USERNAME=/DB_DATABASE=bagisto_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_DATABASE=abc1234@/g' .env
 
-php artisan key:generate
+# php artisan key:generate
 php artisan migrate
 php artisan db:seed
+php artisan vendor:publish
 php artisan storage:link
 # php artisan serve --host=74.55.34.34 --port=8000
 
