@@ -127,14 +127,13 @@ cd /var/www/html
 rm index*
 composer create-project bagisto/bagisto 
 cd bagisto 
-php artisan bagisto:install
 
 cp .env.example .env
-sudo nano .env
-sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
-sed -i 's/DB_USERNAME=/DB_DATABASE=bagisto_user/g' .env
-sed -i 's/DB_PASSWORD=/DB_DATABASE=abc1234@/g' .env
+# sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
+# sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
+# sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
+php artisan bagisto:install
 # php artisan key:generate
 php artisan migrate
 php artisan db:seed
