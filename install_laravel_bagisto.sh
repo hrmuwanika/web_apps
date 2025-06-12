@@ -124,38 +124,45 @@ sudo systemctl restart mariadb.service
 
 echo "
 #--------------------------------------------------
-# Installation of Nodejs and Npm
+# Installation of Nodejs,Npm and composer
 #--------------------------------------------------"
-sudo apt install -y nodejs npm
-
-# Install composer
-curl -sS https://getcomposer.org/installer | php
-sudo mv composer.phar /usr/local/bin/composer
-sudo chmod +x /usr/local/bin/composer
+sudo apt install -y nodejs npm composer
 
 cd /var/www/html
 rm index*
 
 echo "
 #--------------------------------------------------
-# Installation of Bagisto
+# Clone the Bagisto repository
 #--------------------------------------------------"
-composer create-project bagisto/bagisto 
+git clone https://github.com/bagisto/bagisto.git 
 
 sudo chown -R www-data:www-data /var/www/html/bagisto
 sudo chmod -R 775 /var/www/html/bagisto/storage 
-sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
+# Navigate to project directory
 cd bagisto 
+
+# Install php dependencies
+composer install
+
+# Copy environment file
 cp .env.example .env
 
 sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
+# Generate application key
+php artisan key:generate
+sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
+
 php artisan bagisto:install
+
+# run migrations and seeders
 php artisan migrate
-php artisan vendor:publish
+php artisan db:seed
+php artisan vendor:publish --all
 php artisan storage:link
 # php artisan serve --host=74.55.34.34 --port=8000
 
