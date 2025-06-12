@@ -193,7 +193,7 @@ sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
     listen [::]:80;
-    server_name example.com;
+    server_name $WEBSITE_NAME;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
     index index.php;
@@ -250,7 +250,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEB
   sudo snap refresh core
   sudo snap install --classic certbot
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo apt install -y python3-certbot-nginx
+  sudo apt install -y certbot python3-certbot-nginx
   sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
   
   sudo systemctl restart nginx
