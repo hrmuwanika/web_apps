@@ -1,15 +1,22 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Laravel Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
-# Authors: Henry Robert Muwanika
+#  Requirements for installation of Bagisto ecommerce
+#  Php: 8.2 or higher
+#  Composer: latest
+#  Database: MariaDB 10.3
+#  Node.js: 18.x (for PWA)
+#  NPM/Yarn: Latest
+#  Web server: Nginx 
+#  OS: Ubuntu 20.04, 22.04, 24.04
+# 
 
 # Make a new file:
-# sudo nano install_laravel_nginx.sh
+# sudo nano install_laravel_bagisto.sh
 # Place this content in it and then make the file executable:
-# sudo chmod +x install_laravel_nginx.sh
-# Execute the script to install Laravel:
-# ./install_laravel_nginx.sh
+# sudo chmod +x install_laravel_bagisto.sh
+# Execute the script to install Bagisto:
+# ./install_laravel_bagisto.sh
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -21,9 +28,8 @@ ADMIN_EMAIL="info@example.com"
 
 echo "
 #--------------------------------------------------
-# Update Server
+# Updating the Ubuntu Server
 #--------------------------------------------------"
-echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
@@ -45,7 +51,6 @@ echo "
 #--------------------------------------------------
 # Set up the timezones
 #--------------------------------------------------"
-# set the correct timezone on ubuntu
 timedatectl set-timezone Africa/Kigali
 timedatectl
 
@@ -58,7 +63,7 @@ add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-mbstring php8.3-curl php8.3-xml php-pear  \
-php8.3-bcmath php8.3-ldap php8.3-soap php8.3-fpm unzip wget git curl php8.3-mysqli php8.3-imagick php8.3-redis php8.3-apcu imagemagick 
+php8.3-bcmath php8.3-soap php8.3-fpm unzip wget git curl php8.3-mysql php8.3-imagick php8.3-redis php8.3-apcu imagemagick 
 
 sudo apt autoremove apache2 -y
 
@@ -119,9 +124,14 @@ sudo systemctl restart mariadb.service
 
 echo "
 #--------------------------------------------------
-# Installation of Nodejs, Npm and composer
+# Installation of Nodejs and Npm
 #--------------------------------------------------"
-sudo apt install -y nodejs npm composer
+sudo apt install -y nodejs npm
+
+# Install composer
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
 
 cd /var/www/html
 rm index*
@@ -179,32 +189,18 @@ server {
     server_name example.com;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-
     index index.php;
-    charset utf-8;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location ~* ^\/(?!cache).*\.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|webp|woff|woff2)$ {
-      expires max;
-      access_log off;
-      add_header Cache-Control "public";
-    }
-    
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
- 
-    error_page 404 /index.php;
-
-    location ~ ^/index\.php(/|\$) {
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_hide_header X-Powered-By;
+        #fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        #include fastcgi_params;
+        #fastcgi_hide_header X-Powered-By;
     }
 
     location ~ /\.(?!well-known).* {
