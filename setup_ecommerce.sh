@@ -12,6 +12,8 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
+sudo ufw allow http
+sudo ufw allow https
 sudo ufw allow 8000/tcp
 sudo ufw allow 3000/tcp
 sudo ufw --force enable
@@ -19,6 +21,9 @@ sudo ufw reload
 
 apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-zip php8.3-gd php8.3-mbstring php8.3-curl php8.3-xml php-pear  \
 php8.3-bcmath php8.3-fpm unzip git curl php8.3-pgsql nodejs npm composer
+
+sudo systemctl start php8.3-fpm.service
+sudo systemctl enable php8.3-fpm.service
 
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
@@ -30,17 +35,15 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Setup PostgreSQL database
-setup_database() {
-  read -p "Enter PostgreSQL username: " db_user
-  read -s -p "Enter PostgreSQL password: " db_pass
-  echo
-  read -p "Enter database name (ecommerce): " db_name
-  db_name=${db_name:-ecommerce}
+sudo -su postgres psql -c "CREATE USER ecom_user WITH PASSWORD 'abc1234@';"
+sudo -su postgres psql -c "CREATE DATABASE ecommerce_db;"
+sudo -su postgres psql -c "ALTER DATABASE ecommerce_db OWNER TO ecom_user;"
+sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ecommerce_db TO ecom_user;"
 
-  sudo -u postgres psql -c "CREATE USER $db_user WITH PASSWORD '$db_pass';"
-  sudo -u postgres psql -c "CREATE DATABASE $db_name;"
-  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $db_name TO $db_user;"
-}
+sudo apt install -y nginx-full
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
+
 
 ########################################################################################################################################
 # Install Laravel backend
@@ -54,12 +57,12 @@ setup_database() {
 
   # Configure .env
   cp .env.example .env
-  sed -i "s/DB_CONNECTION=mysql/DB_CONNECTION=pgsql/" .env
-  sed -i "s/DB_HOST=127.0.0.1/DB_HOST=localhost/" .env
-  sed -i "s/DB_PORT=3306/DB_PORT=5432/" .env
-  sed -i "s/DB_DATABASE=laravel/DB_DATABASE=$db_name/" .env
-  sed -i "s/DB_USERNAME=root/DB_USERNAME=$db_user/" .env
-  sed -i "s/DB_PASSWORD=/DB_PASSWORD=$db_pass/" .env
+  sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
+  sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
+  sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
+  sed -i "s/# DB_DATABASE=lavarel/DB_DATABASE=ecommerce_db/g" .env
+  sed -i "s/# DB_USERNAME=root/DB_USERNAME=ecom_user/g" .env
+  sed -i "s/# DB_PASSWORD=/DB_PASSWORD=abc1234@/g" .env
 
   # Generate app key
   php artisan key:generate
