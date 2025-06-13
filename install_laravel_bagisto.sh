@@ -59,11 +59,12 @@ echo "
 # Installation of PHP
 #--------------------------------------------------"
 sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
+
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-mbstring php8.3-curl php8.3-xml php-pear  \
-php8.3-bcmath php8.3-soap php8.3-fpm unzip wget git curl php8.3-mysql php8.3-imagick php8.3-redis php8.3-apcu imagemagick 
+sudo apt install -y php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap \
+php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath unzip wget git curl
 
 sudo apt autoremove apache2 -y
 
@@ -148,7 +149,9 @@ composer install
 
 # Copy environment file
 cp .env.example .env
-
+#sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
+#sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
+#sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
 sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
@@ -193,7 +196,7 @@ sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
     listen [::]:80;
-    server_name $WEBSITE_NAME;
+    server_name \$WEBSITE_NAME;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
     index index.php;
