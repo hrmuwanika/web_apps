@@ -4,9 +4,6 @@
 # This script installs dependencies and sets up a basic e-commerce application
 # with Laravel backend (PostgreSQL) and Next.js frontend
 
-# Exit on error and print commands
-set -ex
-
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y
 
