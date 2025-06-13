@@ -60,7 +60,7 @@ sudo systemctl enable nginx.service
   sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
   sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
   sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
-  sed -i "s/# DB_DATABASE=lavarel/DB_DATABASE=ecommerce_db/g" .env
+  sed -i "s/# DB_DATABASE=laravel/DB_DATABASE=ecommerce_db/g" .env
   sed -i "s/# DB_USERNAME=root/DB_USERNAME=ecom_user/g" .env
   sed -i "s/# DB_PASSWORD=/DB_PASSWORD=abc1234@/g" .env
 
