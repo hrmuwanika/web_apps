@@ -41,9 +41,11 @@ sudo -su postgres psql -c "ALTER DATABASE ecommerce_db OWNER TO ecom_user;"
 sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ecommerce_db TO ecom_user;"
 
 sudo apt install -y nginx-full
+
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
+cd /var/www/html/
 
 ########################################################################################################################################
 # Install Laravel backend
@@ -277,6 +279,44 @@ EOL
 ########################################################################################################################
 # Frontend End
 ########################################################################################################################
+
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+
+sudo cat <<EOF > /etc/nginx/sites-available/ecommerce.conf
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $WEBSITE_NAME;
+    root /var/www/html/ecommerce-backend/public;                       # Path to your Laravel public directory
+
+    index index.php;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        #fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        #include fastcgi_params;
+        #fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+EOF
+
+sudo ln -s /etc/nginx/sites-available/ecommerce.conf /etc/nginx/sites-enabled/
+nginx -t
+
+sudo systemctl restart nginx.service
+
+sudo chown -R www-data:www-data /var/www/html/ecommerce-backend
+sudo chmod -R 775 /var/www/html/ecommerce-backend
 
   echo ""
   echo "Setup completed successfully!"
