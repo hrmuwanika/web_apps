@@ -90,7 +90,7 @@ echo "
 # curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 # sudo apt update
 
-# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
+# sudo apt -y install postgresql-16 postgresql-client postgresql-contrib php8.3-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
