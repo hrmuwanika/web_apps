@@ -64,7 +64,7 @@ add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap \
-php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath unzip wget git curl
+php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath php8.3-tokenizer unzip wget git curl
 
 sudo apt autoremove apache2 -y
 
@@ -215,7 +215,8 @@ server {
     error_page 404 /index.php;
     
     location ~ \.php\$ {
-        fastcgi_pass localhost:8000;
+        # fastcgi_pass localhost:8000;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
     }
