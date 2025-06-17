@@ -72,9 +72,6 @@ sudo apt install -y nginx-full
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-sudo systemctl start php8.3-fpm.service
-sudo systemctl enable php8.3-fpm.service
-
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/cli/php.ini
 sed -ie "s/memory_limit = 128M/memory_limit = 1G/" /etc/php/8.3/cli/php.ini
@@ -155,6 +152,7 @@ cp .env.example .env
 sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
+sed -i 's/QUEUE_CONNECTION=sync/QUEUE_CONNECTION=database/g' .env
 
 # Generate application key
 php artisan key:generate
@@ -170,15 +168,17 @@ php artisan storage:link
 # php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
-sudo cat<<EOF > /etc/systemd/system/bagisto.service
+sudo cat<<EOF > /etc/systemd/system/laravel.service
 [Unit]
-Description=Laravel queue worker
+Description=Laravel WebSocket Server
+After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-Restart=on-failure
-ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --daemon --env=production
+Restart=always
+WorkingDirectory=/var/www/html/bagisto
+ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --sleep=3 --tries=3
 
 [Install]
 WantedBy=multi-user.target
@@ -186,8 +186,8 @@ EOF
 
 # start laravel as a service
 systemctl daemon-reload
-sudo systemctl enable bagisto.service
-sudo systemctl start bagisto.service
+sudo systemctl enable laravel.service
+sudo systemctl start laravel.service
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
@@ -196,21 +196,28 @@ sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
     listen [::]:80;
-    server_name \$WEBSITE_NAME;
+    server_name localhost;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    
     index index.php;
-
+    charset utf-8;
+     
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        #fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
-        #include fastcgi_params;
-        #fastcgi_hide_header X-Powered-By;
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+    
+    location ~ \.php\$ {
+        fastcgi_pass localhost:8000;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        include fastcgi_params;
     }
 
     location ~ /\.(?!well-known).* {
@@ -264,7 +271,7 @@ else
 fi
 
 sudo systemctl restart nginx
-sudo systemctl restart php8.3-fpm
+
 echo "Laravel installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
 
