@@ -24,9 +24,11 @@ sudo ufw allow 3000/tcp
 sudo ufw --force enable
 sudo ufw reload
 
-echo "================================ Install php8.3 ========================================================================="
-sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-intl php8.4-zip php8.4-gd php8.4-mbstring php8.4-curl php8.4-xml php-pear  \
-php8.4-bcmath php8.4-fpm php8.4-pgsql 
+echo "================================ Install php8.4 ========================================================================="
+sudo add-apt-repository ppa:ondrej/php
+sudo apt update
+sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
+php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 
 # Install laravel installer
 /bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
