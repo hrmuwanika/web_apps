@@ -124,7 +124,7 @@ echo "
 #--------------------------------------------------
 # Installation of Nodejs,Npm and composer
 #--------------------------------------------------"
-sudo apt install -y nodejs npm composer
+sudo apt install -y nodejs npm composer supervisor
 
 cd /var/www/html
 rm index*
@@ -170,7 +170,7 @@ php artisan storage:link
 # Laravel queue worker using systemd
 sudo cat<<EOF > /etc/systemd/system/laravel.service
 [Unit]
-Description=Laravel WebSocket Server
+Description=Laravel Laravel Queue Server
 After=network.target
 
 [Service]
