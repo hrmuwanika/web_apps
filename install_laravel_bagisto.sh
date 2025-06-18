@@ -58,19 +58,21 @@ echo "
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------"
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
+sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
 
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
 sudo apt install -y php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap \
-php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath php8.3-tokenizer unzip wget git curl
+php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath php8.3-redis php8.3-memcached php8.3-apcu tokenizer unzip wget git curl
+
+sudo systemctl enable php8.3-fpm
+sudo systemctl start php8.3-fpm
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 sudo apt autoremove apache2 -y
-
-sudo apt install -y nginx-full
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/cli/php.ini
@@ -122,9 +124,11 @@ sudo systemctl restart mariadb.service
 
 echo "
 #--------------------------------------------------
-# Installation of Nodejs,Npm and composer
+# Installation of Nodejs, Npm, Supervisor and Nginx
 #--------------------------------------------------"
-sudo apt install -y nodejs npm composer supervisor
+sudo apt install -y nodejs npm supervisor nginx-full
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
 
 cd /var/www/html
 rm index*
