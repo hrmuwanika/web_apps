@@ -107,10 +107,10 @@ echo "
 # sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -su postgres psql -c "CREATE USER bagisto_user WITH PASSWORD 'abc1234@';"
-# sudo -su postgres psql -c "CREATE DATABASE bagisto_db;"
-# sudo -su postgres psql -c "ALTER DATABASE bagisto_db OWNER TO bagisto_user;"
-# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE bagisto_db TO bagisto_user;"
+# sudo -su postgres psql -c "CREATE USER laravel_user WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE laravel_db;"
+# sudo -su postgres psql -c "ALTER DATABASE laravel_db OWNER TO laravel_user;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE laravel_db TO laravel_user;"
 
 # sudo systemctl restart postgresql
 
@@ -125,9 +125,9 @@ sudo systemctl enable mariadb.service
 
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE bagisto_db;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'bagisto_user'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON bagisto_db.* TO 'bagisto_user'@'localhost';"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE laravel_db;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'laravel_user'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON laravel_db.* TO 'laravel_user'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
@@ -163,15 +163,15 @@ cp .env.example .env
 #sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
 #sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
 #sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
-sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
-sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
+sed -i 's/DB_DATABASE=/DB_DATABASE=laravel_db/g' .env
+sed -i 's/DB_USERNAME=/DB_USERNAME=laravel_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 # Generate application key
 php artisan key:generate
 sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
-php artisan bagisto:install
+# php artisan bagisto:install
 
 # run migrations and seeders
 php artisan migrate
@@ -180,35 +180,9 @@ php artisan vendor:publish --all
 php artisan storage:link
 # php artisan serve --host=74.55.34.34 --port=8000
 
-# Laravel queue worker using systemd
-sudo cat<<EOF > /etc/systemd/system/laravel.service
-[Unit]
-Description=Laravel Laravel Queue Server
-After=network.target
-
-[Service]
-User=www-data
-Group=www-data
-Restart=always
-WorkingDirectory=/var/www/html/bagisto
-ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --sleep=3 --tries=3
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# start laravel as a service
-systemctl daemon-reload
-sudo systemctl enable laravel.service
-sudo systemctl start laravel.service
-
-sudo rm /etc/nginx/sites-available/default
-sudo rm /etc/nginx/sites-enabled/default
-
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
-    listen [::]:80;
     server_name localhost;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
@@ -228,7 +202,6 @@ server {
     error_page 404 /index.php;
     
     location ~ \.php\$ {
-        # fastcgi_pass localhost:8000;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
@@ -242,7 +215,11 @@ server {
 EOF
 
 sudo ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/
+
 sudo unlink /etc/nginx/sites-enabled/default
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+
 sudo nginx -t
 
 sudo systemctl reload nginx
@@ -268,9 +245,7 @@ if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEB
   sudo ln -s /snap/bin/certbot /usr/bin/certbot
   sudo apt install -y certbot python3-certbot-nginx
   sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
-  
-  sudo systemctl restart nginx
-  
+    
   echo "============ SSL/HTTPS is enabled! ========================"
 else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
@@ -279,7 +254,7 @@ fi
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.3-fpm
 
-echo "Laravel installation is complete"
+echo "Laravel & Bagisto installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
 
 
