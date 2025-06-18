@@ -35,7 +35,7 @@ sudo apt autoremove -y
 
 echo "
 #----------------------------------------------------
-# Disabling password authentication
+# SSH authentication
 #----------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -43,9 +43,19 @@ sudo systemctl restart sshd
 
 echo "
 #--------------------------------------------------
-# Generate SSH key pairs
+# Install and configure Firewall
 #--------------------------------------------------"
-# ssh-keygen -t rsa -b 4096
+sudo apt install -y ufw
+
+sudo ufw allow 22/tcp
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 'Nginx HTTP'
+sudo ufw allow 'Nginx HTTPS'
+
+# Enable UFW
+sudo ufw --force enable
+sudo ufw reload
 
 echo "
 #--------------------------------------------------
@@ -60,11 +70,11 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
 
-add-apt-repository ppa:ondrej/php
+sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap \
-php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-bcmath php8.3-redis php8.3-memcached php8.3-apcu tokenizer unzip wget git curl
+sudo apt install php8.3-common php8.3-bcmath php8.3-mbstring php8.3-xml php8.3-curl php8.3-gd php8.3-zip php8.3-mysql php8.3 php-fpm openssl php8.3-bcmath \
+php8.3-cli php8.3-curl php8.3-mbstring php8.3-pgsql php8.3-tokenizer php8.3-xml php8.3-zip php8.3-intl php8.3-sqlite3 unzip wget git 
 
 sudo systemctl enable php8.3-fpm
 sudo systemctl start php8.3-fpm
@@ -156,7 +166,6 @@ cp .env.example .env
 sed -i 's/DB_DATABASE=/DB_DATABASE=bagisto_db/g' .env
 sed -i 's/DB_USERNAME=/DB_USERNAME=bagisto_user/g' .env
 sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
-sed -i 's/QUEUE_CONNECTION=sync/QUEUE_CONNECTION=database/g' .env
 
 # Generate application key
 php artisan key:generate
@@ -206,7 +215,7 @@ server {
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
     
-    index index.php;
+    index index.html index.htm index.php;
     charset utf-8;
      
     location / {
@@ -221,6 +230,7 @@ server {
     location ~ \.php\$ {
         # fastcgi_pass localhost:8000;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -232,25 +242,16 @@ server {
 EOF
 
 sudo ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/
-nginx -t
+sudo unlink /etc/nginx/sites-enabled/default
+sudo nginx -t
 
-sudo systemctl restart nginx.service
+sudo systemctl reload nginx
 
 echo "
 #--------------------------------------------------
-# Install and configure Firewall
+# Generate SSL certificate
 #--------------------------------------------------"
-sudo apt install -y ufw
-
-sudo ufw allow 22/tcp
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
-
-# Enable UFW
-sudo ufw --force enable
-sudo ufw reload
+# sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
 
 echo "
 #--------------------------------------------------
@@ -275,7 +276,8 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-sudo systemctl restart nginx
+sudo systemctl restart nginx.service
+sudo systemctl restart php8.3-fpm
 
 echo "Laravel installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
