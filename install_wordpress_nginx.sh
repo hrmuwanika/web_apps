@@ -88,64 +88,43 @@ echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------"
-# echo -e "=== Install and configure PostgreSQL ... ==="
-# sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-# curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
-# sudo apt update
+echo -e "=== Install and configure PostgreSQL ... ==="
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+sudo apt update
 
-# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
+sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
 
-# echo "=== Starting PostgreSQL service... ==="
-# sudo systemctl start postgresql 
-# sudo systemctl enable postgresql
+echo "=== Starting PostgreSQL service... ==="
+sudo systemctl start postgresql 
+sudo systemctl enable postgresql
 
 # Create the new user with superuser privileges
-# sudo -su postgres psql -c "CREATE USER wp_admin WITH PASSWORD 'abc1234@';"
-# sudo -su postgres psql -c "CREATE DATABASE wordpress_db;"
-# sudo -su postgres psql -c "ALTER DATABASE wordpress_db OWNER TO wp_admin;"
-# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE wordpress_db TO wp_admin;"
+sudo -su postgres psql -c "CREATE USER wp_admin WITH PASSWORD 'abc1234@';"
+sudo -su postgres psql -c "CREATE DATABASE wordpress_db;"
+sudo -su postgres psql -c "ALTER DATABASE wordpress_db OWNER TO wp_admin;"
+sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE wordpress_db TO wp_admin;"
 
-# sudo systemctl restart postgresql
-
-#--------------------------------------------------
-# Install Debian default database MariaDB 
-#--------------------------------------------------
-sudo apt install -y mariadb-server mariadb-client mariadb-backup
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
-
-# sudo mariadb-secure-installation
-
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
-sudo systemctl restart mariadb.service
-
-sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpress_db;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'wp_admin'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpress_db.* TO 'wp_admin'@'localhost';"
-sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
-
-sudo systemctl restart mariadb.service
-
+sudo systemctl restart postgresql
 
 echo "
 #--------------------------------------------------
 # Installation of Wordpress
 #--------------------------------------------------"
 cd /opt && wget https://wordpress.org/latest.tar.gz
+git clone https://github.com/hrmuwanika/postgresql-for-wordpress.git
 tar xzvf latest.tar.gz
 
 rm /var/www/html/index.html
 cp -rf wordpress/ /var/www/html/
-
+mv postgresql-for-wordpress/pg4wp /var/www/html/wordpress/wp-content/plugins/
 mkdir /var/www/html/wordpress/wp-content/uploads
 
 sudo chown -R www-data:www-data /var/www/html/wordpress/
 sudo chmod -R 755 /var/www/html/wordpress/
+
+cd /var/www/html/wordpress/wp-content
+cp plugins/pg4wp/db.php ./
 
 cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
 server {
