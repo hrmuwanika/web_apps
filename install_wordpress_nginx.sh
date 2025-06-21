@@ -115,7 +115,7 @@ cd /opt && wget https://wordpress.org/latest.tar.gz
 git clone https://github.com/hrmuwanika/postgresql-for-wordpress.git
 tar xzvf latest.tar.gz
 
-rm /var/www/html/index.html
+rm /var/www/html/index*
 cp -rf wordpress/ /var/www/html/
 mv postgresql-for-wordpress/pg4wp /var/www/html/wordpress/wp-content/plugins/
 mkdir /var/www/html/wordpress/wp-content/uploads
@@ -126,7 +126,7 @@ sudo chmod -R 755 /var/www/html/wordpress/
 cd /var/www/html/wordpress/wp-content
 cp plugins/pg4wp/db.php ./
 
-cd ..
+cd /var/www/html/wordpress/
 cp wp-config-sample.php wp-config.php
 sudo nano wp-config.php
 
