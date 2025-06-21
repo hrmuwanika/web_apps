@@ -126,6 +126,10 @@ sudo chmod -R 755 /var/www/html/wordpress/
 cd /var/www/html/wordpress/wp-content
 cp plugins/pg4wp/db.php ./
 
+cd ..
+cp wp-config-sample.php wp-config.php
+sudo nano wp-config.php
+
 cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
 server {
     listen 80;
