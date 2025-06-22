@@ -68,28 +68,28 @@ echo "
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------"
-sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
+sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 git unzip
 
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install php8.3-common php8.3-bcmath php8.3-mbstring php8.3-xml php8.3-curl php8.3-gd php8.3-zip php8.3-mysql php8.3 php-fpm openssl php8.3-bcmath \
-php8.3-cli php8.3-curl php8.3-mbstring php8.3-pgsql php8.3-tokenizer php8.3-xml php8.3-zip php8.3-intl php8.3-sqlite3 unzip wget git 
+sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
+php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer 
 
-sudo systemctl enable php8.3-fpm
-sudo systemctl start php8.3-fpm
+sudo systemctl enable php8.4-fpm
+sudo systemctl start php8.4-fpm
 
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 sudo apt autoremove apache2 -y
 
-sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/cli/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 1G/" /etc/php/8.3/cli/php.ini
-sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/cli/php.ini
-sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/cli/php.ini
-sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/cli/php.ini
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/cli/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.4/cli/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 1G/" /etc/php/8.4/cli/php.ini
+sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.4/cli/php.ini
+sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.4/cli/php.ini
+sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.4/cli/php.ini
 
 echo "
 #--------------------------------------------------
@@ -100,7 +100,7 @@ echo "
 # curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 # sudo apt update
 
-# sudo apt -y install postgresql-16 postgresql-client postgresql-contrib php8.3-pgsql
+# sudo apt -y install postgresql-16 postgresql-client postgresql-contrib php8.4-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
@@ -202,7 +202,7 @@ server {
     error_page 404 /index.php;
     
     location ~ \.php\$ {
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
@@ -252,7 +252,7 @@ else
 fi
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.4-fpm
 
 echo "Laravel & Bagisto installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
