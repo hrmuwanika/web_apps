@@ -13,7 +13,11 @@ echo "======== Install required dependencies ==========="
 sudo apt update && sudo apt upgrade -y
 
 echo "================ Install node, npm, composer ===================="
-sudo apt install -y ufw wget curl git unzip nodejs npm 
+sudo apt install -y ufw wget curl git unzip 
+
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt update
+sudo apt install nodejs -y
 
 echo "============== ufw firewall configuration ======================="
 sudo ufw allow 22/tcp
@@ -30,7 +34,11 @@ sudo apt update
 sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
 php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 
-# Install laravel installer
+# Install composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+
+# Laravel installer
 /bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
 composer global require laravel/installer
 
@@ -57,11 +65,3 @@ sudo systemctl enable nginx.service
 
 cd /var/www/html/
 rm -rf *
-
-########################################################################################################################################
-# Install Laravel backend
-########################################################################################################################################
-  echo "================== Setting up Laravel backend ============================"
-  laravel new laravel_backend
-  cd laravel_backend
-
