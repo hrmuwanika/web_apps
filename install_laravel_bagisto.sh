@@ -136,7 +136,11 @@ echo "
 #--------------------------------------------------
 # Installation of Nodejs, Npm, Supervisor and Nginx
 #--------------------------------------------------"
-sudo apt install -y nodejs npm supervisor nginx-full
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt update
+sudo apt install nodejs npm -y
+
+sudo apt install -y nginx-full
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
