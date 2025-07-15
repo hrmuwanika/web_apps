@@ -79,6 +79,7 @@ php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 sudo systemctl enable php8.4-fpm
 sudo systemctl start php8.4-fpm
 
+# Install composer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
@@ -175,13 +176,12 @@ sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 php artisan key:generate
 sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
 
-# php artisan bagisto:install
+php artisan bagisto:install
 
 # run migrations and seeders
-php artisan migrate
-php artisan db:seed
-php artisan vendor:publish --all
-php artisan storage:link
+# php artisan migrate
+# php artisan db:seed
+# php artisan vendor:publish --all
 # php artisan serve --host=74.55.34.34 --port=8000
 
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
