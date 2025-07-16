@@ -184,6 +184,28 @@ php artisan bagisto:install
 # php artisan vendor:publish --all
 # php artisan serve --host=74.55.34.34 --port=8000
 
+# Laravel queue worker using systemd
+sudo cat<<EOF > /etc/systemd/system/laravel.service
+[Unit]
+Description=Laravel Laravel Queue Server
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+WorkingDirectory=/var/www/html/bagisto
+ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --sleep=3 --tries=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# start laravel as a service
+systemctl daemon-reload
+sudo systemctl enable laravel.service
+sudo systemctl start laravel.service
+
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
