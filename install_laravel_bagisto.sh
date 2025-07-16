@@ -153,6 +153,7 @@ echo "
 # Clone the Bagisto repository
 #--------------------------------------------------"
 git clone https://github.com/bagisto/bagisto.git 
+# composer create-project bagisto/bagisto
 
 sudo chown -R www-data:www-data /var/www/html/bagisto
 sudo chmod -R 775 /var/www/html/bagisto/storage 
@@ -209,7 +210,7 @@ sudo systemctl start laravel.service
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
-    server_name localhost;
+    server_name example.com;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
     add_header X-Frame-Options "SAMEORIGIN";
