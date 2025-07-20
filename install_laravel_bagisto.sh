@@ -2,10 +2,10 @@
 
 ################################################################################
 #  Requirements for installation of Bagisto ecommerce
-#  Php: 8.2 or higher
+#  Php: 8.4 or higher
 #  Composer: latest
 #  Database: MariaDB 10.3
-#  Node.js: 18.x (for PWA)
+#  Node.js: 24.x (for PWA)
 #  NPM/Yarn: Latest
 #  Web server: Nginx 
 #  OS: Ubuntu 20.04, 22.04, 24.04
