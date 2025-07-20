@@ -70,8 +70,8 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 git unzip
 
-sudo add-apt-repository -y ppa:ondrej/php
-sudo apt update -y
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
 
 sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
 php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer 
@@ -229,8 +229,8 @@ server {
     error_page 404 /index.php;
     
     location ~ \.php\$ {
+        include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
-        fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
     }
