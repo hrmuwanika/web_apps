@@ -15,9 +15,20 @@ sudo apt update && sudo apt upgrade -y
 echo "================ Install node, npm, composer ===================="
 sudo apt install -y ufw wget curl git unzip 
 
+# Remove any old Node.js installations (optional)
+sudo apt remove nodejs npm
+
 curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt update
 sudo apt install nodejs -y
+
+mkdir -p ~/.npm-global
+npm config set prefix ~/.npm-global
+
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+sudo apt install -y git ripgrep
 
 # Install claude code
 npm install -g @anthropic-ai/claude-code
