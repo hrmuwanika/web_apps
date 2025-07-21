@@ -19,6 +19,9 @@ curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt update
 sudo apt install nodejs -y
 
+# Install claude code
+npm install -g @anthropic-ai/claude-code
+
 echo "============== ufw firewall configuration ======================="
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
@@ -66,5 +69,4 @@ sudo systemctl enable nginx.service
 cd /var/www/html/
 rm -rf *
 
-# Install claude code
-npm install -g @anthropic-ai/claude-code
+
