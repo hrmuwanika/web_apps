@@ -3,9 +3,9 @@
 # ##### Laravel app development #####
 # Laravel installer v5.14.0
 # Composer v2.8.9
-# Php v8.2 or higher
+# Php v8.4 or higher
 # Postgresql v16
-# Nodejs v18 or higher
+# Nodejs v24 or higher
 # PNPM - for dependency management
 # with Laravel backend (PostgreSQL) and Next.js frontend
 
@@ -65,3 +65,6 @@ sudo systemctl enable nginx.service
 
 cd /var/www/html/
 rm -rf *
+
+# Install claude code
+npm install -g @anthropic-ai/claude-code
