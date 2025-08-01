@@ -20,7 +20,8 @@ sudo apt remove nodejs npm
 
 curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt update
-sudo apt install nodejs -y
+sudo apt install -y nodejs 
+npm install -g npm
 
 mkdir -p ~/.npm-global
 npm config set prefix ~/.npm-global
