@@ -111,6 +111,7 @@ echo "
 # Installation of Wordpress
 #--------------------------------------------------"
 cd /opt && wget https://wordpress.org/latest.tar.gz
+tar -zvxf latest.tar.gz
 
 rm /var/www/html/index*
 cp -rf wordpress/ /var/www/html/
