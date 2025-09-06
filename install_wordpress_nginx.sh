@@ -85,44 +85,41 @@ echo "
 #--------------------------------------------------
 # Installing Mariadb Server
 #--------------------------------------------------"
-sudo apt install -y mariadb-server
-
-echo "=== Starting Mariadb service... ==="
+sudo apt install -y mariadb-server mariadb-client mariadb-backup
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
-# Create the new user with superuser privileges
-sudo -su postgres psql -c "CREATE USER wp_admin WITH PASSWORD 'abc1234@';"
-sudo -su postgres psql -c "CREATE DATABASE wordpress_db;"
-sudo -su postgres psql -c "ALTER DATABASE wordpress_db OWNER TO wp_admin;"
-sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE wordpress_db TO wp_admin;"
+# sudo mariadb-secure-installation
 
-sudo systemctl restart postgresql
+# Configure Mariadb database
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+
+sudo systemctl restart mariadb.service
+
+sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpress_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'db_admin'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpress_db.* TO 'db_admin'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+
+sudo systemctl restart mariadb.service
 
 echo "
 #--------------------------------------------------
 # Installation of Wordpress
 #--------------------------------------------------"
 cd /opt && wget https://wordpress.org/latest.tar.gz
-git clone https://github.com/hrmuwanika/postgresql-for-wordpress.git
-tar xzvf latest.tar.gz
 
 rm /var/www/html/index*
 cp -rf wordpress/ /var/www/html/
-mv postgresql-for-wordpress/pg4wp /var/www/html/wordpress/wp-content/plugins/
-mkdir /var/www/html/wordpress/wp-content/uploads
 
 sudo chown -R www-data:www-data /var/www/html/wordpress/
 sudo chmod -R 755 /var/www/html/wordpress/
 
-cd /var/www/html/wordpress/wp-content
-cp plugins/pg4wp/db.php ./
-
-cd /var/www/html/wordpress/
-cp wp-config-sample.php wp-config.php
-sudo nano wp-config.php
-
 cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
+
 server {
     listen 80;
     listen [::]:80;
@@ -144,10 +141,10 @@ server {
     }
     
     location ~ \.php$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    fastcgi_pass  unix:/run/php/php8.3-fpm.sock;
+    fastcgi_index index.php;
     include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
     }
 
     location ~ /\.ht {
