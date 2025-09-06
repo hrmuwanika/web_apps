@@ -89,7 +89,7 @@ sudo apt install -y mariadb-server mariadb-client mariadb-backup
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
-# sudo mariadb-secure-installation
+sudo mariadb-secure-installation
 
 # Configure Mariadb database
 sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
@@ -111,15 +111,15 @@ echo "
 # Installation of Wordpress
 #--------------------------------------------------"
 cd /opt && wget https://wordpress.org/latest.tar.gz
-tar -zvxf latest.tar.gz
+sudo tar -zvxf latest.tar.gz
 
-rm /var/www/html/index*
-cp -rf wordpress/ /var/www/html/
+sudo rm index.html index.nginx-debian.html
+sudo cp -rf wordpress/ /var/www/html/
 
 sudo chown -R www-data:www-data /var/www/html/wordpress/
 sudo chmod -R 755 /var/www/html/wordpress/
 
-cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
+sudo cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
 
 server {
     listen 80;
@@ -138,35 +138,51 @@ server {
     client_max_body_size 100M;
     
     location / {
-       try_files \$uri \$uri/ /index.php?$args; 
+       try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
     }
     
     location ~ \.php$ {
-    fastcgi_pass  unix:/run/php/php8.3-fpm.sock;
-    fastcgi_index index.php;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;          # adjust if your PHP version differs
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
     }
 
-    location ~ /\.ht {
-        deny all;
-    }
-    
     location = /favicon.ico {
-        log_not_found off;
         access_log off;
+        log_not_found off;
+        expires max;
     }
 
     location = /robots.txt {
-        allow all;
-        log_not_found off;
         access_log off;
-    }	
+        log_not_found off;
+    }
+
+    error_page 404 /404.html;
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location /wp-content/uploads/ {
+        location ~ \.php$ {
+            deny all;
+    }
     
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires max;
         log_not_found off;
-    }	  
+    }
 }
 EOF
 
@@ -188,8 +204,7 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
+sudo ufw allow "Nginx Full"
 
 # Enable UFW
 sudo ufw --force enable
