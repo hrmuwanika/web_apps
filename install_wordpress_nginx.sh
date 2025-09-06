@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Wordpress Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
+# Script for installing Wordpress Mariadb, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -10,9 +10,7 @@
 # sudo chmod +x install_wordpress_nginx.sh
 # Execute the script to install Moodle:
 # ./install_wordpress_nginx.sh
-# crontab -e
-# Add the following line, which will run the cron script every ten minutes 
-#  * * * * * /usr/bin/php -q -f /var/www/html/moodle/admin/cli/cron.php
+
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -27,7 +25,7 @@ echo "
 # Update Server
 #--------------------------------------------------"
 echo "============= Update Server ================"
-sudo apt update && sudo apt upgrade -y
+sudo apt update -y && sudo apt upgrade -y
 sudo apt autoremove -y
 
 echo "
@@ -61,12 +59,11 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-imap php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-snmp php8.3-mbstring php8.3-curl php8.3-xml php-pear php8.3-mysqli \
-php8.3-bcmath php8.3-ldap php8.3-soap unzip git curl php8.3-mysqli php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu imagemagick libpng-dev libjpeg-dev libtiff-dev 
+sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-imap php8.3-fpm php8.3-snmp php8.3-xml php8.3-zip php8.3-mbstring php8.3-curl php8.3-mysqli php8.3-gd php8.3-intl
 
 sudo apt autoremove apache2 -y
 
-sudo apt install -y nginx-full
+sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
@@ -86,18 +83,13 @@ sudo systemctl restart php8.3-fpm
 
 echo "
 #--------------------------------------------------
-# Installing PostgreSQL Server
+# Installing Mariadb Server
 #--------------------------------------------------"
-echo -e "=== Install and configure PostgreSQL ... ==="
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
-sudo apt update
+sudo apt install -y mariadb-server
 
-sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
-
-echo "=== Starting PostgreSQL service... ==="
-sudo systemctl start postgresql 
-sudo systemctl enable postgresql
+echo "=== Starting Mariadb service... ==="
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
 
 # Create the new user with superuser privileges
 sudo -su postgres psql -c "CREATE USER wp_admin WITH PASSWORD 'abc1234@';"
