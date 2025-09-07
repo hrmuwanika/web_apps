@@ -142,7 +142,6 @@ server {
     }
     
     location ~ \.php$ {
-        try_files $uri =404;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;          # adjust if your PHP version differs
         fastcgi_index index.php;
@@ -183,6 +182,7 @@ server {
         expires max;
         log_not_found off;
     }
+  } 
 }
 EOF
 
