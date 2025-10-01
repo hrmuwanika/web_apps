@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Wordpress Mariadb, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
+# Script for installing Wordpress Mariadb, Nginx and Php 8.4 on Ubuntu 20.04, 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -59,7 +59,7 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-imap php8.3-fpm php8.3-snmp php8.3-xml php8.3-zip php8.3-mbstring php8.3-curl php8.3-mysqli php8.3-gd php8.3-intl
+sudo apt install -y php8.4 php8.4-cli php8.4-common php8.4-imap php8.4-fpm php8.4-snmp php8.4-xml php8.4-zip php8.4-mbstring php8.4-curl php8.4-mysqli php8.4-gd php8.4-intl
 
 sudo apt autoremove apache2 -y
 
@@ -67,17 +67,17 @@ sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/;max_input_vars = 1000/max_input_vars = 10000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/;max_input_vars = 1000/max_input_vars = 10000/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.4/fpm/php.ini
 
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.4-fpm
 
 echo "
 #--------------------------------------------------
@@ -141,7 +141,7 @@ server {
     
     location ~ \.php$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;          # adjust if your PHP version differs
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;          # adjust if your PHP version differs
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
@@ -191,7 +191,7 @@ sudo ln -s /etc/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.4-fpm
 
 echo "
 #--------------------------------------------------
