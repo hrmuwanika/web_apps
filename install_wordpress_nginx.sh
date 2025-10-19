@@ -68,7 +68,7 @@ sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 1200/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 10000/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
