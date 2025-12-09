@@ -29,32 +29,8 @@ sudo useradd -r -s /sbin/nologin openwebui
 sudo chown -R openwebui:openwebui /opt/open-webui
 
 # open web ui startup on boot
-sudo cat <<EOF > /etc/systemd/system/openwebui.service
-[Unit]
-Description=Open WebUI
-After=network.target
-
-[Service]
-Type=simple
-User=openwebui
-Group=openwebui
-WorkingDirectory=/opt/open-webui
-ExecStart=/bin/bash -c "source /opt/open-webui/bin/activate && /opt/open-webui/bin/open-webui serve"
-Restart=always
-Environment=ENV_VAR_NAME=value                        # Set any environment variables needed
-PrivateTmp=true
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-AmbientCapabilities=CAP_NET_BIND_SERVICE              # If binding to low ports
-LimitNOFILE=10000                                     # Limit the number of open files
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo sytemctl enable open-webui
-sudo sytemctl start open-webui
+crontab -e
+# @reboot /bin/bash -c "source /opt/open-webui/bin/activate && /opt/open-webui/bin/open-webui serve"
 
 sudo apt install nginx -y
 sudo sytemctl enable nginx
