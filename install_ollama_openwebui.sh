@@ -30,7 +30,7 @@ sudo chown -R openwebui:openwebui /opt/open-webui
 
 # open web ui startup on boot
 crontab -e
-# @reboot /bin/bash -c "source /opt/open-webui/bin/activate && /opt/open-webui/bin/open-webui serve"
+# @reboot /opt/open-webui/bin/open-webui serve
 
 sudo apt install nginx -y
 sudo sytemctl enable nginx
