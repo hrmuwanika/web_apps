@@ -40,7 +40,9 @@ sudo cat <<EOF > /etc/nginx/sites-available/openwebui.conf
 server {
     listen 80;
     server_name example.com;
-
+    
+    client_max_body_size 200M;
+    
     access_log /var/log/nginx/openwebui_access.log;
     error_log /var/log/nginx/openwebui_error.log;
 
