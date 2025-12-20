@@ -20,7 +20,10 @@ sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/Unity_Technologies_ApS.gpg]
 sudo apt update
 sudo apt install -y unityhub
 
-curl -fsSL https://ollama.com/install.sh | sh
+# Install ollama
+curl -fsSL https://ollama.com/install.sh | sudo sh
+sudo systemctl enable ollama
+sudo systemctl status ollama
 
 ollama pull gemma2:2b
 ollama pull DeepseekV2
