@@ -14,7 +14,7 @@ sudo apt install -y libsndfile1 portaudio19-dev
 mkdir whisper_env
 python -m venv whisper_env
 source whisper_env/bin/activate
-pip install -U openai-whisper
+pip3 install openai-whisper gtts
 
 # install unity hub
 wget -qO - https://hub.unity3d.com/linux/keys/public | gpg --dearmor | sudo tee /usr/share/keyrings/Unity_Technologies_ApS.gpg > /dev/null
