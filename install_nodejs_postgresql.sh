@@ -65,6 +65,9 @@ sudo mkdir -p $APP_DIR
 sudo chown $USER:$USER $APP_DIR
 cd $APP_DIR
 
+npx create-next-app@latest user-management
+cd user-management
+
 echo "==== Initializing Node & Prisma ===="
 npm init -y
 npm install @prisma/client
@@ -75,8 +78,26 @@ cat <<EOT > .env
 DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME?schema=public"
 EOT
 
+sudo cat <<EOF > /etc/systemd/system/nodeapp.service
+
+[Unit]
+Description=Node.js Application
+After=network.target
+
+[Service]
+Type=simple
+User=your-username
+WorkingDirectory=$APP_DIR
+ExecStart=/usr/bin/node /$APP_DIR/app.js
+Restart=on-failure
+Environment=NODE_ENV=production PORT=3000
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable nodeapp
+sudo systemctl start nodeapp
+
 echo "==== Setup Complete! ===="
-echo "To make your app start on boot, use: pm2 startup"
-
-
-
