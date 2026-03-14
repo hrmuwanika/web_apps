@@ -86,7 +86,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=your-username
+User=$USER
 WorkingDirectory=$APP_DIR
 ExecStart=/usr/bin/node /$APP_DIR/app.js
 Restart=on-failure
