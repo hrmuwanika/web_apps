@@ -50,12 +50,8 @@ sudo apt install -y apache2
 sudo systemctl is-enabled apache2.service
 sudo systemctl status apache2.service
 
-sudo apt install -y mysql-server mysql-client 
 sudo apt install -y libapache2-mod-php8.3 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl \
 php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml php-pear
-
-sudo systemctl is-enabled mysql.service
-sudo systemctl status mysql.service
 
 sudo pecl install uploadprogress
 
@@ -89,14 +85,30 @@ php -r "unlink('composer-setup.php');"
 
 sudo mv composer.phar /usr/local/bin/composer
 
-sudo mysql_secure_installation
+echo "
+#--------------------------------------------------
+# Mariadb Installation
+#--------------------------------------------------"
+sudo apt install -y mariadb-server mariadb-client
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
 
-sudo mysql -u root -p
-CREATE USER 'gstutor_dev'@'localhost' IDENTIFIED BY 'abc1234@';
-CREATE database gstutor_dev;
-GRANT ALL ON gstutor_dev.* TO 'gstutor_dev'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-exit
+# sudo mariadb-secure-installation
+
+# Configure Mariadb database
+sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+
+sudo systemctl restart mariadb.service
+
+sudo mariadb -uroot --password="" -e "CREATE DATABASE gstutor_dev;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'gstutor_dev'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL ON gstutor_dev.* TO gstutor_dev@localhost WITH GRANT OPTION;"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+
+sudo systemctl restart mariadb.service
 
 
 echo "
@@ -105,8 +117,8 @@ echo "
 #--------------------------------------------------"
 sudo mkdir /var/www/html/drupal
 
-cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-10.3.3.tar.gz
-sudo tar xzvf drupal-10.3.3.tar.gz -C /var/www/html/drupal --strip-components=1
+cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-9.5.9.tar.gz
+sudo tar xzvf drupal-9.5.9.tar.gz -C /var/www/html/drupal --strip-components=1
 
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
@@ -114,70 +126,36 @@ sudo chmod -R 755 /var/www/html/drupal/
 cd /var/www/html/drupal
 sudo -u www-data composer install --no-dev
 
-sudo nano /etc/apache2/sites-available/drupal.conf
-
-#####################################################################################################################################################
+sudo cat <<EOF > /etc/apache2/sites-available/drupal.conf
 
 <VirtualHost *:80>
+     ServerName drupal.example.com
+     ServerAlias drupal.example.com
+     ServerAdmin admin@example.com
+     DocumentRoot /var/www/html/drupal/
 
-    ServerName howtoforge.local
-    ServerAdmin admin@howtoforge.local
+     CustomLog ${APACHE_LOG_DIR}/access.log combined
+     ErrorLog ${APACHE_LOG_DIR}/error.log
 
-    ErrorLog ${APACHE_LOG_DIR}/howtoforge.local.error.log
-    CustomLog ${APACHE_LOG_DIR}/howtoforge.local.access.log combined
-
-</VirtualHost>
-
-<IfModule mod_ssl.c>
-
-    <VirtualHost _default_:80>
-
-        ServerName example.com
-        ServerAdmin admin@example.com
-        DocumentRoot /var/www/html/drupal
-
-        # Add security
-        php_flag register_globals off
-
-        ErrorLog ${APACHE_LOG_DIR}/example.com.error.log
-        CustomLog ${APACHE_LOG_DIR}/example.com.access.log combined
-
-        <FilesMatch "\.(cgi|shtml|phtml|php)$">
-                SSLOptions +StdEnvVars
-        </FilesMatch>
-
-        <Directory /var/www/html/drupal>
-                Options FollowSymlinks
-                #Allow .htaccess
-                AllowOverride All
-                Require all granted
-                <IfModule security2_module>
-                        SecRuleEngine Off
-                        # or disable only problematic rules
-                </IfModule>
-        </Directory>
-
-        <Directory /var/www/html/drupal/>
+      <Directory /var/www/html/drupal>
+            Options Indexes FollowSymLinks
+            AllowOverride All
+            Require all granted
             RewriteEngine on
             RewriteBase /
             RewriteCond %{REQUEST_FILENAME} !-f
             RewriteCond %{REQUEST_FILENAME} !-d
             RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
-        </Directory>
+      </Directory>
+</VirtualHost>
+EOF
 
-    </VirtualHost>
-
-</IfModule>
-
-###################################################################################################################################################
 
 sudo a2enmod rewrite ssl headers deflate
 sudo a2ensite drupal.conf
 sudo apachectl configtest
 
 sudo systemctl restart apache2
-
-################################################################################
 
 sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
 sudo nano /var/www/html/drupal/sites/default/settings.php
@@ -187,6 +165,29 @@ $settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
 EOF
 
 sudo chmod 444 /var/www/html/drupal/sites/default/settings.php
+
+echo "
+#--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------"
+
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+  sudo apt install -y snapd
+  sudo apt-get remove certbot
+  
+  sudo snap install core
+  sudo snap refresh core
+  sudo snap install --classic certbot
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo apt install -y python3-certbot-apache
+  sudo certbot --apache -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  
+  sudo systemctl restart nginx
+  
+  echo "============ SSL/HTTPS is enabled! ========================"
+else
+  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+fi
 
 # cd /usr/src
 # mysqldump -u root -p gstutor_dev backup.sql
