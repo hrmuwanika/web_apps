@@ -117,7 +117,7 @@ sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE gstutor_dev;"
 sudo mariadb -uroot --password="" -e "CREATE USER 'gstutor_dev'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON gstutor_dev* TO 'gstutor_dev'@'localhost';"
+sudo mariadb -uroot --password="" -e "GRANT ALL ON gstutor_dev.* TO gstutor_dev@localhost WITH GRANT OPTION;"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
