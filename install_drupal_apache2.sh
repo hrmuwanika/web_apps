@@ -21,10 +21,8 @@ echo "
 #  Configure UFW to allow web traffic and SSH
 #--------------------------------------------------"
 sudo apt install -y ufw
-
+sudo ufw allow "Apache Full"
 sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
@@ -46,9 +44,6 @@ echo "
 
 
 sudo apt install -y ca-certificates apt-transport-https software-properties-common
-sudo add-apt-repository ppa:ondrej/php
-sudo apt update
-
 
 sudo apt install -y apache2 
 
