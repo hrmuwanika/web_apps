@@ -50,49 +50,61 @@ sudo add-apt-repository ppa:ondrej/php
 sudo apt update
 
 
-sudo apt install -y apache2 mysql-server mysql-client 
+sudo apt install -y apache2 
+
+sudo systemctl is-enabled apache2.service
+sudo systemctl status apache2.service
+
+sudo apt install -y mysql-server mysql-client 
 sudo apt install -y libapache2-mod-php8.3 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl \
 php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml php-pear
 
-sudo systemctl enable mysql.service
-sudo systemctl start mysql.service 
+sudo systemctl is-enabled mysql.service
+sudo systemctl status mysql.service
 
 sudo pecl install uploadprogress
 
+sudo cat <<EOF | sudo tee /etc/php/8.3/mods-available/uploadprogress.ini
+; configuration for php uploadprogress module
+; priority 15
+extension=uploadprogress.so
+EOF
+
+sudo ln -s /etc/php/8.3/mods-available/uploadprogress.ini /etc/php/8.3/apache2/conf.d/15-uploadprogress.ini
+
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/apache2/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/apache2/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 300/" /etc/php/8.3/apache2/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/apache2/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/apache2/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/apache2/php.ini
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/apache2/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/apache2/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 300M/" /etc/php/8.3/apache2/php.ini
 sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/apache2/php.ini
+
 sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/apache2/php.ini
 sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/apache2/php.ini
 #sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/apache2/php.ini
 #sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/apache2/php.ini
 
-sudo tee -a /etc/php/8.3/apache2/php.ini <<EOF
-   extension=uploadprogress
-   extension=php_openssl
-EOF
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'c8b085408188070d5f52bcfe4ecfbee5f727afa458b2573b8eaaf77b3419b0bf2768dc67c86944da1544f06fa544fd47') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+sudo mv composer.phar /usr/local/bin/composer
 
 sudo mysql_secure_installation
 
 sudo mysql -u root -p
-
 ## Creating New User for Drupal Database ##
 CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';
-
 ## Create New Database ##
-create database gstutor_dev DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
+CREATE database gstutor_dev;
 ## Grant Privileges to Database ##
-GRANT ALL PRIVILEGES ON gstutor_dev.* TO 'drupaluser'@'localhost';
-
+GRANT ALL ON gstutor_dev.* TO 'drupaluser'@'localhost' WITH GRANT OPTION;
 ## FLUSH privileges ##
 FLUSH PRIVILEGES;
-
 ## Exit ##
 exit
 
@@ -109,42 +121,86 @@ sudo tar xzvf drupal-10.3.3.tar.gz -C /var/www/html/drupal --strip-components=1
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
 
+cd /var/www/html/drupal
+sudo -u www-data composer install --no-dev
+
 sudo nano /etc/apache2/sites-available/drupal.conf
 
 #####################################################################################################################################################
 
 <VirtualHost *:80>
-     ServerName example.com
-     ServerAlias www.example.com
-     ServerAdmin admin@example.com
 
-     DocumentRoot /var/www/html/drupal/
+    ServerName howtoforge.local
+    ServerAdmin admin@howtoforge.local
 
-     CustomLog ${APACHE_LOG_DIR}/access.log combined
-     ErrorLog ${APACHE_LOG_DIR}/error.log
+    ErrorLog ${APACHE_LOG_DIR}/howtoforge.local.error.log
+    CustomLog ${APACHE_LOG_DIR}/howtoforge.local.access.log combined
 
-      <Directory /var/www/html/drupal>
-            Options Indexes FollowSymLinks
-            AllowOverride All
-            Require all granted
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+
+    <VirtualHost _default_:80>
+
+        ServerName example.com
+        ServerAdmin admin@example.com
+        DocumentRoot /var/www/html/drupal
+
+        # Add security
+        php_flag register_globals off
+
+        ErrorLog ${APACHE_LOG_DIR}/example.com.error.log
+        CustomLog ${APACHE_LOG_DIR}/example.com.access.log combined
+
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                SSLOptions +StdEnvVars
+        </FilesMatch>
+
+        <Directory /var/www/html/drupal>
+                Options FollowSymlinks
+                #Allow .htaccess
+                AllowOverride All
+                Require all granted
+                <IfModule security2_module>
+                        SecRuleEngine Off
+                        # or disable only problematic rules
+                </IfModule>
+        </Directory>
+
+        <Directory /var/www/html/drupal/>
             RewriteEngine on
             RewriteBase /
             RewriteCond %{REQUEST_FILENAME} !-f
             RewriteCond %{REQUEST_FILENAME} !-d
             RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
-      </Directory>
-</VirtualHost>
+        </Directory>
+
+    </VirtualHost>
+
+</IfModule>
 
 ###################################################################################################################################################
 
+sudo a2enmod rewrite ssl headers deflate
 sudo a2ensite drupal.conf
-sudo a2enmod rewrite
+sudo apachectl configtest
 
 sudo systemctl restart apache2
 
 
 
 ################################################################################
+
+sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
+sudo nano /var/www/html/drupal/sites/default/settings.php
+
+tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
+$settings['trusted_host_patterns'] = [
+  '^hwdomain\.io$',
+];
+EOF
+
+sudo chmod 444 /var/www/html/drupal/sites/default/settings.php
 
 #cd /usr/src
 #mysqldump -u root -p gstutor_dev backup.sql
