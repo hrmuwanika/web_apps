@@ -92,15 +92,10 @@ sudo mv composer.phar /usr/local/bin/composer
 sudo mysql_secure_installation
 
 sudo mysql -u root -p
-## Creating New User for Drupal Database ##
-CREATE USER 'drupaluser'@'localhost' IDENTIFIED BY 'abc1234@';
-## Create New Database ##
+CREATE USER 'gstutor_dev'@'localhost' IDENTIFIED BY 'abc1234@';
 CREATE database gstutor_dev;
-## Grant Privileges to Database ##
-GRANT ALL ON gstutor_dev.* TO 'drupaluser'@'localhost' WITH GRANT OPTION;
-## FLUSH privileges ##
+GRANT ALL ON gstutor_dev.* TO 'gstutor_dev'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
-## Exit ##
 exit
 
 
