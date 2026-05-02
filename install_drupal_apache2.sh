@@ -182,23 +182,19 @@ sudo apachectl configtest
 
 sudo systemctl restart apache2
 
-
-
 ################################################################################
 
 sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
 sudo nano /var/www/html/drupal/sites/default/settings.php
 
 tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-$settings['trusted_host_patterns'] = [
-  '^hwdomain\.io$',
-];
+$settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
 EOF
 
 sudo chmod 444 /var/www/html/drupal/sites/default/settings.php
 
-#cd /usr/src
-#mysqldump -u root -p gstutor_dev backup.sql
-#mysql -u root -p
-#use gstutor_dev;
-#ALTER USER 'drupaluser'@'localhost' IDENTIFIED BY 'new_password';
+# cd /usr/src
+# mysqldump -u root -p gstutor_dev backup.sql
+# mysql -u root -p
+# use gstutor_dev;
+# ALTER USER 'drupaluser'@'localhost' IDENTIFIED BY 'new_password';
