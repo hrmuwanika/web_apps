@@ -45,13 +45,15 @@ echo "
 
 sudo apt install -y ca-certificates apt-transport-https software-properties-common
 
-sudo apt install -y apache2 
+sudo apt install -y apache2 libapache2-mod-php
 
 sudo systemctl is-enabled apache2.service
 sudo systemctl status apache2.service
 
-sudo apt install -y libapache2-mod-php8.3 php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl \
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl \
 php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml php-pear
+
+sudo apt install php php-{cli,fpm,json,common,mysql,zip,gd,intl,mbstring,curl,xml,pear,tidy,soap,bcmath,xmlrpc}
 
 sudo pecl install uploadprogress
 
@@ -129,8 +131,8 @@ sudo -u www-data composer install --no-dev
 sudo cat <<EOF > /etc/apache2/sites-available/drupal.conf
 
 <VirtualHost *:80>
-     ServerName drupal.example.com
-     ServerAlias drupal.example.com
+     ServerName example.com
+     ServerAlias www.example.com
      ServerAdmin admin@example.com
      DocumentRoot /var/www/html/drupal/
 
@@ -146,23 +148,29 @@ sudo cat <<EOF > /etc/apache2/sites-available/drupal.conf
             RewriteCond %{REQUEST_FILENAME} !-f
             RewriteCond %{REQUEST_FILENAME} !-d
             RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
-      </Directory>
+   </Directory>
 </VirtualHost>
 EOF
 
-
-sudo a2enmod rewrite ssl headers deflate
-sudo a2ensite drupal.conf
 sudo apachectl configtest
 
-sudo systemctl restart apache2
+sudo a2dismod mpm_event
+sudo a2enmod mpm_prefork
+sudo sudo a2enmod php8.0
+sudo a2enmod rewrite ssl headers deflate
+
+sudo a2ensite drupal.conf
+systemctl restart apache2
+
+sudo a2dissite 000-default.conf
+sudo rm /var/www/html/index.html
 
 sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
 sudo nano /var/www/html/drupal/sites/default/settings.php
 
-tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-$settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
-EOF
+# sudo tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
+# $settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
+# EOF
 
 sudo chmod 444 /var/www/html/drupal/sites/default/settings.php
 
