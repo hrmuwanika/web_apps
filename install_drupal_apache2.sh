@@ -21,8 +21,9 @@ echo "
 #  Configure UFW to allow web traffic and SSH
 #--------------------------------------------------"
 sudo apt install -y ufw
-sudo ufw allow "Apache Full"
 sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
@@ -46,7 +47,7 @@ echo "
 sudo apt install -y ca-certificates apt-transport-https software-properties-common
 
 sudo apt install -y apache2 libapache2-mod-php
-
+sudo apt install -y unzip
 sudo systemctl is-enabled apache2.service
 sudo systemctl status apache2.service
 
@@ -115,10 +116,9 @@ echo "
 # Drupal installation
 #--------------------------------------------------"
 sudo mkdir /var/www/html/drupal
-
 cd /opt && sudo wget https://ftp.drupal.org/files/projects/drupal-9.5.9.zip
-sudo unzip drupal-9.5.9.zip -d /var/www/html/
-sudo mv /var/www/html/drupal-9.5.9/ /var/www/html/drupal/
+sudo unzip drupal-9.5.9.zip 
+sudo cp -rf drupal-9.5.9/* /var/www/html/drupal/
 
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
@@ -157,7 +157,7 @@ sudo apachectl configtest
 
 sudo a2dismod mpm_event
 sudo a2enmod mpm_prefork
-sudo sudo a2enmod php8.0
+sudo sudo a2enmod php8.3
 sudo a2enmod rewrite ssl headers deflate
 
 sudo a2ensite drupal.conf
