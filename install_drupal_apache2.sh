@@ -116,8 +116,9 @@ echo "
 #--------------------------------------------------"
 sudo mkdir /var/www/html/drupal
 
-cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-9.5.9.tar.gz
-sudo tar xzvf drupal-9.5.9.tar.gz -C /var/www/html/drupal --strip-components=1
+cd /opt && sudo wget https://ftp.drupal.org/files/projects/drupal-9.5.9.zip
+sudo unzip drupal-9.5.9.zip -d /var/www/html/
+sudo mv /var/www/html/drupal-9.5.9/ /var/www/html/drupal/
 
 sudo chown -R www-data:www-data /var/www/html/drupal/
 sudo chmod -R 755 /var/www/html/drupal/
