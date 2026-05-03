@@ -50,10 +50,7 @@ sudo apt install -y apache2 libapache2-mod-php
 sudo systemctl is-enabled apache2.service
 sudo systemctl status apache2.service
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl \
-php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml php-pear
-
-sudo apt install php php-{cli,fpm,json,common,mysql,zip,gd,intl,mbstring,curl,xml,pear,tidy,soap,bcmath,xmlrpc}
+sudo apt install -y php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-mbstring php-curl php-xml php-pear php-tidy php-soap php-bcmath php-xmlrpc 
 
 sudo pecl install uploadprogress
 
@@ -139,10 +136,13 @@ sudo cat <<EOF > /etc/apache2/sites-available/drupal.conf
      CustomLog ${APACHE_LOG_DIR}/access.log combined
      ErrorLog ${APACHE_LOG_DIR}/error.log
 
-      <Directory /var/www/html/drupal>
-            Options Indexes FollowSymLinks
+     <Directory /var/www/html/drupal/>
+            Options FollowSymlinks
             AllowOverride All
             Require all granted
+    </Directory>
+
+    <Directory /var/www/html/drupal>
             RewriteEngine on
             RewriteBase /
             RewriteCond %{REQUEST_FILENAME} !-f
