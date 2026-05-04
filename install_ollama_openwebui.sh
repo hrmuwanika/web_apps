@@ -39,7 +39,7 @@ sudo sytemctl start nginx
 sudo cat <<EOF > /etc/nginx/sites-available/openwebui.conf
 server {
     listen 80;
-    server_name example.com;
+    server_name \$WEBSITE_NAME;
     
     client_max_body_size 200M;
     
