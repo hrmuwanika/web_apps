@@ -129,8 +129,8 @@ sudo -u www-data composer install --no-dev
 sudo cat <<EOF > /etc/apache2/sites-available/drupal.conf
 
 <VirtualHost *:80>
-     ServerName example.com
-     ServerAlias www.example.com
+     ServerName $WEBSITE_NAME
+     ServerAlias www.$WEBSITE_NAME
      ServerAdmin admin@example.com
      DocumentRoot /var/www/html/drupal/
 
