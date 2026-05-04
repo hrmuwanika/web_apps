@@ -210,7 +210,7 @@ sudo systemctl start laravel.service
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
-    server_name $WEBSITE_NAME;
+    server_name \$WEBSITE_NAME;
     root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
 
     add_header X-Frame-Options "SAMEORIGIN";
