@@ -200,7 +200,7 @@ sudo ufw --force enable
 sudo ufw reload
 
 # tee -a /var/www/drupal/sites/default/settings.php <<EOF
-# $settings['trusted_host_patterns'] = ['192\.168\.1\.100'];
+# \$settings['trusted_host_patterns'] = ['192\.168\.1\.10'];
 # EOF
 
 echo "Drupal setup completed successfully."
