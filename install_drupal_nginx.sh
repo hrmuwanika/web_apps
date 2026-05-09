@@ -160,6 +160,9 @@ nginx -t
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.4-fpm
 
+sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
+sudo nano /var/www/html/drupal/sites/default/settings.php
+
 echo "
 #--------------------------------------------------
 # Enable ssl with certbot
