@@ -170,7 +170,7 @@ sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
 sudo nano /var/www/html/drupal/sites/default/settings.php
 
 # sudo tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-# $settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
+# \$settings['trusted_host_patterns'] = ['192\.168\.1\.11'];
 # EOF
 
 sudo chmod 444 /var/www/html/drupal/sites/default/settings.php
