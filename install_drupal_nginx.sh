@@ -38,14 +38,13 @@ sudo systemctl start nginx.service
 
 echo "
 #--------------------------------------------------
-# # PHP 8.3 installation
+# # PHP 8.4 installation
 #--------------------------------------------------"
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php-pear \
-php8.3-dev php8.3-bcmath php8.3-pspell php8.3-ldap php8.3-soap php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu php8.3-mysql php8.3-xml \
-php-pear
+sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-intl php8.4-xmlrpc php8.4-zip php8.4-gd php8.4-tidy php8.4-mbstring php8.4-curl php-pear \
+php8.4-dev php8.4-bcmath php8.4-pspell php8.4-ldap php8.4-soap php8.4-gmp php8.4-imagick php8.4-fpm php8.4-redis php8.4-apcu php8.4-mysql php8.4-xml 
 
-sudo systemctl start php8.3-fpm
-sudo systemctl enable php8.3-fpm
+sudo systemctl start php8.4-fpm
+sudo systemctl enable php8.4-fpm
 
 sudo apt install -y build-essential  bzip2 imagemagick composer libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev postfix curl unzip git
 
@@ -54,26 +53,26 @@ sudo systemctl enable fail2ban
 
 sudo pecl install uploadprogress
 
-sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
-sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/fpm/php.ini
-#sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.3/fpm/php.ini
-#sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.3/fpm/php.ini
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.4/fpm/php.ini
+sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.4/fpm/php.ini
+#sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.4/fpm/php.ini
+#sed -ie 's/;extension=pgsql/extension=pgsql/g' /etc/php/8.4/fpm/php.ini
 
-sudo tee -a /etc/php/8.3/fpm/php.ini <<EOF
+sudo tee -a /etc/php/8.4/fpm/php.ini <<EOF
    extension=uploadprogress
    extension=php_openssl
 EOF
 
 sudo systemctl restart nginx
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.4-fpm
 
 # echo "
 #--------------------------------------------------
@@ -107,12 +106,6 @@ sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE gstutor_dev;"
@@ -126,58 +119,38 @@ echo "
 #--------------------------------------------------
 # Drupal installation
 #--------------------------------------------------"
-cd /opt && wget https://ftp-origin.drupal.org/files/projects/drupal-10.4.7.tar.gz
-tar -zxvf drupal-10.4.7.tar.gz
-cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.1.7.tar.gz 
-# tar -zxvf drupal-11.1.7.tar.gz
+cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.3.9.tar.gz 
+tar -zxvf drupal-11.3.9.tar.gz
 
-mkdir /var/www/html/drupal
-#sudo mv drupal-11.1.7/* /var/www/html/drupal
-sudo cp -rf drupal-10.4.7/* /var/www/html/drupal
-sudo chown -R www-data:www-data /var/www/html/drupal/
-sudo chmod -R 755 /var/www/html/drupal/
+mkdir /var/www/drupal
+sudo cp -rf drupal-11.3.9/* /var/www/drupal
+sudo chown -R www-data:www-data /var/www/drupal/
+sudo chmod -R 755 /var/www/drupal/
 
 sudo cat <<EOF > /etc/nginx/sites-available/drupal.conf
-
 server {
     listen 80;
     listen [::]:80;
-    
-    root /var/www/html/drupal;
-    index  index.php;
-    server_name \$WEBSITE_NAME;
+    server_name _;
 
-    client_max_body_size 100M;
-    autoindex off;
+    root /var/www/drupal;
+    index index.php index.html index.htm;
 
     location / {
-        try_files \$uri /index.php?\$query_string;
+        try_files \$uri \$uri/ /index.php?\$args;
     }
 
-    location @rewrite {
-        rewrite ^/(.*)$ /index.php?q=\$1;
-    }
-
-    location ~ '\.php$|^/update.php' {
+    location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
-    location ~* /sites/.*/files/styles/ {
-        try_files \$uri @rewrite;
+    location ~ /\.ht {
+        deny all;
     }
-
-    location ~ ^/sites/.*/files/ {
-        try_files \$uri @rewrite;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires max;
-        log_not_found off;
-     }
- }
+}   
 EOF
 
 ln -s /etc/nginx/sites-available/drupal.conf /etc/nginx/sites-enabled/
@@ -185,7 +158,7 @@ ln -s /etc/nginx/sites-available/drupal.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.4-fpm
 
 echo "
 #--------------------------------------------------
@@ -219,16 +192,15 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw allow 8080/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
 sudo ufw reload
 
-# tee -a /var/www/html/drupal/sites/default/settings.php <<EOF
-# $settings['trusted_host_patterns'] = ['192\.168\.150\.100'];
+# tee -a /var/www/drupal/sites/default/settings.php <<EOF
+# $settings['trusted_host_patterns'] = ['192\.168\.1\.100'];
 # EOF
 
 echo "Drupal setup completed successfully."
