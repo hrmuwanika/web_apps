@@ -20,7 +20,7 @@ ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
-ADMIN_EMAIL="moodle@example.com"
+ADMIN_EMAIL="info@example.com"
 
 #--------------------------------------------------
 # Update Server
@@ -30,11 +30,11 @@ sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
 #----------------------------------------------------
-# Disabling password authentication
+# Enabling password authentication
 #----------------------------------------------------
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 #--------------------------------------------------
 # Install and configure Firewall
@@ -44,8 +44,8 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 sudo ufw --force enable
 sudo ufw reload
@@ -60,25 +60,15 @@ timedatectl
 #--------------------------------------------------
 # Install Debian default database MariaDB 
 #--------------------------------------------------
-sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
-sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] https://mariadb.mirror.liquidtelecom.com/repo/10.11/ubuntu focal main'
-sudo update
-
 sudo apt install -y mariadb-server mariadb-client mariadb-backup
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb;"
 sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234@';"
 sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
@@ -140,8 +130,8 @@ sudo systemctl restart apache2
 cd /opt/
 # wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 # tar xvf moodle-latest-405.tgz
-wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
-tar xvf moodle-latest-500.tgz
+wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-502.tgz
+tar xvf moodle-latest-502.tgz
 
 rm /var/www/html/index.html
 cp -rf moodle/ /var/www/html/
