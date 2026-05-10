@@ -30,11 +30,11 @@ sudo apt autoremove -y
 
 echo "
 #----------------------------------------------------
-# Disabling password authentication
+# Enabling password authentication
 #----------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 echo "
 #--------------------------------------------------
@@ -59,7 +59,9 @@ apt -y install software-properties-common
 add-apt-repository ppa:ondrej/php
 sudo apt update -y
 
-sudo apt install -y php8.4 php8.4-cli php8.4-common php8.4-imap php8.4-fpm php8.4-snmp php8.4-xml php8.4-zip php8.4-mbstring php8.4-curl php8.4-mysqli php8.4-gd php8.4-intl
+sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-intl php8.4-xmlrpc php8.4-zip php8.4-gd php8.4-tidy php8.4-mbstring php8.4-curl php-pear \
+php8.4-dev php8.4-bcmath php8.4-pspell php8.4-ldap php8.4-soap php8.4-gmp php8.4-imagick php8.4-fpm php8.4-redis php8.4-apcu php8.4-mysql php8.4-xml \
+php8.4-imap php8.4-snmp 
 
 sudo apt autoremove apache2 -y
 
@@ -87,19 +89,13 @@ sudo apt install -y mariadb-server mariadb-client mariadb-backup
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
 
-sudo mariadb-secure-installation
-
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
+# sudo mariadb-secure-installation
 
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpress_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'db_admin'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpress_db.* TO 'db_admin'@'localhost';"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE wordpress_db;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'dbadmin'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON wordpress_db.* TO 'dbadmin'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
@@ -112,76 +108,39 @@ cd /opt && wget https://wordpress.org/latest.tar.gz
 sudo tar -zvxf latest.tar.gz
 
 sudo rm index.html index.nginx-debian.html
-sudo cp -rf wordpress/ /var/www/html/
+mkdir /var/www/mywebsite
+sudo cp -rf wordpress/* /var/www/mywebsite
 
-sudo chown -R www-data:www-data /var/www/html/wordpress/
-sudo chmod -R 755 /var/www/html/wordpress/
+sudo chown -R www-data:www-data /var/www/mywebsite
+sudo chmod -R 755 /var/www/mywebsite
 
 sudo cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
 
 server {
     listen 80;
     listen [::]:80;
-    server_name \$WEBSITE_NAME;
+    server_name _;
     
-    root /var/www/html/wordpress;
-    index  index.php;
-    
-    server_tokens off;
-   
-    # Log files
-    access_log /var/log/nginx/wordpress.access.log;
-    error_log /var/log/nginx/wordpress.error.log;
+    root /var/www/mywebsite;
+    index index.php index.html index.htm;
     
     client_max_body_size 100M;
     
     location / {
-       try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
+        try_files \$uri \$uri/ /index.php?\$args;
     }
-    
+
     location ~ \.php$ {
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;          # adjust if your PHP version differs
-        fastcgi_index index.php;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
-    location = /favicon.ico {
-        access_log off;
-        log_not_found off;
-        expires max;
-    }
-
-    location = /robots.txt {
-        access_log off;
-        log_not_found off;
-    }
-
-    error_page 404 /404.html;
-
-    error_page 500 502 503 504 /50x.html;
-    location = /50x.html {
-        root /usr/share/nginx/html;
-    }
-
-    location ~ /\. {
+    location ~ /\.ht {
         deny all;
-        access_log off;
-        log_not_found off;
     }
-
-    location /wp-content/uploads/ {
-        location ~ \.php$ {
-            deny all;
-    }
-    
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires max;
-        log_not_found off;
-    }
-  } 
-}
+}   
 EOF
 
 sudo rm /etc/nginx/sites-available/default
