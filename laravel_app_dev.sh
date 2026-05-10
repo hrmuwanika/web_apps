@@ -49,9 +49,16 @@ sudo apt update
 sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
 php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 
+echo "
+#------------------------------------------------
 # Install composer
+#------------------------------------------------"
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'c8b085408188070d5f52bcfe4ecfbee5f727afa458b2573b8eaaf77b3419b0bf2768dc67c86944da1544f06fa544fd47') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+sudo mv composer.phar /usr/local/bin/composer
 
 # Laravel installer
 /bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
@@ -73,7 +80,7 @@ sudo -su postgres psql -c "CREATE DATABASE laradev_db;"
 sudo -su postgres psql -c "ALTER DATABASE laradev_db OWNER TO dev_user;"
 sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE laradev_db TO dev_user;"
 
-sudo apt install -y nginx-full
+sudo apt install -y nginx
 
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
