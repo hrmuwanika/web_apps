@@ -164,6 +164,8 @@ server {
 }   
 EOF
 
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/drupal.conf /etc/nginx/sites-enabled/
 
 nginx -t
