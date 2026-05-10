@@ -172,7 +172,7 @@ sudo systemctl restart nginx.service
 sudo systemctl restart php8.4-fpm
 
 sudo chmod 644 /var/www/drupal/sites/default/settings.php
-sudo nano /var/www/drupal/sites/default/settings.php
+# sudo chmod 444 /var/www/drupal/sites/default/settings.php
 
 echo "
 #--------------------------------------------------
