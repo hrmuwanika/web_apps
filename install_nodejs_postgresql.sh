@@ -16,14 +16,9 @@ sudo apt upgrade -y
 sudo apt autoremove -y
 
 #----------------------------------------------------
-# Disabing password authentication
+# Install openssh
 #----------------------------------------------------
-echo "=== Disabling password authentication ... ==="
 sudo apt -y install openssh-server
-sudo sed -i 's/#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-sudo sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config 
-sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
 
 #--------------------------------------------------
 # Setting up the timezones
