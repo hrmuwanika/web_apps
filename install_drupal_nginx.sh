@@ -16,11 +16,11 @@ sudo apt autoremove -y
 
 echo "
 #--------------------------------------------------
-# Disable root login via SSH
+# Enable root login via SSH
 #--------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 echo "
 #--------------------------------------------------
@@ -32,7 +32,7 @@ echo "
 #--------------------------------------------------
 # Nginx installation
 #--------------------------------------------------"
-sudo apt install -y nginx-full
+sudo apt install -y nginx
 sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
 
@@ -108,9 +108,9 @@ sudo systemctl enable mariadb.service
 
 sudo systemctl restart mariadb.service
 
-sudo mariadb -uroot --password="" -e "CREATE DATABASE gstutor_dev;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'gstutor_dev'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL ON gstutor_dev.* TO gstutor_dev@localhost WITH GRANT OPTION;"
+sudo mariadb -uroot --password="" -e "CREATE DATABASE drupal_db;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'dbadmin'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL ON drupal_db.* TO dbadmin@localhost WITH GRANT OPTION;"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
@@ -160,8 +160,8 @@ nginx -t
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.4-fpm
 
-sudo chmod 644 /var/www/html/drupal/sites/default/settings.php
-sudo nano /var/www/html/drupal/sites/default/settings.php
+sudo chmod 644 /var/www/drupal/sites/default/settings.php
+sudo nano /var/www/drupal/sites/default/settings.php
 
 echo "
 #--------------------------------------------------
@@ -191,7 +191,6 @@ echo "
 #  Configure UFW to allow web traffic and SSH
 #--------------------------------------------------"
 sudo apt install -y ufw
-
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -202,12 +201,12 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 sudo ufw reload
 
-# tee -a /var/www/drupal/sites/default/settings.php <<EOF
-# \$settings['trusted_host_patterns'] = ['192\.168\.1\.10'];
-# EOF
+# nano /var/www/drupal/sites/default/settings.php <<EOF
+# $settings['trusted_host_patterns'] = ['192\.168\.1\.13'];
 
 echo "Drupal setup completed successfully."
 
-composer create-project drupal/cms
+# cd /var/www/drupal/
+# composer create-project drupal/cms
 
 
