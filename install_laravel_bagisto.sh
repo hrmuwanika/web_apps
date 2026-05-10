@@ -39,7 +39,7 @@ echo "
 #----------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 echo "
 #--------------------------------------------------
@@ -50,8 +50,8 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow 'Nginx HTTP'
-sudo ufw allow 'Nginx HTTPS'
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
@@ -79,9 +79,16 @@ php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 sudo systemctl enable php8.4-fpm
 sudo systemctl start php8.4-fpm
 
+echo "
+#------------------------------------------------
 # Install composer
+#------------------------------------------------"
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'c8b085408188070d5f52bcfe4ecfbee5f727afa458b2573b8eaaf77b3419b0bf2768dc67c86944da1544f06fa544fd47') { echo 'Installer verified'.PHP_EOL; } else { echo 'Installer corrupt'.PHP_EOL; unlink('composer-setup.php'); exit(1); }"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+sudo mv composer.phar /usr/local/bin/composer
 
 sudo apt autoremove apache2 -y
 
@@ -141,12 +148,11 @@ curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt update
 sudo apt install nodejs npm -y
 
-sudo apt install -y nginx-full
+sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-cd /var/www/html
-rm index*
+cd /var/www/
 
 echo "
 #--------------------------------------------------
@@ -155,8 +161,8 @@ echo "
 git clone https://github.com/bagisto/bagisto.git 
 # composer create-project bagisto/bagisto
 
-sudo chown -R www-data:www-data /var/www/html/bagisto
-sudo chmod -R 775 /var/www/html/bagisto/storage 
+sudo chown -R www-data:www-data /var/www/bagisto
+sudo chmod -R 775 /var/www/bagisto/storage 
 
 # Navigate to project directory
 cd bagisto 
@@ -175,7 +181,7 @@ sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 # Generate application key
 php artisan key:generate
-sudo chmod -R 775 /var/www/html/bagisto/bootstrap/cache
+sudo chmod -R 775 /var/www/bagisto/bootstrap/cache
 
 php artisan bagisto:install
 
@@ -195,8 +201,8 @@ After=network.target
 User=www-data
 Group=www-data
 Restart=always
-WorkingDirectory=/var/www/html/bagisto
-ExecStart=/usr/bin/php /var/www/html/bagisto/artisan queue:work --sleep=3 --tries=3
+WorkingDirectory=/var/www/bagisto
+ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
 
 [Install]
 WantedBy=multi-user.target
@@ -204,19 +210,22 @@ EOF
 
 # start laravel as a service
 systemctl daemon-reload
+
 sudo systemctl enable laravel.service
 sudo systemctl start laravel.service
 
 sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
 server {
     listen 80;
-    server_name \$WEBSITE_NAME;
-    root /var/www/html/bagisto/public;                       # Path to your Laravel public directory
-
+    listen [::]:80;
+    server_name _;
+    
+    root /var/www/bagisto/public;                       # Path to your Laravel public directory
+    index index.html index.htm index.php;
+    
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
     
-    index index.html index.htm index.php;
     charset utf-8;
      
     location / {
