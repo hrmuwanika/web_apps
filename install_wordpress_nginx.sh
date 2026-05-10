@@ -130,14 +130,22 @@ server {
         try_files \$uri \$uri/ /index.php?\$args;
     }
 
-    location ~ \.php$ {
+    location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
+    location ~* \.(jpg|jpeg|gif|png|webp|svg|woff|woff2|ttf|css|js|ico|xml)\$ {
+        access_log off;
+        log_not_found off;
+        expires 360d;
+    }
+
     location ~ /\.ht {
+        access_log off;
+        log_not_found off;
         deny all;
     }
 }   
@@ -161,7 +169,8 @@ sudo apt install -y ufw
 sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow "Nginx Full"
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
