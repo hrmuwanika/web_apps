@@ -20,7 +20,7 @@ ENABLE_SSL="True"
 # Set the website name
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
-ADMIN_EMAIL="moodle@example.com"
+ADMIN_EMAIL="info@example.com"
 
 echo "
 #--------------------------------------------------
@@ -32,11 +32,11 @@ sudo apt autoremove -y
 
 echo "
 #----------------------------------------------------
-# Disabling password authentication
+# Enabling password authentication
 #----------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 echo "
 #--------------------------------------------------
@@ -67,7 +67,7 @@ php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick 
 
 sudo apt autoremove apache2 -y
 
-sudo apt install -y nginx-full
+sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
@@ -120,12 +120,6 @@ sudo systemctl enable mariadb.service
 
 # sudo mariadb-secure-installation
 
-# Configure Mariadb database
-sed -i '/\[mysqld\]/a default_storage_engine = innodb' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_per_table = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_large_prefix = 1' /etc/mysql/mariadb.conf.d/50-server.cnf
-sed -i '/\[mysqld\]/a innodb_file_format = Barracuda' /etc/mysql/mariadb.conf.d/50-server.cnf
-
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
@@ -143,8 +137,8 @@ echo "
 cd /opt/
 # wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
 # tar xvf moodle-latest-405.tgz
-wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
-tar xvf moodle-latest-500.tgz
+wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
+tar xvf moodle-latest-502.tgz
 
 rm /var/www/html/index.html
 cp -rf moodle/ /var/www/html/
