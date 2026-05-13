@@ -59,8 +59,8 @@ sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.4/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.4/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 60M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 60M/" /etc/php/8.4/fpm/php.ini
 sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.4/fpm/php.ini
 sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.4/fpm/php.ini
 #sed -ie 's/;extension=pdo_pgsql/extension=pdo_pgsql/g' /etc/php/8.4/fpm/php.ini
@@ -120,8 +120,8 @@ sudo systemctl enable mariadb.service
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE drupal_db;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'dbadmin'@'localhost' IDENTIFIED BY 'abc1234@';"
-sudo mariadb -uroot --password="" -e "GRANT ALL ON drupal_db.* TO dbadmin@localhost WITH GRANT OPTION;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'drupal_user'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "GRANT ALL ON drupal_db.* TO drupal_user@localhost WITH GRANT OPTION;"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
@@ -130,13 +130,17 @@ echo "
 #--------------------------------------------------
 # Drupal installation
 #--------------------------------------------------"
-cd /opt && wget https://ftp.drupal.org/files/projects/drupal-11.3.9.tar.gz 
-tar -zxvf drupal-11.3.9.tar.gz
+cd /var/www
+sudo composer create-project drupal/recommended-project my-site
 
-mkdir /var/www/drupal
-sudo cp -rf drupal-11.3.9/* /var/www/drupal
-sudo chown -R www-data:www-data /var/www/drupal/
-sudo chmod -R 755 /var/www/drupal/
+sudo chown -R www-data:www-data /var/www/my-site/web/sites/default/files
+sudo chown -R www-data:www-data /var/www/my-site/web/sites/default/settings.php
+sudo chmod -R 755 /var/www/my-site/
+
+# Install Drush (Drupal Shell)
+sudo composer require drush/drush
+sudo composer update --no-dev
+sudo composer install --no-dev
 
 sudo cat <<EOF > /etc/nginx/sites-available/drupal.conf
 server {
@@ -144,22 +148,31 @@ server {
     listen [::]:80;
     server_name _;
 
-    root /var/www/drupal;
+    root /var/www/my-site/web;
     index index.php index.html index.htm;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$args;
     }
 
-    location ~ \.php$ {
+    location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
+   # Protect Drupal internal files
+    location ~ ^/sites/.*/private/ {
+        return 403;
+    }
+
     location ~ /\.ht {
         deny all;
+    }
+
+    location @rewrite {
+        rewrite ^/(.*)\$ /index.php?q=\$1;
     }
 }   
 EOF
@@ -173,8 +186,9 @@ nginx -t
 sudo systemctl restart nginx.service
 sudo systemctl restart php8.4-fpm
 
-sudo chmod 644 /var/www/drupal/sites/default/settings.php
-# sudo chmod 444 /var/www/drupal/sites/default/settings.php
+
+# chmod 444 /var/www/my-site/web/sites/default/settings.php
+# chmod 444 /var/www/my-site/web/sites/default/default.settings.php
 
 echo "
 #--------------------------------------------------
@@ -214,12 +228,8 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 sudo ufw reload
 
-# nano /var/www/drupal/sites/default/settings.php <<EOF
+# nano /var/www/my-site/sites/default/settings.php <<EOF
 # $settings['trusted_host_patterns'] = ['192\.168\.1\.13'];
 
 echo "Drupal setup completed successfully."
-
-# cd /var/www/drupal/
-# composer create-project drupal/cms
-
 
