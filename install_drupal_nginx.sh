@@ -42,7 +42,7 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-intl php8.4-xmlrpc php8.4-zip php8.4-gd php8.4-tidy php8.4-mbstring php8.4-curl php-pear \
 php8.4-dev php8.4-bcmath php8.4-pspell php8.4-ldap php8.4-soap php8.4-gmp php8.4-imagick php8.4-fpm php8.4-redis php8.4-apcu php8.4-mysql php8.4-xml \
-php8.4-pgsql
+php8.4-pgsql php8.4-apcu
 
 sudo systemctl start php8.4-fpm
 sudo systemctl enable php8.4-fpm
@@ -52,6 +52,7 @@ sudo apt install -y build-essential  bzip2 imagemagick composer libsodium23 fail
 sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
 
+sudo phpenmod apcu
 sudo pecl install uploadprogress
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/fpm/php.ini
