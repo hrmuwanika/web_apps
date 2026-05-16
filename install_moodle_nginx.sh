@@ -78,13 +78,13 @@ sudo systemctl start fail2ban.service
 sudo systemctl enable fail2ban.service
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 600/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_input_time = 60/max_input_time = 1000/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 500M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 500M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 100M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
@@ -139,7 +139,7 @@ echo "
 #--------------------------------------------------"
 cd /opt/
 wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
-tar xvf moodle-latest-502.tgz
+tar xzvf moodle-latest-502.tgz
 
 rm /var/www/html/index.html
 cp -rf moodle/ /var/www/html/
@@ -154,57 +154,32 @@ sudo chmod -R 755 /var/www/html/moodle
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-cat <<EOF > /etc/nginx/sites-available/moodle.conf 
+cat >/etc/nginx/conf.d/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
     root /var/www/html/moodle;
-    index  index.php;
-    server_name \$WEBSITE_NAME;
-
-    # Log files
-    access_log /var/log/nginx/moodle.access.log;
-    error_log /var/log/nginx/moodle.error.log;
+    index  index.php index.html index.htm;
+    server_name  example.com;
     
     client_max_body_size 100M;
     
+    autoindex off;
     location / {
-       try_files \$uri \$uri/ /index.php?$args; 
+        try_files $uri $uri/ =404;
     }
-    
-    location ~ \.php$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-    include fastcgi_params;
-    }
-
     location /dataroot/ {
       internal;
       alias /var/www/moodledata/;
     }
-
-    location ~ /\.ht {
-        deny all;
+    location ~ [^/].php(/|$) {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
     }
-    
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
-    }
-
-    location = /robots.txt {
-        allow all;
-        log_not_found off;
-        access_log off;
-    }	
-    
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires max;
-        log_not_found off;
-    }	  
 }
-EOF
+NGINX
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
