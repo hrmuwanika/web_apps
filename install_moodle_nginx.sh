@@ -152,7 +152,7 @@ sudo chmod -R 775 /var/www/moodledata
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-cat >/etc/nginx/conf.d/moodle.conf <<'NGINX'
+sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
