@@ -58,12 +58,15 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
 apt -y install software-properties-common
-add-apt-repository ppa:ondrej/php
-sudo apt update -y
 
-sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-intl php8.3-xmlrpc php8.3-zip php8.3-gd php8.3-tidy php8.3-mbstring php8.3-curl php8.3-xml php-pear \
-php8.3-bcmath php8.3-pspell php8.3-curl php8.3-ldap php8.3-soap unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix php8.3-mysql \
-php8.3-gmp php8.3-imagick php8.3-fpm php8.3-redis php8.3-apcu bzip2 imagemagick ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt upgrade -y
+
+sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php8.3-zip php-pear \
+php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm \
+php8.3-xmlrpc php8.3-pspell php8.3-ldap
+
+sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix bzip2 ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
 
 sudo apt autoremove apache2 -y
 
@@ -135,8 +138,6 @@ echo "
 # Installation of Moodle
 #--------------------------------------------------"
 cd /opt/
-# wget https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.tgz
-# tar xvf moodle-latest-405.tgz
 wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
 tar xvf moodle-latest-502.tgz
 
