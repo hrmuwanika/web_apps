@@ -66,8 +66,7 @@ sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring 
 php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm \
 php8.3-xmlrpc php8.3-pspell php8.3-ldap
 
-sudo apt install -y unzip git curl libpcre3 libpcre3-dev graphviz aspell ghostscript clamav postfix bzip2 ffmpeg libsodium23 fail2ban libpng-dev libjpeg-dev libtiff-dev 
-
+sudo apt install -y unzip git curl clamav ffmpeg 
 sudo apt autoremove apache2 -y
 
 sudo apt install -y nginx
@@ -85,7 +84,7 @@ sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& 
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 100M/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 256M/" /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
@@ -145,11 +144,10 @@ rm /var/www/html/index.html
 cp -rf moodle/ /var/www/html/
 
 sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/moodledata
-sudo chmod -R 775 /var/www/moodledata
-
 sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chown -R www-data:www-data /var/www/moodledata
 sudo chmod -R 755 /var/www/html/moodle
+sudo chmod -R 775 /var/www/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -160,18 +158,20 @@ server {
     listen [::]:80;
     root /var/www/html/moodle;
     index  index.php index.html index.htm;
-    server_name  example.com;
+    server_name  learn.example.com;
     
     client_max_body_size 100M;
-    
     autoindex off;
+    
     location / {
         try_files $uri $uri/ =404;
     }
+    
     location /dataroot/ {
       internal;
       alias /var/www/moodledata/;
     }
+    
     location ~ [^/].php(/|$) {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
