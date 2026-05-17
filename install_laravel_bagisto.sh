@@ -214,7 +214,7 @@ systemctl daemon-reload
 sudo systemctl enable laravel.service
 sudo systemctl start laravel.service
 
-sudo cat <<EOF > /etc/nginx/sites-available/laravel.conf
+sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
@@ -229,7 +229,7 @@ server {
     charset utf-8;
      
     location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     location = /favicon.ico { access_log off; log_not_found off; }
@@ -237,10 +237,10 @@ server {
 
     error_page 404 /index.php;
     
-    location ~ \.php\$ {
+    location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
@@ -248,7 +248,7 @@ server {
         deny all;
     }
 }
-EOF
+NGINX
 
 sudo ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/
 
