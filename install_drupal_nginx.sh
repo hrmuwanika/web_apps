@@ -144,7 +144,7 @@ sudo composer require drush/drush
 sudo composer update --no-dev
 sudo composer install --no-dev
 
-sudo cat <<EOF > /etc/nginx/sites-available/drupal.conf
+sudo cat > /etc/nginx/sites-available/drupal.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
@@ -154,13 +154,13 @@ server {
     index index.php index.html index.htm;
 
     location / {
-        try_files \$uri \$uri/ /index.php?\$args;
+        try_files $uri $uri/ /index.php?$args;
     }
 
-    location ~ \.php\$ {
+    location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.4-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
@@ -174,10 +174,10 @@ server {
     }
 
     location @rewrite {
-        rewrite ^/(.*)\$ /index.php?q=\$1;
+        rewrite ^/(.*)$ /index.php?q=$1;
     }
 }   
-EOF
+NGINX
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
