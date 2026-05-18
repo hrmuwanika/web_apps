@@ -198,7 +198,7 @@ php artisan optimize:clear
 # Laravel queue worker using systemd
 sudo cat<<EOF > /etc/systemd/system/laravel.service
 [Unit]
-Description=Laravel Laravel Queue Server
+Description=Laravel Application Server
 After=network.target
 
 [Service]
@@ -206,30 +206,32 @@ User=www-data
 Group=www-data
 Restart=always
 WorkingDirectory=/var/www/bagisto
-ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
+#ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
+ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8000
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
 # start laravel as a service
-systemctl daemon-reload
-
+sudo systemctl daemon-reload
 sudo systemctl enable laravel.service
 sudo systemctl start laravel.service
 
 sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 80;
+    listen [::]:80;
     server_name _;
 
     root /var/www/bagisto/public;
-    index index.php;
+    index index.php index.html index.htm;
     charset utf-8;
 
     client_max_body_size 100M;
-
+    
+    # Security Headers
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
     add_header X-XSS-Protection "1; mode=block";
@@ -242,7 +244,7 @@ server {
         add_header Content-Type text/plain;
     }
 
-    # --- Static assets with cache headers ---
+    # Static Files Caching
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
@@ -250,17 +252,18 @@ server {
         try_files $uri =404;
     }
 
-    # --- Laravel routing ---
+    # Handle Laravel Routes
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Favicon and robots.txt
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
 
     error_page 404 /index.php;
 
-    # --- PHP-FPM ---
+    # PHP Processing
     location ~ ^/index\.php(/|$) {
         fastcgi_pass unix:/run/php/php-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -281,13 +284,13 @@ server {
         deny all;
     }
 
-    # --- Deny access to sensitive files ---
+    # Security: Deny access to sensitive files
     location ~ /\.(env|git|svn) {
         deny all;
         return 404;
     }
 
-    # --- Gzip ---
+    # Gzip Compression
     gzip on;
     gzip_vary on;
     gzip_proxied any;
