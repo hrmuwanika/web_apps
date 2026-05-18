@@ -66,8 +66,8 @@ php8.4-imap php8.4-snmp
 sudo apt autoremove apache2 -y
 
 sudo apt install -y nginx
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
+sudo systemctl is-active nginx
+sudo systemctl is-enabled nginx
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/fpm/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 1200/" /etc/php/8.4/fpm/php.ini
@@ -86,8 +86,8 @@ echo "
 # Installing Mariadb Server
 #--------------------------------------------------"
 sudo apt install -y mariadb-server mariadb-client mariadb-backup
-sudo systemctl start mariadb.service
-sudo systemctl enable mariadb.service
+sudo systemctl is-active mariadb
+sudo systemctl is-enabled mariadb
 
 # sudo mariadb-secure-installation
 
@@ -108,48 +108,65 @@ cd /opt && wget https://wordpress.org/latest.tar.gz
 sudo tar -zvxf latest.tar.gz
 
 sudo rm index.html index.nginx-debian.html
-mkdir /var/www/mywebsite
-sudo cp -rf wordpress/* /var/www/mywebsite
 
-sudo chown -R www-data:www-data /var/www/mywebsite
-sudo chmod -R 755 /var/www/mywebsite
+sudo cp -rf wordpress/ /var/www/
+sudo chown -R www-data:www-data /var/www/wordpress
+sudo find /var/www/wordpress -type d -exec chmod 755 {} \;
+sudo find /var/www/wordpress -type f -exec chmod 644 {} \;
+#sudo chmod -R 755 /var/www/wordpress
 
-sudo cat <<EOF > /etc/nginx/sites-available/wordpress.conf 
-
+sudo cat > /etc/nginx/sites-available/wordpress.conf <<'NGINX'
 server {
-    listen 80;
-    listen [::]:80;
-    server_name _;
-    
-    root /var/www/mywebsite;
-    index index.php index.html index.htm;
-    
-    client_max_body_size 100M;
-    
-    location / {
-        try_files \$uri \$uri/ /index.php?\$args;
-    }
+  listen 80;
+  listen [::]:80;
+  server_name example.com;
+  
+  root /var/www/wordpress;
+  index index.php index.html index.htm index.nginx-debian.html;
 
-    location ~ \.php\$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include fastcgi_params;
-    }
+  location / {
+    try_files $uri $uri/ /index.php?$args;
+  }
 
-    location ~* \.(jpg|jpeg|gif|png|webp|svg|woff|woff2|ttf|css|js|ico|xml)\$ {
-        access_log off;
-        log_not_found off;
-        expires 360d;
-    }
+  location ~* /wp-sitemap.*\.xml {
+    try_files $uri $uri/ /index.php$is_args$args;
+  }
 
-    location ~ /\.ht {
-        access_log off;
-        log_not_found off;
-        deny all;
-    }
-}   
-EOF
+  client_max_body_size 100M;
+
+  location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    fastcgi_buffer_size 128k;
+    fastcgi_buffers 4 128k;
+    fastcgi_intercept_errors on;
+  }
+
+  gzip on;
+  gzip_comp_level 6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_disable "msie6";
+  gzip_types application/atom+xml application/geo+json application/javascript application/x-javascript application/json application/ld+json application/manifest+json application/rdf+xml application/rss+xml application/xhtml+xml application/xml font/eot font/otf font/ttf image/svg+xml text/css text/javascript text/plain text/xml;
+
+  location ~* \.(?:css(\.map)?|js(\.map)?|jpe?g|png|gif|ico|cur|heic|webp|tiff?|mp3|m4a|aac|ogg|midi?|wav|mp4|mov|webm|mpe?g|avi|ogv|flv|wmv)$ {
+    expires 90d;
+    access_log off;
+  }
+
+  location ~* \.(?:svgz?|ttf|ttc|otf|eot|woff2?)$ {
+    add_header Access-Control-Allow-Origin "*";
+    expires 90d;
+    access_log off;
+  }
+
+  location ~ /\.ht {
+    access_log off;
+    log_not_found off;
+    deny all;
+  }
+}
+NGINX
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
@@ -176,9 +193,6 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 sudo ufw reload
 
-sudo apt install -y cron 
-sudo systemctl enable cron
-sudo systemctl start cron
 
 echo "
 #--------------------------------------------------
