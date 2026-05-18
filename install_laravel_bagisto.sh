@@ -216,18 +216,37 @@ sudo systemctl start laravel.service
 
 sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
-    listen 80;
-    listen [::]:80;
+    listen 80 default_server;
+    listen [::]:80 default_server;
     server_name _;
-    
-    root /var/www/bagisto/public;                       # Path to your Laravel public directory
-    index index.html index.htm index.php;
-    
+
+    root /var/www/bagisto/public;
+    index index.php;
+    charset utf-8;
+
+    client_max_body_size 100M;
+
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
-    
-    charset utf-8;
-     
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
+
+    # --- Health check endpoint ---
+    location = /health {
+        access_log off;
+        return 200 "OK";
+        add_header Content-Type text/plain;
+    }
+
+    # --- Static assets with cache headers ---
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    # --- Laravel routing ---
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
@@ -236,17 +255,40 @@ server {
     location = /robots.txt  { access_log off; log_not_found off; }
 
     error_page 404 /index.php;
-    
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+
+    # --- PHP-FPM ---
+    location ~ ^/index\.php(/|$) {
+        fastcgi_pass unix:/run/php/php-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+
+        fastcgi_buffering on;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 16 16k;
+
+        fastcgi_connect_timeout 60s;
+        fastcgi_send_timeout 300s;
+        fastcgi_read_timeout 300s;
     }
 
+    # --- Deny dotfiles ---
     location ~ /\.(?!well-known).* {
         deny all;
     }
+
+    # --- Deny access to sensitive files ---
+    location ~ /\.(env|git|svn) {
+        deny all;
+        return 404;
+    }
+
+    # --- Gzip ---
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
 }
 NGINX
 
