@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ################################################################################
-#  Requirements for installation of Bagisto ecommerce
-#  Php: 8.4 or higher
+#  Requirements for installation of Liberu Real Estate 
+#  Php: 8.5 or higher
 #  Composer: latest
 #  Database: MariaDB 10.3
 #  Node.js: 24.x (for PWA)
@@ -12,11 +12,11 @@
 # 
 
 # Make a new file:
-# sudo nano install_laravel_bagisto.sh
+# sudo nano install_liberu_real_estate.sh
 # Place this content in it and then make the file executable:
-# sudo chmod +x install_laravel_bagisto.sh
+# sudo chmod +x install_liberu_real_estate.shh
 # Execute the script to install Bagisto:
-# ./install_laravel_bagisto.sh
+# ./install_liberu_real_estate.sh
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -89,7 +89,6 @@ php composer-setup.php
 php -r "unlink('composer-setup.php');"
 
 sudo mv composer.phar /usr/local/bin/composer
-
 sudo apt autoremove apache2 -y
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.5/cli/php.ini
@@ -107,7 +106,7 @@ echo "
 #--------------------------------------------------
 # Installing PostgreSQL Server
 #--------------------------------------------------"
-# sudo apt install -y postgresql-16 postgresql-client postgresql-contrib php8.4-pgsql
+# sudo apt install -y postgresql-16 postgresql-client postgresql-contrib php8.5-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
