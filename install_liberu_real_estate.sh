@@ -166,12 +166,7 @@ sudo chmod -R 775 /var/www/real-estate-laravel/storage
 
 # Copy environment file
 cp .env.example .env
-#sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
-#sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
-#sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
-sed -i 's/DB_DATABASE=/DB_DATABASE=laravel_db/g' .env
-sed -i 's/DB_USERNAME=/DB_USERNAME=laravel_user/g' .env
-sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
+nano .env
 
 # Generate application key
 php artisan key:generate
@@ -235,7 +230,7 @@ server {
     error_page 404 /index.php;
 
     location ~ ^/index\.php(/|$) {
-        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.5-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
         fastcgi_hide_header X-Powered-By;
@@ -285,8 +280,8 @@ else
 fi
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.4-fpm
+sudo systemctl restart php8.5-fpm
 
-echo "Laravel & Bagisto installation is complete"
+echo "Liberu Real Estate installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
 
