@@ -94,8 +94,12 @@ sudo apt autoremove apache2 -y
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/cli/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.4/cli/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 1G/" /etc/php/8.4/cli/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 110M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.4/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.4/cli/php.ini
 sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.4/cli/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.4/cli/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.4/cli/php.ini
 
@@ -108,7 +112,7 @@ echo "
 # curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 # sudo apt update
 
-# sudo apt -y install postgresql-16 postgresql-client postgresql-contrib php8.4-pgsql
+# sudo apt install -y postgresql-16 postgresql-client postgresql-contrib php8.4-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
@@ -152,14 +156,12 @@ sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
 
-cd /var/www/
-
 echo "
 #--------------------------------------------------
 # Clone the Bagisto repository
 #--------------------------------------------------"
-git clone https://github.com/bagisto/bagisto.git 
-# composer create-project bagisto/bagisto
+cd /var/www/
+sudo composer create-project bagisto/bagisto bagisto
 
 sudo chown -R www-data:www-data /var/www/bagisto
 sudo chmod -R 775 /var/www/bagisto/storage 
@@ -167,8 +169,8 @@ sudo chmod -R 775 /var/www/bagisto/storage
 # Navigate to project directory
 cd bagisto 
 
-# Install php dependencies
-composer install
+# Run Installation
+php artisan bagisto:install
 
 # Copy environment file
 cp .env.example .env
@@ -183,7 +185,9 @@ sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 php artisan key:generate
 sudo chmod -R 775 /var/www/bagisto/bootstrap/cache
 
-php artisan bagisto:install
+php artisan migrate:fresh --seed
+php artisan storage:link
+php artisan optimize:clear
 
 # run migrations and seeders
 # php artisan migrate
