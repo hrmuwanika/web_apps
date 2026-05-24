@@ -40,8 +40,12 @@ echo "
 # Installing ollama
 #--------------------------------------------------"
 curl -fsSL https://ollama.com/install.sh | sudo sh
-sudo systemctl enable ollama
+
+sudo nano /etc/systemd/system/ollama.service
+
+sudo systemctl daemon-reload
 sudo systemctl start ollama
+sudo systemctl enable ollama
 
 ollama pull gemma3:4b
 
