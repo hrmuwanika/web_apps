@@ -176,11 +176,11 @@ echo "
 # Clone the Bagisto repository
 #--------------------------------------------------"
 cd /var/www/
-sudo composer create-project bagisto/bagisto bagisto
+sudo git clone https://github.com/hrmuwanika/bagisto.git
 
 # Navigate to project directory
 cd bagisto 
-
+composer install
 # Run Installation
 # php artisan bagisto:install
 
