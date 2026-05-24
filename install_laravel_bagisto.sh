@@ -2,13 +2,13 @@
 
 ################################################################################
 #  Requirements for installation of Bagisto ecommerce
-#  Php: 8.4 or higher
+#  Php: 8.3 or higher
 #  Composer: latest
 #  Database: MariaDB 10.3
 #  Node.js: 24.x (for PWA)
 #  NPM/Yarn: Latest
 #  Web server: Nginx 
-#  OS: Ubuntu 20.04, 22.04, 24.04
+#  OS: Ubuntu 22.04, 24.04
 # 
 
 # Make a new file:
@@ -127,7 +127,7 @@ echo "
 # curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 # sudo apt update
 
-# sudo apt install -y postgresql-16 postgresql-client postgresql-contrib php8.4-pgsql
+# sudo apt install -y postgresql-16 postgresql-client postgresql-contrib php8.3-pgsql
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
@@ -181,6 +181,7 @@ sudo git clone https://github.com/hrmuwanika/bagisto.git
 # Navigate to project directory
 cd bagisto 
 composer install
+
 # Run Installation
 # php artisan bagisto:install
 
@@ -302,7 +303,6 @@ echo "
 #--------------------------------------------------
 # Enable ssl with certbot
 #--------------------------------------------------"
-
 if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "info@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
   sudo apt install -y snapd
   sudo apt-get remove certbot
@@ -320,7 +320,7 @@ else
 fi
 
 sudo systemctl restart nginx.service
-sudo systemctl restart php8.4-fpm
+sudo systemctl restart php8.3-fpm
 
 echo "Laravel & Bagisto installation is complete"
 echo "Access Laravel on https://$WEBSITE_NAME"
