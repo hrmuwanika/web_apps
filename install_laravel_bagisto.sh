@@ -203,34 +203,34 @@ php artisan optimize:clear
 # php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
-sudo cat > /etc/systemd/system/laravel.service <<'EOF'
-[Unit]
-Description=Laravel Application Server
-After=network.target
+# sudo cat > /etc/systemd/system/laravel.service <<'EOF'
+# [Unit]
+# Description=Laravel Application Server
+# After=network.target
 
-[Service]
-User=www-data
-Group=www-data
-Restart=always
-WorkingDirectory=/var/www/bagisto
-#ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
-ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8000
-Restart=always
+# [Service]
+# User=www-data
+# Group=www-data
+# Restart=always
+# WorkingDirectory=/var/www/bagisto
+# ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
+# ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8000
+# Restart=always
 
-[Install]
-WantedBy=multi-user.target
-EOF
+# [Install]
+# WantedBy=multi-user.target
+# EOF
 
 # start laravel as a service
-sudo systemctl daemon-reload
-sudo systemctl enable laravel.service
-sudo systemctl start laravel.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable laravel.service
+# sudo systemctl start laravel.service
 
 sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    server_name _;
+    server_name $WEBSITE_NAME;
 
     root /var/www/bagisto/public;
     index index.php index.html index.htm;
@@ -313,7 +313,6 @@ sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
 
 sudo nginx -t
-
 sudo systemctl reload nginx
 
 echo "
