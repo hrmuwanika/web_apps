@@ -200,35 +200,8 @@ php artisan migrate:fresh --seed
 php artisan storage:link
 php artisan optimize:clear
 
-# run migrations and seeders
-# php artisan migrate
-# php artisan db:seed
-# php artisan vendor:publish --all
-# php artisan serve --host=74.55.34.34 --port=8000
-
-# Laravel queue worker using systemd
-# sudo cat > /etc/systemd/system/laravel.service <<'EOF'
-# [Unit]
-# Description=Laravel Application Server
-# After=network.target
-
-# [Service]
-# User=www-data
-# Group=www-data
-# Restart=always
-# WorkingDirectory=/var/www/bagisto
-# ExecStart=/usr/bin/php /var/www/bagisto/artisan queue:work --sleep=3 --tries=3
-# ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8000
-# Restart=always
-
-# [Install]
-# WantedBy=multi-user.target
-# EOF
-
-# start laravel as a service
-# sudo systemctl daemon-reload
-# sudo systemctl enable laravel.service
-# sudo systemctl start laravel.service
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
 
 sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
