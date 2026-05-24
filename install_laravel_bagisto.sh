@@ -2,12 +2,12 @@
 
 ################################################################################
 #  Requirements for installation of Bagisto ecommerce
-#  Php: 8.3 or higher
-#  Composer: latest
+#  PHP 8.3 or higher
+#  Composer: 2.5 or higher
 #  Database: MariaDB 10.3
 #  Node.js: 24.x (for PWA)
 #  NPM/Yarn: Latest
-#  Web server: Nginx 
+#  Webserver: Nginx 
 #  OS: Ubuntu 22.04, 24.04
 # 
 
@@ -40,12 +40,12 @@ echo "
 # Installing ollama
 #--------------------------------------------------"
 curl -fsSL https://ollama.com/install.sh | sudo sh
+sudo systemctl enable ollama
 
 sudo nano /etc/systemd/system/ollama.service
 
 sudo systemctl daemon-reload
-sudo systemctl start ollama
-sudo systemctl enable ollama
+sudo systemctl restart ollama
 
 ollama pull gemma3:4b
 
