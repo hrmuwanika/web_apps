@@ -88,11 +88,11 @@ sudo apt install -y gpg ca-certificates apt-transport-https software-properties-
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-sudo apt install -y php8.4 php8.4-common php8.4-cli php8.4-opcache php8.4-mysql php8.4-xml php8.4-curl php8.4-zip php8.4-mbstring php8.4-gd php8.4-intl php8.4-bcmath \
-php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer 
+sudo apt install -y php8.3 php8.3-common php8.3-cli php8.3-opcache php8.3-mysql php8.3-xml php8.3-curl php8.3-zip php8.3-mbstring php8.3-gd php8.3-intl php8.3-bcmath \
+php8.3-xml php-pear php8.3-fpm php8.3-pgsql php8.3-tokenizer
 
-sudo systemctl enable php8.4-fpm
-sudo systemctl start php8.4-fpm
+sudo systemctl enable php8.3-fpm
+sudo systemctl start php8.3-fpm
 
 sudo apt autoremove apache2 -y
 
@@ -107,16 +107,16 @@ php -r "unlink('composer-setup.php');"
 
 sudo mv composer.phar /usr/local/bin/composer
 
-sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/cli/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.4/cli/php.ini
-sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.4/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 110M/" /etc/php/8.4/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.4/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.4/cli/php.ini
-sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.4/cli/php.ini
-sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.4/fpm/php.ini
-sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.4/cli/php.ini
-sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.4/cli/php.ini
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/cli/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/cli/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 110M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/cli/php.ini
+sed -ie 's/;cgi.fix_pathinfo = 1/cgi.fix_pathinfo = 0/' /etc/php/8.3/cli/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
+sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/cli/php.ini
+sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/cli/php.ini
 
 echo "
 #--------------------------------------------------
@@ -276,7 +276,7 @@ server {
 
     # PHP Processing
     location ~ ^/index\.php(/|$) {
-        fastcgi_pass unix:/run/php/php-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
         fastcgi_hide_header X-Powered-By;
