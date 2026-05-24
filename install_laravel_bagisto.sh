@@ -33,6 +33,18 @@ echo "
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
+sudo apt install -y nano wget curl git unzip
+
+echo "
+#--------------------------------------------------
+# Installing ollama
+#--------------------------------------------------"
+curl -fsSL https://ollama.com/install.sh | sudo sh
+sudo systemctl enable ollama
+sudo systemctl start ollama
+
+ollama pull gemma3:4b
+
 echo "
 #----------------------------------------------------
 # SSH authentication
@@ -46,10 +58,9 @@ echo "
 # Install and configure Firewall
 #--------------------------------------------------"
 sudo apt install -y ufw
-
-sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
+sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 
@@ -68,7 +79,7 @@ echo "
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------"
-sudo apt install -y curl gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 git unzip
+sudo apt install -y gpg ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 
 
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
@@ -78,6 +89,8 @@ php8.4-xml php-pear php8.4-fpm php8.4-pgsql php8.4-tokenizer
 
 sudo systemctl enable php8.4-fpm
 sudo systemctl start php8.4-fpm
+
+sudo apt autoremove apache2 -y
 
 echo "
 #------------------------------------------------
@@ -89,8 +102,6 @@ php composer-setup.php
 php -r "unlink('composer-setup.php');"
 
 sudo mv composer.phar /usr/local/bin/composer
-
-sudo apt autoremove apache2 -y
 
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.4/cli/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.4/cli/php.ini
@@ -162,9 +173,6 @@ echo "
 #--------------------------------------------------"
 cd /var/www/
 sudo composer create-project bagisto/bagisto bagisto
-
-sudo chown -R www-data:www-data /var/www/bagisto
-sudo chmod -R 775 /var/www/bagisto/storage 
 
 # Navigate to project directory
 cd bagisto 
