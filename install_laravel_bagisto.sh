@@ -178,7 +178,7 @@ sudo composer create-project bagisto/bagisto bagisto
 cd bagisto 
 
 # Run Installation
-php artisan bagisto:install
+# php artisan bagisto:install
 
 # Copy environment file
 cp .env.example .env
@@ -191,7 +191,6 @@ sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 # Generate application key
 php artisan key:generate
-sudo chmod -R 775 /var/www/bagisto/bootstrap/cache
 
 php artisan migrate:fresh --seed
 php artisan storage:link
@@ -204,7 +203,7 @@ php artisan optimize:clear
 # php artisan serve --host=74.55.34.34 --port=8000
 
 # Laravel queue worker using systemd
-sudo cat<<EOF > /etc/systemd/system/laravel.service
+sudo cat > /etc/systemd/system/laravel.service <<'EOF'
 [Unit]
 Description=Laravel Application Server
 After=network.target
