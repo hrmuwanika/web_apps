@@ -46,10 +46,9 @@ echo "
 # Install and configure Firewall
 #--------------------------------------------------"
 sudo apt install -y ufw
-
-sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
+sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 
@@ -152,92 +151,111 @@ sudo systemctl enable nginx.service
 
 echo "
 #--------------------------------------------------
-# Clone the Bagisto repository
+# Clone the Liberu Real Estate repository
 #--------------------------------------------------"
 cd /var/www/
 git clone https://github.com/liberu-real-estate/real-estate-laravel.git
-cd real-estate-laravel
 
+# Navigate to project directory
+cd real-estate-laravel
 composer install
 
-sudo chown -R www-data:www-data /var/www/real-estate-laravel
-sudo chmod -R 775 /var/www/real-estate-laravel/storage 
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache 
 
 # Copy environment file
 cp .env.example .env
-nano .env
+#sed -i "s/DB_CONNECTION=sqlite/DB_CONNECTION=pgsql/g" .env
+#sed -i "s/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/g" .env
+#sed -i "s/# DB_PORT=3306/DB_PORT=5432/g" .env
+sed -i 's/DB_DATABASE=/DB_DATABASE=laravel_db/g' .env
+sed -i 's/DB_USERNAME=/DB_USERNAME=laravel_user/g' .env
+sed -i 's/DB_PASSWORD=/DB_PASSWORD=abc1234@/g' .env
 
 # Generate application key
 php artisan key:generate
 
 # Edit .env with your database credentials, then:
 php artisan migrate --seed
-
 npm install && npm run build
-
-# run migrations and seeders
-# php artisan migrate
-# php artisan db:seed
-# php artisan vendor:publish --all
-# php artisan serve --host=74.55.34.34 --port=8000
-
-# Laravel queue worker using systemd
-sudo cat<<EOF > /etc/systemd/system/laravel.service
-[Unit]
-Description=Laravel Application Server
-After=network.target
-
-[Service]
-User=www-data
-Group=www-data
-Restart=always
-WorkingDirectory=/var/www/real-estate-laravel
-ExecStart=/usr/bin/php /var/www/real-estate-laravel/artisan queue:work --sleep=3 --tries=3
-#ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8000
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# start laravel as a service
-sudo systemctl daemon-reload
-sudo systemctl enable laravel.service
-sudo systemctl start laravel.service
 
 sudo cat > /etc/nginx/sites-available/laravel.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    server_name example.com;
+    server_name $WEBSITE_NAME;
+
     root /var/www/real-estate-laravel/public;
-
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-
-    index index.php;
-
+    index index.php index.html index.htm;
     charset utf-8;
 
+    client_max_body_size 100M;
+    
+    # Security Headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
+
+    # --- Health check endpoint ---
+    location = /health {
+        access_log off;
+        return 200 "OK";
+        add_header Content-Type text/plain;
+    }
+
+    # Static Files Caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    # Handle Laravel Routes
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Favicon and robots.txt
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
 
     error_page 404 /index.php;
 
+    # PHP Processing
     location ~ ^/index\.php(/|$) {
-        fastcgi_pass unix:/var/run/php/php8.5-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.5-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
         fastcgi_hide_header X-Powered-By;
+
+        fastcgi_buffering on;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 16 16k;
+
+        fastcgi_connect_timeout 60s;
+        fastcgi_send_timeout 300s;
+        fastcgi_read_timeout 300s;
     }
 
+    # --- Deny dotfiles ---
     location ~ /\.(?!well-known).* {
         deny all;
     }
+
+    # Security: Deny access to sensitive files
+    location ~ /\.(env|git|svn) {
+        deny all;
+        return 404;
+    }
+
+    # Gzip Compression
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
 }
 NGINX
 
@@ -248,7 +266,6 @@ sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
 
 sudo nginx -t
-
 sudo systemctl reload nginx
 
 echo "
