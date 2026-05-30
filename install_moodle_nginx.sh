@@ -44,7 +44,9 @@ sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
 # Install php8.3
-sudo apt install -y php8.3 php8.3-fpm php8.3-mysql php8.3-cli php8.3-curl php8.3-gd php8.3-xml php8.3-zip php8.3-xmlrpc php8.3-bcmath php8.3-intl
+sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php8.3-zip php-pear \
+php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm \
+php8.3-xmlrpc php8.3-pspell php8.3-ldap
 
 # Configure PHP.ini for Moodle requirements
 PHP_INI="/etc/php/8.3/fpm/php.ini"
@@ -66,7 +68,7 @@ sudo systemctl start mariadb
 sudo systemctl enable mariadb
 
 # Secure installation (you’ll be prompted)
-sudo mariadb-secure-installation
+# sudo mariadb-secure-installation
 # - Set root password
 # - Remove anonymous users
 # - Disallow root login remotely
@@ -74,12 +76,10 @@ sudo mariadb-secure-installation
 # - Reload privilege tables
 
 # Create Moodle database and user
-sudo mariadb -u root -p <<'SQL'
-CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '${DB_PASS}';
-GRANT ALL PRIVILEGES ON moodle.* TO 'moodleuser'@'localhost';
-FLUSH PRIVILEGES;
-SQL
+sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
 # Remove Apache if it snuck in
 sudo apt autoremove apache2 -y
@@ -118,40 +118,28 @@ sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    server_name $WEBSITE_NAME;
-
     root /var/www/moodle;
-    index index.php index.html index.htm;
-
-    client_max_body_size 0; # Unlimited uploads
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-        try_files $uri /$1 =404;
-        expires max;
-        log_not_found off;
-    }
-
+    
+    index  index.php index.html index.htm;
+    server_name  "$WEBSITE_NAME";
+    
+    client_max_body_size 100M;
+    autoindex off;
+    
     location / {
-        try_files $uri $uri/ /index.php?$args;
+        try_files $uri $uri/ =404;
     }
-
-    # PHP
-    location ~ \.php$ {
+    
+    location /dataroot/ {
+      internal;
+      alias /var/moodledata/;
+    }
+    
+    location ~ [^/].php(/|$) {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        fastcgi_param MAGE_MODE production;
-        fastcgi_param MAGE_ROOT /var/www/moodle;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
-    }
-
-    # Moodle data
-    location ^~ /moodledata/ {
-        internal;
-        alias /var/moodledata/;
     }
 }
 NGINX
