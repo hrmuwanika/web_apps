@@ -44,7 +44,7 @@ sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
 # Install php8.3
-sudo apt install -y php8.3 php8.3-fpm php8.3-mysql php8.3-cli php8.3-curl php8.3-gd php8.3-xml php8.3-zip php8.3-xmlrpc php8.3-bcmath php8.3-json
+sudo apt install -y php8.3 php8.3-fpm php8.3-mysql php8.3-cli php8.3-curl php8.3-gd php8.3-xml php8.3-zip php8.3-xmlrpc php8.3-bcmath php8.3-intl
 
 # Configure PHP.ini for Moodle requirements
 PHP_INI="/etc/php/8.3/fpm/php.ini"
