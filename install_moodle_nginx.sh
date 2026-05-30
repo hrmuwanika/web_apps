@@ -12,7 +12,7 @@
 # ./install_moodle_nginx.sh
 # crontab -e
 # Add the following line, which will run the cron script every ten minutes 
-#  * * * * * /usr/bin/php -q -f /var/www/html/moodle/admin/cli/cron.php
+#  * * * * * /usr/bin/php -q -f /var/www/moodle/admin/cli/cron.php
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -141,13 +141,13 @@ wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502
 tar xzvf moodle-latest-502.tgz
 
 rm /var/www/html/index.html
-cp -rf moodle/ /var/www/html/
+cp -rf moodle/ /var/www/
 
-sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chown -R www-data:www-data /var/www/moodledata
-sudo chmod -R 755 /var/www/html/moodle
-sudo chmod -R 775 /var/www/moodledata
+sudo mkdir -p /var/moodledata
+sudo chown -R www-data:www-data /var/www/moodle
+sudo chown -R www-data:www-data /var/moodledata
+sudo chmod -R 755 /var/www/moodle
+sudo chmod -R 775 /var/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -156,9 +156,9 @@ sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/moodle;
+    root /var/www/moodle;
     index  index.php index.html index.htm;
-    server_name  learn.example.com;
+    server_name  elearning.example.com;
     
     client_max_body_size 100M;
     autoindex off;
@@ -169,7 +169,7 @@ server {
     
     location /dataroot/ {
       internal;
-      alias /var/www/moodledata/;
+      alias /var/moodledata/;
     }
     
     location ~ [^/].php(/|$) {
@@ -233,36 +233,36 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-# sudo cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
-sudo cat <<EOF > /var/www/html/moodle/config.php 
+# sudo cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
+sudo cat > /var/www/moodle/config.php <<'EOF'
 <?PHP
-unset(\$CFG);                                // Ignore this line
-global \$CFG;                                // This is necessary here for PHPUnit execution
-\$CFG = new stdClass();
-\$CFG->dbtype    = 'mariadb';
-\$CFG->dblibrary = 'native';
-\$CFG->dbhost    = 'localhost';
-\$CFG->dbname    = 'moodledb';
-\$CFG->dbuser    = 'moodleuser';
-\$CFG->dbpass    = 'abc1234@';
-\$CFG->prefix    = 'mdl_';
-\$CFG->dboptions = array(
+unset($CFG);                                // Ignore this line
+global $CFG;                                // This is necessary here for PHPUnit execution
+$CFG = new stdClass();
+$CFG->dbtype    = 'mariadb';
+$CFG->dblibrary = 'native';
+$CFG->dbhost    = 'localhost';
+$CFG->dbname    = 'moodledb';
+$CFG->dbuser    = 'moodleuser';
+$CFG->dbpass    = 'abc1234@';
+$CFG->prefix    = 'mdl_';
+$CFG->dboptions = array(
     'dbpersist' => false,
     'dbsocket'  => false,
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = 0; 
-\$CFG->preventexecpath = true;
-\$CFG->wwwroot   = "http://\$WEBSITE_NAME";
-\$CFG->dataroot  = '/var/www/moodledata';
-\$CFG->directorypermissions = 0777;
-\$CFG->admin = 'admin';
+$CFG->slasharguments = 0; 
+$CFG->preventexecpath = true;
+$CFG->wwwroot   = "http://$WEBSITE_NAME";
+$CFG->dataroot  = '/var/moodledata';
+$CFG->directorypermissions = 0777;
+$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod -R 444 /var/www/html/moodle/config.php
+sudo chmod -R 444 /var/www/moodle/config.php
 sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
