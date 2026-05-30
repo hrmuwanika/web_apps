@@ -112,23 +112,9 @@ sudo chmod -R 755 /var/www/moodle
 sudo chmod -R 770 /var/moodledata
 
 echo "--------------------------------------------------"
-echo " Download and install mod_jitsi plugin"
-echo "--------------------------------------------------"
-# Download the latest mod_jitsi plugin
-cd /tmp
-wget https://github.com/jitsi/moodle-plugins/releases/download/v2.0/jitsi_plugin.zip
-
-# Unpack into Moodle
-sudo unzip jitsi_plugin.zip -d /var/www/moodle/local
-
-# Set ownership
-sudo chown -R www-data:www-data /var/www/moodle/local/jitsi
-
-
-echo "--------------------------------------------------"
 echo " Configure Nginx Server Block"
 echo "--------------------------------------------------"
-sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
+sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
 server {
     listen 80;
     listen [::]:80;
