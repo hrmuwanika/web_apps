@@ -118,7 +118,7 @@ sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/moodle;
+    root /var/www/moodle/public;
     
     index  index.php index.html index.htm;
     server_name  "$WEBSITE_NAME";
