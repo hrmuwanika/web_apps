@@ -26,7 +26,7 @@ echo " Enabling root access to SSH "
 echo "--------------------------------------------------"
 sudo apt install -y openssh-server fail2ban
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sudo systemctl restart sshd
+sudo systemctl restart ssh
 
 echo "--------------------------------------------------"
 echo " Set up the timezone"
