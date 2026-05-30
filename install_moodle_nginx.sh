@@ -85,7 +85,7 @@ sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 sudo apt autoremove apache2 -y
 
 echo "--------------------------------------------------"
-echo "# Installing Nginx"
+echo " Installing Nginx"
 echo "--------------------------------------------------"
 sudo apt install -y nginx
 sudo systemctl start nginx
