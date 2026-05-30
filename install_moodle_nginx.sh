@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
+# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -10,6 +10,7 @@
 # sudo chmod +x install_moodle_nginx.sh
 # Execute the script to install Moodle:
 # ./install_moodle_nginx.sh
+
 # crontab -e
 # Add the following line, which will run the cron script every ten minutes 
 #  * * * * * /usr/bin/php -q -f /var/www/moodle/admin/cli/cron.php
