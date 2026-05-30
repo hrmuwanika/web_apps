@@ -12,7 +12,7 @@ ENABLE_SSL="True"
 WEBSITE_NAME="elearning.example.com"                      # Ensure this matches your intended URL
 ADMIN_EMAIL="info@example.com"
 TIMEZONE="Africa/Kigali"
-DB_PASS="7pi57KrvHZzFveOr"
+DB_PASS="7pi57KrvHZyFvemr"
 # =======================================================
 
 echo "--------------------------------------------------"
