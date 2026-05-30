@@ -12,7 +12,7 @@ ENABLE_SSL="True"
 WEBSITE_NAME="elearning.example.com"                      # Ensure this matches your intended URL
 ADMIN_EMAIL="info@example.com"
 TIMEZONE="Africa/Kigali"
-DB_PASS="abc1234@"
+DB_PASS="7pi57KrvHZzFveOr"
 # =======================================================
 
 echo "--------------------------------------------------"
@@ -128,11 +128,11 @@ sudo chown -R www-data:www-data /var/www/moodle/local/jitsi
 echo "--------------------------------------------------"
 echo " Configure Nginx Server Block"
 echo "--------------------------------------------------"
-sudo tee /etc/nginx/sites-available/moodle.conf <<NGINX
+sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    server_name example.com;
+    server_name $WEBSITE_NAME;
 
     root /var/www/moodle;
     index index.php index.html index.htm;
