@@ -165,10 +165,11 @@ sudo chmod -R 775 /var/moodledata
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
+sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
 server {
     listen 80;
     listen [::]:80;
+    
     root /var/www/moodle;
     index  index.php index.html index.htm;
     server_name  elearning.example.com;
@@ -223,41 +224,42 @@ sudo apt install -y cron
 sudo systemctl enable cron
 sudo systemctl start cron
 
-echo "
-#--------------------------------------------------
-# Enable ssl with certbot
-#--------------------------------------------------"
+echo "--------------------------------------------------"
+echo "# Certbot SSL Installation"
+echo "--------------------------------------------------"
+# Base Protocol Choice
+PROTOCOL="http"
 
-if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
-  sudo apt install -y snapd
-  sudo apt-get remove certbot
-  
-  sudo snap install core
-  sudo snap refresh core
-  sudo snap install --classic certbot
-  sudo ln -s /snap/bin/certbot /usr/bin/certbot
-  sudo apt install -y python3-certbot-nginx
-  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
-  
-  sudo systemctl restart nginx
-  
-  echo "============ SSL/HTTPS is enabled! ========================"
+if [ "$ENABLE_SSL" = "True" ] && [ "$WEBSITE_NAME" != "example.com" ] && [ "$WEBSITE_NAME" != "elearning.example.com" ]; then
+    sudo apt-get remove certbot -y || true
+    sudo apt install -y snapd
+    sudo snap install core && sudo snap refresh core
+    sudo snap install --classic certbot
+    sudo ln -sf /snap/bin/certbot /usr/bin/certbot
+    
+    # Run Certbot non-interactively
+    sudo certbot --nginx -d "$WEBSITE_NAME" --noninteractive --agree-tos --email "$ADMIN_EMAIL" --redirect
+    PROTOCOL="https"
+    echo "============ SSL/HTTPS is enabled! ========================"
 else
-  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
+    echo "==== SSL/HTTPS skipped (using default example configs or manual choice) ======"
 fi
 
 # sudo cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
-sudo cat <<EOF > /var/www/moodle/config.php 
+echo "--------------------------------------------------"
+echo "# Writing Moodle config.php"
+echo "--------------------------------------------------"
+sudo tee /var/www/moodle/config.php <<EOF
 <?PHP
-unset(\$CFG);                                // Ignore this line
-global \$CFG;                                // This is necessary here for PHPUnit execution
+unset(\$CFG);
+global \$CFG;
 \$CFG = new stdClass();
 \$CFG->dbtype    = 'mariadb';
 \$CFG->dblibrary = 'native';
 \$CFG->dbhost    = 'localhost';
 \$CFG->dbname    = 'moodledb';
 \$CFG->dbuser    = 'moodleuser';
-\$CFG->dbpass    = '$DB_PASS';
+\$CFG->dbpass    = '${DB_PASS}';
 \$CFG->prefix    = 'mdl_';
 \$CFG->dboptions = array(
     'dbpersist' => false,
@@ -265,18 +267,21 @@ global \$CFG;                                // This is necessary here for PHPUn
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = 0; 
+\$CFG->slasharguments = 1; 
 \$CFG->preventexecpath = true;
-\$CFG->wwwroot   = "http://\$WEBSITE_NAME";
+\$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
-\$CFG->directorypermissions = 0777;
+\$CFG->directorypermissions = 02777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod -R 444 /var/www/moodle/config.php
+sudo chmod 444 /var/www/moodle/config.php
 sudo systemctl restart nginx
+sudo systemctl restart php8.3-fpm
 
-echo "Moodle installation is complete"
-echo "Access moodle on https://$WEBSITE_NAME/install.php"
+echo "=================================================================="
+echo " Moodle installation setup is complete!"
+echo " Complete the UI web-setup at: ${PROTOCOL}://${WEBSITE_NAME}/"
+echo "=================================================================="
