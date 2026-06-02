@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
+# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -12,7 +12,7 @@
 # ./install_moodle_nginx.sh
 # crontab -e
 # Add the following line, which will run the cron script every ten minutes 
-#  * * * * * /usr/bin/php -q -f /var/www/html/moodle/admin/cli/cron.php
+#  * * * * * /usr/bin/php -q -f /var/www/moodle/admin/cli/cron.php
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -21,6 +21,8 @@ ENABLE_SSL="True"
 WEBSITE_NAME="example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="info@example.com"
+# Database password
+DB_PASS="abc1234@"
 
 echo "
 #--------------------------------------------------
@@ -125,7 +127,7 @@ sudo systemctl enable mariadb.service
 sudo systemctl restart mariadb.service
 
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234@';"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '$DB_PASS';"
 sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
@@ -141,13 +143,13 @@ wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502
 tar xzvf moodle-latest-502.tgz
 
 rm /var/www/html/index.html
-cp -rf moodle/ /var/www/html/
+cp -rf moodle/ /var/www/
 
-sudo mkdir -p /var/www/moodledata
-sudo chown -R www-data:www-data /var/www/html/moodle
-sudo chown -R www-data:www-data /var/www/moodledata
-sudo chmod -R 755 /var/www/html/moodle
-sudo chmod -R 775 /var/www/moodledata
+sudo mkdir -p /var/moodledata
+sudo chown -R www-data:www-data /var/www/moodle
+sudo chown -R www-data:www-data /var/moodledata
+sudo chmod -R 755 /var/www/moodle
+sudo chmod -R 775 /var/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -156,7 +158,7 @@ sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/html/moodle;
+    root /var/www/moodle;
     index  index.php index.html index.htm;
     server_name  learn.example.com;
     
@@ -169,7 +171,7 @@ server {
     
     location /dataroot/ {
       internal;
-      alias /var/www/moodledata/;
+      alias /var/moodledata/;
     }
     
     location ~ [^/].php(/|$) {
@@ -234,7 +236,7 @@ else
 fi
 
 # sudo cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
-sudo cat <<EOF > /var/www/html/moodle/config.php 
+sudo cat <<EOF > /var/www/moodle/config.php 
 <?PHP
 unset(\$CFG);                                // Ignore this line
 global \$CFG;                                // This is necessary here for PHPUnit execution
@@ -244,7 +246,7 @@ global \$CFG;                                // This is necessary here for PHPUn
 \$CFG->dbhost    = 'localhost';
 \$CFG->dbname    = 'moodledb';
 \$CFG->dbuser    = 'moodleuser';
-\$CFG->dbpass    = 'abc1234@';
+\$CFG->dbpass    = '$DB_PASS';
 \$CFG->prefix    = 'mdl_';
 \$CFG->dboptions = array(
     'dbpersist' => false,
@@ -255,14 +257,14 @@ global \$CFG;                                // This is necessary here for PHPUn
 \$CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "http://\$WEBSITE_NAME";
-\$CFG->dataroot  = '/var/www/moodledata';
+\$CFG->dataroot  = '/var/moodledata';
 \$CFG->directorypermissions = 0777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod -R 444 /var/www/html/moodle/config.php
+sudo chmod -R 444 /var/www/moodle/config.php
 sudo systemctl restart nginx
 
 echo "Moodle installation is complete"
