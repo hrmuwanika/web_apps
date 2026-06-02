@@ -18,23 +18,22 @@
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
 # Set the website name
-WEBSITE_NAME="example.com"
+WEBSITE_NAME="elearning.example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="info@example.com"
 # Database password
-DB_PASS="abc1234@"
+DB_PASS="7pi57KrvHZzFvemr"
 
 echo "
-#--------------------------------------------------
+#----------------------------------------------------
 # Update Server
-#--------------------------------------------------"
-echo "============= Update Server ================"
+#----------------------------------------------------"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
 echo "
 #----------------------------------------------------
-# Enabling password authentication
+# Enabling root access 
 #----------------------------------------------------"
 sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -55,29 +54,26 @@ timedatectl set-timezone Africa/Kigali
 timedatectl
 
 echo "
+#-------------------------------------------------------
+# Installation of dependencies
+#-------------------------------------------------------"
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav ffmpeg 
+
+echo "
 #--------------------------------------------------
 # Installation of PHP
 #--------------------------------------------------"
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
-apt -y install software-properties-common
-
 sudo add-apt-repository ppa:ondrej/php -y
-sudo apt upgrade -y
+sudo apt update
 
 sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php8.3-zip php-pear \
 php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm \
 php8.3-xmlrpc php8.3-pspell php8.3-ldap
 
-sudo apt install -y unzip git curl clamav ffmpeg 
-sudo apt autoremove apache2 -y
-
-sudo apt install -y nginx
-sudo systemctl start nginx.service
-sudo systemctl enable nginx.service
-
-sudo systemctl start fail2ban.service
-sudo systemctl enable fail2ban.service
-
+echo "
+#----------------------------------------------------
+# Configure PHP.ini for Moodle requirements
+#----------------------------------------------------"
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
@@ -91,6 +87,16 @@ sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/ph
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
 sudo systemctl restart php8.3-fpm
+
+echo "
+#--------------------------------------------------
+# Installation of Nginx
+#--------------------------------------------------"
+sudo apt autoremove apache2 -y
+
+sudo apt install -y nginx
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
 
 echo "
 #--------------------------------------------------
@@ -115,9 +121,10 @@ echo "
 
 # sudo systemctl restart postgresql
 
+echo "
 #--------------------------------------------------
 # Install Debian default database MariaDB 
-#--------------------------------------------------
+#--------------------------------------------------"
 sudo apt install -y mariadb-server mariadb-client mariadb-backup
 sudo systemctl start mariadb.service
 sudo systemctl enable mariadb.service
@@ -126,6 +133,10 @@ sudo systemctl enable mariadb.service
 
 sudo systemctl restart mariadb.service
 
+echo "
+#-----------------------------------------------------------------
+# Database configuration 
+#-----------------------------------------------------------------"
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '$DB_PASS';"
 sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
@@ -160,7 +171,7 @@ server {
     listen [::]:80;
     root /var/www/moodle;
     index  index.php index.html index.htm;
-    server_name  learn.example.com;
+    server_name  elearning.example.com;
     
     client_max_body_size 100M;
     autoindex off;
@@ -235,7 +246,7 @@ else
   echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-# sudo cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+# sudo cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
 sudo cat <<EOF > /var/www/moodle/config.php 
 <?PHP
 unset(\$CFG);                                // Ignore this line
