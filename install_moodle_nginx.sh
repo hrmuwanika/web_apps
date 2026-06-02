@@ -1,127 +1,164 @@
 #!/bin/bash
 
-#############################################################################################
-# Shell script for installing Moodle v5.0 MariaDB, Nginx and Php 8.3 on Ubuntu 22.04/24.04
-#############################################################################################
+################################################################################
+# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 20.04, 22.04, 24.04
+# Authors: Henry Robert Muwanika
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+# Make a new file:
+# sudo nano install_moodle.sh
+# Place this content in it and then make the file executable:
+# sudo chmod +x install_moodle_nginx.sh
+# Execute the script to install Moodle:
+# ./install_moodle_nginx.sh
+# crontab -e
+# Add the following line, which will run the cron script every ten minutes 
+#  * * * * * /usr/bin/php -q -f /var/www/html/moodle/admin/cli/cron.php
+################################################################################
 
-# ==================== CONFIGURATION ====================
+# Set to "True" to install certbot and have ssl enabled, "False" to use http
 ENABLE_SSL="True"
-WEBSITE_NAME="elearning.example.com"                      # Ensure this matches your intended URL
+# Set the website name
+WEBSITE_NAME="example.com"
+# Provide Email to register ssl certificate
 ADMIN_EMAIL="info@example.com"
-TIMEZONE="Africa/Kigali"
-DB_PASS="7pi57KrvHZyFvemr"
-# =======================================================
 
-echo "--------------------------------------------------"
-echo " Update everything "
-echo "--------------------------------------------------"
+echo "
+#--------------------------------------------------
+# Update Server
+#--------------------------------------------------"
+echo "============= Update Server ================"
 sudo apt update && sudo apt upgrade -y
 sudo apt autoremove -y
 
-echo "--------------------------------------------------"
-echo " Enabling root access to SSH "
-echo "--------------------------------------------------"
-sudo apt install -y openssh-server fail2ban
+echo "
+#----------------------------------------------------
+# Enabling password authentication
+#----------------------------------------------------"
+sudo apt install -y openssh-server
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 sudo systemctl restart ssh
 
-echo "--------------------------------------------------"
-echo " Set up the timezone"
-echo "--------------------------------------------------"
-sudo timedatectl set-timezone "$TIMEZONE"
+echo "
+#--------------------------------------------------
+# Generate SSH key pairs
+#--------------------------------------------------"
+# ssh-keygen -t rsa -b 4096
+
+echo "
+#--------------------------------------------------
+# Set up the timezones
+#--------------------------------------------------"
+# set the correct timezone on ubuntu
+timedatectl set-timezone Africa/Kigali
 timedatectl
 
-echo "--------------------------------------------------"
-echo " Installation of base packages "
-echo "--------------------------------------------------"
-sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common
-sudo apt install -y nano wget unzip git clamav ffmpeg
+echo "
+#--------------------------------------------------
+# Installation of PHP
+#--------------------------------------------------"
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2
+apt -y install software-properties-common
 
 sudo add-apt-repository ppa:ondrej/php -y
-sudo apt update
+sudo apt upgrade -y
 
-# Install php8.3
 sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php8.3-zip php-pear \
 php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm \
 php8.3-xmlrpc php8.3-pspell php8.3-ldap
 
-# Configure PHP.ini for Moodle requirements
-PHP_INI="/etc/php/8.3/fpm/php.ini"
-sudo sed -i "s|;date.timezone =|date.timezone = ${TIMEZONE}|g" $PHP_INI
-sudo sed -i "s/max_execution_time = 30/max_execution_time = 360/" $PHP_INI
-sudo sed -i "s/max_input_time = 60/max_input_time = 360/" $PHP_INI
-sudo sed -i "s/;max_input_vars = 1000/max_input_vars = 7000/" $PHP_INI
-sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 100M/" $PHP_INI
-sudo sed -i "s/post_max_size = 8M/post_max_size = 100M/" $PHP_INI
-sudo sed -i "s/memory_limit = 128M/memory_limit = 512M/" $PHP_INI # Moodle 5.0 benefits from 512M
+sudo apt install -y unzip git curl clamav ffmpeg 
+sudo apt autoremove apache2 -y
+
+sudo apt install -y nginx
+sudo systemctl start nginx.service
+sudo systemctl enable nginx.service
+
+sudo systemctl start fail2ban.service
+sudo systemctl enable fail2ban.service
+
+sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 100M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 256M/" /etc/php/8.3/fpm/php.ini
+sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
+sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
 sudo systemctl restart php8.3-fpm
 
-echo "--------------------------------------------------"
-echo " Install MariaDB Database"
-echo "--------------------------------------------------"
-sudo apt install -y mariadb-server mariadb-backup
-sudo systemctl start mariadb
-sudo systemctl enable mariadb
+echo "
+#--------------------------------------------------
+# Installing PostgreSQL Server
+#--------------------------------------------------"
+# echo -e "=== Install and configure PostgreSQL ... ==="
+# sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+# curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+# sudo apt update
 
-# Secure installation (you’ll be prompted)
+# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
+
+# echo "=== Starting PostgreSQL service... ==="
+# sudo systemctl start postgresql 
+# sudo systemctl enable postgresql
+
+# Create the new user with superuser privileges
+# sudo -su postgres psql -c "CREATE USER moodleuser WITH PASSWORD 'abc1234@';"
+# sudo -su postgres psql -c "CREATE DATABASE moodledb;"
+# sudo -su postgres psql -c "ALTER DATABASE moodledb OWNER TO moodleuser;"
+# sudo -su postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodleuser;"
+
+# sudo systemctl restart postgresql
+
+#--------------------------------------------------
+# Install Debian default database MariaDB 
+#--------------------------------------------------
+sudo apt install -y mariadb-server mariadb-client mariadb-backup
+sudo systemctl start mariadb.service
+sudo systemctl enable mariadb.service
+
 # sudo mariadb-secure-installation
-# - Set root password
-# - Remove anonymous users
-# - Disallow root login remotely
-# - Remove test database
-# - Reload privilege tables
 
-# Create Moodle database and user
+sudo systemctl restart mariadb.service
+
 sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'abc1234@';"
 sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
 sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
 
-# Remove Apache if it snuck in
-sudo apt autoremove apache2 -y
+sudo systemctl restart mariadb.service
 
-echo "--------------------------------------------------"
-echo " Installing Nginx"
-echo "--------------------------------------------------"
-sudo apt install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
 
-echo "--------------------------------------------------"
-echo " Download and Extract Moodle"
-echo "--------------------------------------------------"
-cd /opt
-sudo wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
-sudo tar -xzvf moodle-latest-502.tgz
+echo "
+#--------------------------------------------------
+# Installation of Moodle
+#--------------------------------------------------"
+cd /opt/
+wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
+tar xzvf moodle-latest-502.tgz
 
-sudo rm -rf /var/www/html
-sudo mv moodle /var/www/moodle
+rm /var/www/html/index.html
+cp -rf moodle/ /var/www/html/
 
-sudo mkdir -p /var/moodledata
+sudo mkdir -p /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo chmod -R 755 /var/www/html/moodle
+sudo chmod -R 775 /var/www/moodledata
+
 sudo mkdir -p /var/quarantine
-
-# Set strict permissions setup
-sudo chown -R www-data:www-data /var/www/moodle
-sudo chown -R www-data:www-data /var/moodledata
 sudo chown -R www-data:www-data /var/quarantine
-sudo chmod -R 755 /var/www/moodle
-sudo chmod -R 770 /var/moodledata
 
-echo "--------------------------------------------------"
-echo " Configure Nginx Server Block"
-echo "--------------------------------------------------"
-sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
+sudo cat > /etc/nginx/sites-available/moodle.conf <<'NGINX'
 server {
     listen 80;
     listen [::]:80;
-    root /var/www/moodle/public;
-    
+    root /var/www/html/moodle;
     index  index.php index.html index.htm;
-    server_name  "$WEBSITE_NAME";
+    server_name  learn.example.com;
     
     client_max_body_size 100M;
     autoindex off;
@@ -132,7 +169,7 @@ server {
     
     location /dataroot/ {
       internal;
-      alias /var/moodledata/;
+      alias /var/www/moodledata/;
     }
     
     location ~ [^/].php(/|$) {
@@ -144,64 +181,70 @@ server {
 }
 NGINX
 
-# Manage links safely
-sudo rm -f /etc/nginx/sites-available/default
-sudo rm -f /etc/nginx/sites-enabled/default
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
-sudo ln -sf /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
+nginx -t
 
-echo "--------------------------------------------------"
-echo "# Install and Configure Firewall"
-echo "--------------------------------------------------"
+sudo systemctl restart nginx.service
+sudo systemctl restart php8.3-fpm
+
+echo "
+#--------------------------------------------------
+# Install and configure Firewall
+#--------------------------------------------------"
 sudo apt install -y ufw
+
 sudo ufw allow 22/tcp
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
 sudo ufw allow http
 sudo ufw allow https
+
+# Enable UFW
 sudo ufw --force enable
 sudo ufw reload
 
-# Set up Cron
 sudo apt install -y cron 
 sudo systemctl enable cron
 sudo systemctl start cron
 
-echo "--------------------------------------------------"
-echo "# Certbot SSL Installation"
-echo "--------------------------------------------------"
-# Base Protocol Choice
-PROTOCOL="http"
+echo "
+#--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------"
 
-if [ "$ENABLE_SSL" = "True" ] && [ "$WEBSITE_NAME" != "example.com" ] && [ "$WEBSITE_NAME" != "elearning.example.com" ]; then
-    sudo apt-get remove certbot -y || true
-    sudo apt install -y snapd
-    sudo snap install core && sudo snap refresh core
-    sudo snap install --classic certbot
-    sudo ln -sf /snap/bin/certbot /usr/bin/certbot
-    
-    # Run Certbot non-interactively
-    sudo certbot --nginx -d "$WEBSITE_NAME" --noninteractive --agree-tos --email "$ADMIN_EMAIL" --redirect
-    PROTOCOL="https"
-    echo "============ SSL/HTTPS is enabled! ========================"
+if [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "moodle@example.com" ]  && [ $WEBSITE_NAME != "example.com" ];then
+  sudo apt install -y snapd
+  sudo apt-get remove certbot
+  
+  sudo snap install core
+  sudo snap refresh core
+  sudo snap install --classic certbot
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo apt install -y python3-certbot-nginx
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  
+  sudo systemctl restart nginx
+  
+  echo "============ SSL/HTTPS is enabled! ========================"
 else
-    echo "==== SSL/HTTPS skipped (using default example configs or manual choice) ======"
+  echo "==== SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration! ======"
 fi
 
-echo "--------------------------------------------------"
-echo "# Writing Moodle config.php"
-echo "--------------------------------------------------"
-sudo tee /var/www/moodle/config.php <<EOF
+# sudo cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+sudo cat <<EOF > /var/www/html/moodle/config.php 
 <?PHP
-unset(\$CFG);
-global \$CFG;
+unset(\$CFG);                                // Ignore this line
+global \$CFG;                                // This is necessary here for PHPUnit execution
 \$CFG = new stdClass();
 \$CFG->dbtype    = 'mariadb';
 \$CFG->dblibrary = 'native';
 \$CFG->dbhost    = 'localhost';
 \$CFG->dbname    = 'moodledb';
 \$CFG->dbuser    = 'moodleuser';
-\$CFG->dbpass    = '${DB_PASS}';
+\$CFG->dbpass    = 'abc1234@';
 \$CFG->prefix    = 'mdl_';
 \$CFG->dboptions = array(
     'dbpersist' => false,
@@ -209,21 +252,18 @@ global \$CFG;
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = 1; 
+\$CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
-\$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
-\$CFG->dataroot  = '/var/moodledata';
-\$CFG->directorypermissions = 02777;
+\$CFG->wwwroot   = "http://\$WEBSITE_NAME";
+\$CFG->dataroot  = '/var/www/moodledata';
+\$CFG->directorypermissions = 0777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
-sudo chmod 444 /var/www/moodle/config.php
+sudo chmod -R 444 /var/www/html/moodle/config.php
 sudo systemctl restart nginx
-sudo systemctl restart php8.3-fpm
 
-echo "=================================================================="
-echo " Moodle installation setup is complete!"
-echo " Complete the UI web-setup at: ${PROTOCOL}://${WEBSITE_NAME}/"
-echo "=================================================================="
+echo "Moodle installation is complete"
+echo "Access moodle on https://$WEBSITE_NAME/install.php"
