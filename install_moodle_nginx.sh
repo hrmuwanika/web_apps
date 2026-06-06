@@ -274,6 +274,7 @@ global \$CFG;
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
+\$CFG->routerconfigured = true;
 \$CFG->directorypermissions = 02777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');
