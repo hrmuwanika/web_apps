@@ -170,7 +170,7 @@ server {
     listen 80;
     listen [::]:80;
     
-    root /var/www/moodle;
+    root /var/www/moodle/public;
     index  index.php index.html index.htm;
     server_name  elearning.example.com;
     
@@ -178,7 +178,7 @@ server {
     autoindex off;
     
     location / {
-        try_files $uri $uri/ =404;
+    try_files $uri $uri/ /r.php$is_args$args;
     }
     
     location /dataroot/ {
