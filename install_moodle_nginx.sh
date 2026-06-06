@@ -212,11 +212,11 @@ echo "
 #--------------------------------------------------"
 sudo apt install -y ufw
 
-sudo ufw allow 22/tcp
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow http
-sudo ufw allow https
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 
 # Enable UFW
 sudo ufw --force enable
@@ -281,6 +281,10 @@ require_once(dirname(__FILE__) . '/lib/setup.php');
 EOF
 
 sudo chmod 444 /var/www/moodle/config.php
+
+cd /var/www/moodle
+composer install --no-dev --classmap-authoritative
+
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
 
