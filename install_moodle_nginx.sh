@@ -57,7 +57,7 @@ echo "
 #-------------------------------------------------------
 # Installation of dependencies
 #-------------------------------------------------------"
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav ffmpeg 
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav graphviz aspell ghostscript
 
 echo "
 #--------------------------------------------------
@@ -66,8 +66,8 @@ echo "
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php8.3-zip php-pear php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip \
-php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm php8.3-xmlrpc php8.3-pspell php8.3-ldap
+sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php-pear php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip \
+php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm php8.3-xmlrpc php8.3-pspell php8.3-ldap php8.3-pgsql
 
 echo "
 #----------------------------------------------------
@@ -106,7 +106,7 @@ echo "
 # curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 # sudo apt update
 
-# sudo apt -y install postgresql-16 postgresql-contrib php8.3-pgsql
+# sudo apt -y install postgresql-17 postgresql-contrib
 
 # echo "=== Starting PostgreSQL service... ==="
 # sudo systemctl start postgresql 
@@ -255,13 +255,13 @@ sudo tee /var/www/moodle/config.php <<EOF
 unset(\$CFG);
 global \$CFG;
 \$CFG = new stdClass();
-\$CFG->dbtype    = 'mariadb';
-\$CFG->dblibrary = 'native';
-\$CFG->dbhost    = 'localhost';
-\$CFG->dbname    = 'moodledb';
-\$CFG->dbuser    = 'moodleuser';
-\$CFG->dbpass    = '${DB_PASS}';
-\$CFG->prefix    = 'mdl_';
+\$CFG->dbtype    = 'mariadb';            // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
+\$CFG->dblibrary = 'native';             // 'native' only at the moment
+\$CFG->dbhost    = 'localhost';          // eg 'localhost' or 'db.isp.com' or IP
+\$CFG->dbname    = 'moodledb';           // database name, eg moodle
+\$CFG->dbuser    = 'moodleuser';         // your database username
+\$CFG->dbpass    = '${DB_PASS}';         // your database password
+\$CFG->prefix    = 'mdl_';               // prefix to use for all table names
 \$CFG->dboptions = array(
     'dbpersist' => false,
     'dbsocket'  => false,
