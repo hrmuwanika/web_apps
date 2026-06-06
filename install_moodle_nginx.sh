@@ -10,9 +10,9 @@
 # sudo chmod +x install_moodle_nginx.sh
 # Execute the script to install Moodle:
 # ./install_moodle_nginx.sh
-# crontab -e
+# crontab -u www-data -e
 # Add the following line, which will run the cron script every ten minutes 
-#  * * * * * /usr/bin/php -q -f /var/www/moodle/admin/cli/cron.php
+#  */2 * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php  >/dev/null
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
@@ -77,7 +77,7 @@ echo "
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_execution_time = 30/max_execution_time = 300/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/;max_input_vars = 1000/max_input_vars = 10000/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 120M/" /etc/php/8.3/fpm/php.ini
