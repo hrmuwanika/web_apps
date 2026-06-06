@@ -185,13 +185,12 @@ server {
     # Deny access to internal files and dataroot
     location /dataroot/ {
       internal;
-      alias /var/moodledata/;
     }
 
     # Pass PHP scripts to FastCGI server
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.x-fpm.sock; 
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock; 
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
