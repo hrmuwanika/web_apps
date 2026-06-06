@@ -75,14 +75,14 @@ echo "
 # Configure PHP.ini for Moodle requirements
 #----------------------------------------------------"
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 300/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 7000/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 100M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/post_max_size = 8M/post_max_size = 100M/" /etc/php/8.3/fpm/php.ini
-sed -ie "s/memory_limit = 128M/memory_limit = 256M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/upload_max_filesize = 2M/upload_max_filesize = 120M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/post_max_size = 8M/post_max_size = 120M/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
@@ -160,7 +160,7 @@ sudo mkdir -p /var/moodledata
 sudo chown -R www-data:www-data /var/www/moodle
 sudo chown -R www-data:www-data /var/moodledata
 sudo chmod -R 755 /var/www/moodle
-sudo chmod -R 775 /var/moodledata
+sudo chmod -R 777 /var/moodledata
 
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
@@ -169,10 +169,11 @@ sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
 server {
     listen 80;
     listen [::]:80;
+    server_name  elearning.example.com;
     
+    # Point root directly to the public folder of Moodle
     root /var/www/moodle/public;
     index  index.php index.html index.htm;
-    server_name  elearning.example.com;
     
     client_max_body_size 100M;
     autoindex off;
@@ -180,15 +181,17 @@ server {
     location / {
     try_files $uri $uri/ /r.php$is_args$args;
     }
-    
+
+    # Deny access to internal files and dataroot
     location /dataroot/ {
       internal;
       alias /var/moodledata/;
     }
-    
-    location ~ [^/].php(/|$) {
+
+    # Pass PHP scripts to FastCGI server
+    location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.x-fpm.sock; 
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
