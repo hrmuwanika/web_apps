@@ -321,7 +321,7 @@ global \$CFG;
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = false; 
+\$CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
