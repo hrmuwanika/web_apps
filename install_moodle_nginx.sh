@@ -12,7 +12,7 @@
 # ./install_moodle_nginx.sh
 # crontab -u www-data -e
 # Add the following line, which will run the cron script every ten minutes 
-#  */2 * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php  >/dev/null
+#  * * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php  >/dev/null
 ################################################################################
 
 # Set to "True" to install certbot and have ssl enabled, "False" to use http
