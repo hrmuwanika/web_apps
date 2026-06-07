@@ -24,6 +24,12 @@ ADMIN_EMAIL="info@example.com"
 # Database password
 DB_PASS="b5CB77Y1N5k5"
 
+# Moodle Admin Account UI setup configuration
+MOODLE_ADMIN_USER="admin"
+MOODLE_ADMIN_PASS="eWibA99o2po6"
+MOODLE_ADMIN_EMAIL="info@example.com"
+MOODLE_SITENAME="E-Learning Academy"
+
 echo "
 #----------------------------------------------------
 # Update Server
@@ -95,7 +101,6 @@ echo "
 # Installation of Nginx
 #--------------------------------------------------"
 sudo apt autoremove apache2 -y
-
 sudo apt install -y nginx
 sudo systemctl start nginx.service
 sudo systemctl enable nginx.service
@@ -139,10 +144,10 @@ echo "
 #-----------------------------------------------------------------
 # Database configuration 
 #-----------------------------------------------------------------"
-sudo mariadb -uroot --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mariadb -uroot --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '$DB_PASS';"
-sudo mariadb -uroot --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
-sudo mariadb -uroot --password="" -e "FLUSH PRIVILEGES;"
+sudo mariadb -u root --password="" -e "CREATE DATABASE moodledb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mariadb -u root --password="" -e "CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY '$DB_PASS';"
+sudo mariadb -u root --password="" -e "GRANT ALL PRIVILEGES ON moodledb.* TO 'moodleuser'@'localhost';"
+sudo mariadb -u root --password="" -e "FLUSH PRIVILEGES;"
 
 sudo systemctl restart mariadb.service
 
@@ -155,22 +160,19 @@ cd /opt/
 wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
 tar xzvf moodle-latest-502.tgz
 
-rm /var/www/html/index.html
-cp -rf moodle/ /var/www/
+sudo rm -f /var/www/html/index.html || true
+sudo cp -rf moodle/ /var/www/
 
 sudo mkdir -p /var/moodledata
+sudo mkdir -p /var/quarantine
+
+# Fix permissions on Moodle directory and codebase
+sudo find /var/www/moodle -type d -exec chmod 755 {} \;
+sudo find /var/www/moodle -type f -exec chmod 644 {} \;
 sudo chown -R www-data:www-data /var/www/moodle
 sudo chown -R www-data:www-data /var/moodledata
-sudo chmod -R 755 /var/www/moodle
-sudo chmod -R 777 /var/moodledata
-
-sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
-
-# Reset the permissions on /var/www/html/moodle directories to read, write and execute for the webserver, read and execute for group and others
-sudo find /var/www/moodle -type d -exec chmod 755 {} \;
-# Reset the permissions on /var/www/html/moodle files to read, write for the webserver, read only for group and other
-sudo find /var/www/moodle -type f -exec chmod 644 {} \
+sudo chmod -R 777 /var/moodledata
 
 sudo tee /etc/nginx/sites-available/moodle.conf <<EOF
 server {
@@ -206,8 +208,8 @@ EOF
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
-sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 
+sudo ln -s /etc/nginx/sites-available/moodle.conf /etc/nginx/sites-enabled/
 nginx -t
 
 sudo systemctl restart nginx.service
@@ -229,9 +231,16 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 sudo ufw reload
 
+echo " 
+#-------------------------------------------------------
+# Configuring Cron Jobs
+#-------------------------------------------------------"
 sudo apt install -y cron 
 sudo systemctl enable cron
 sudo systemctl start cron
+
+# Call the cron.php in the moodle admin directory to run every minute.
+echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo crontab -u www-data -
 
 echo "--------------------------------------------------"
 echo "# Certbot SSL Installation"
@@ -253,6 +262,28 @@ if [ "$ENABLE_SSL" = "True" ] && [ "$WEBSITE_NAME" != "example.com" ] && [ "$WEB
 else
     echo "==== SSL/HTTPS skipped (using default example configs or manual choice) ======"
 fi
+
+echo "----------------------------------------------------"
+echo "# Installing Composer Dependencies"
+echo "----------------------------------------------------"
+cd /var/www/moodle
+sudo curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
+sudo composer install --no-dev --classmap-authoritative
+
+echo "----------------------------------------------------"
+echo "# Running Moodle Automated CLI Installer"
+echo "----------------------------------------------------"
+# This pre-configures and runs system initialization updates cleanly 
+sudo -u www-data /usr/bin/php admin/cli/install_database.php \
+    --lang="en" \
+    --adminuser="$MOODLE_ADMIN_USER" \
+    --adminpass="$MOODLE_ADMIN_PASS" \
+    --adminemail="$MOODLE_ADMIN_EMAIL" \
+    --agree-license \
+    --fullname="$MOODLE_SITENAME" \
+    --shortname="Moodle"
 
 # sudo cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
 echo "--------------------------------------------------"
@@ -289,14 +320,8 @@ EOF
 
 sudo chmod 444 /var/www/moodle/config.php
 
-cd /var/www/moodle
-composer install --no-dev --classmap-authoritative
-
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
-
-# Call the cron.php in the moodle admin directory to run every minute.
-echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo crontab -u www-data -
 
 echo "=================================================================="
 echo " Moodle installation setup is complete!"
