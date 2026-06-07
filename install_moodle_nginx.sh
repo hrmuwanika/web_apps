@@ -63,7 +63,7 @@ echo "
 #-------------------------------------------------------
 # Installation of dependencies
 #-------------------------------------------------------"
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav ghostscript graphviz aspell
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav clamav-daemon ghostscript graphviz aspell
 
 echo "
 #--------------------------------------------------
@@ -169,6 +169,7 @@ sudo mkdir -p /var/quarantine
 # Fix permissions on Moodle directory and codebase
 sudo find /var/www/moodle -type d -exec chmod 755 {} \;
 sudo find /var/www/moodle -type f -exec chmod 644 {} \;
+
 sudo chown -R www-data:www-data /var/www/moodle
 sudo chown -R www-data:www-data /var/moodledata
 sudo chown -R www-data:www-data /var/quarantine
