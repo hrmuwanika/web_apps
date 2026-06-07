@@ -167,6 +167,11 @@ sudo chmod -R 777 /var/moodledata
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
+# Reset the permissions on /var/www/html/moodle directories to read, write and execute for the webserver, read and execute for group and others
+sudo find /var/www/moodle -type d -exec chmod 755 {} \;
+# Reset the permissions on /var/www/html/moodle files to read, write for the webserver, read only for group and other
+sudo find /var/www/moodle -type f -exec chmod 644 {} \
+
 sudo tee /etc/nginx/sites-available/moodle.conf <<EOF
 server {
     listen 80;
@@ -271,7 +276,7 @@ global \$CFG;
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = 1; 
+\$CFG->slasharguments = 1false; 
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
@@ -289,6 +294,9 @@ composer install --no-dev --classmap-authoritative
 
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
+
+# Call the cron.php in the moodle admin directory to run every minute.
+echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo crontab -u www-data -
 
 echo "=================================================================="
 echo " Moodle installation setup is complete!"
