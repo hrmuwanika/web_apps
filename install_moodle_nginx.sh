@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script for installing Moodle v5.0 Postgresql, Nginx and Php 8.3 on Ubuntu 22.04, 24.04
+# Script for installing Moodle v5.2 Postgresql, Nginx and Php 8.3 on Ubuntu 22.04, 24.04
 # Authors: Henry Robert Muwanika
 
 # Make a new file:
@@ -22,7 +22,7 @@ WEBSITE_NAME="elearning.example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="info@example.com"
 # Database password
-DB_PASS="7pi57KrvHZzFvemr"
+DB_PASS="b5CB77Y1N5k5"
 
 echo "
 #----------------------------------------------------
@@ -57,7 +57,7 @@ echo "
 #-------------------------------------------------------
 # Installation of dependencies
 #-------------------------------------------------------"
-sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav graphviz aspell ghostscript
+sudo apt install -y ca-certificates apt-transport-https software-properties-common lsb-release gnupg2 unzip git curl clamav ghostscript graphviz aspell
 
 echo "
 #--------------------------------------------------
@@ -67,14 +67,14 @@ sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
 sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-apcu php8.3-mbstring php8.3-gd php8.3-intl php-pear php8.3-xml php8.3-soap php8.3-bcmath php8.3-mysql php8.3-zip \
-php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm php8.3-xmlrpc php8.3-pspell php8.3-ldap php8.3-pgsql
+php8.3-curl php8.3-tidy php8.3-imagick php8.3-gmp php8.3-fpm php8.3-xmlrpc php8.3-pspell php8.3-exif php8.3-ldap php8.3-pgsql php8.3-sodium
 
 echo "
 #----------------------------------------------------
 # Configure PHP.ini for Moodle requirements
 #----------------------------------------------------"
 sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sed -ie "s/max_execution_time = 30/max_execution_time = 300/" /etc/php/8.3/fpm/php.ini
+sed -ie "s/max_execution_time = 30/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/max_input_time = 60/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/;max_input_vars = 1000/max_input_vars = 10000/" /etc/php/8.3/fpm/php.ini
 sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
@@ -164,11 +164,11 @@ sudo chmod -R 777 /var/moodledata
 sudo mkdir -p /var/quarantine
 sudo chown -R www-data:www-data /var/quarantine
 
-sudo cat > /etc/nginx/sites-available/moodle.conf << 'NGINX'
+sudo tee /etc/nginx/sites-available/moodle.conf <<EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name  elearning.example.com;
+    server_name  $WEBSITE_NAME;
     
     # Point root directly to the public folder of Moodle
     root /var/www/moodle/public;
@@ -194,7 +194,7 @@ server {
         include fastcgi_params;
     }
 }
-NGINX
+EOF
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
