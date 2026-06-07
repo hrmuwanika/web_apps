@@ -73,18 +73,18 @@ echo "
 #----------------------------------------------------
 # Configure PHP.ini for Moodle requirements
 #----------------------------------------------------"
-sudo sed -ie "s/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g" /etc/php/8.3/fpm/php.ini
-sudo sed -ie "s/max_execution_time =.*/max_execution_time = 360/" /etc/php/8.3/fpm/php.ini
-sudo sed -ie "s/max_input_time =.*/max_input_time = 360/" /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/\;date\.timezone\ =/date\.timezone\ =\ Africa\/Kigali/g' /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/max_execution_time =.*/max_execution_time = 360/' /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/max_input_time =.*/max_input_time = 360/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^;max_input_vars =.*/max_input_vars = 8000/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^;max_input_vars =.*/max_input_vars = 8000/' /etc/php/8.3/cli/php.ini
-sudo sed -ie "s/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/" /etc/php/8.3/fpm/php.ini
-sudo sed -ie "s/short_open_tag = Off/short_open_tag = On/" /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/error_reporting = E_ALL \& \~E_DEPRECATED/error_reporting = E_ALL \& \~E_NOTICE \& \~E_DEPRECATED/' /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/short_open_tag = Off/short_open_tag = On/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^upload_max_filesize =.*/upload_max_filesize = 256M/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^upload_max_filesize =.*/upload_max_filesize = 256M/' /etc/php/8.3/cli/php.ini
 sudo sed -ie 's/^post_max_size =.*/post_max_size = 256M/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^post_max_size =.*/post_max_size = 256M/' /etc/php/8.3/cli/php.ini
-sudo sed -ie "s/memory_limit =.*/memory_limit = 512M/" /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/memory_limit =.*/memory_limit = 512M/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
