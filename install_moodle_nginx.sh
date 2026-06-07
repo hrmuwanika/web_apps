@@ -26,7 +26,7 @@ DB_PASS="b5CB77Y1N5k5"
 
 # Moodle Admin Account UI setup configuration
 MOODLE_ADMIN_USER="admin"
-MOODLE_ADMIN_PASS="eWibA99o2po6"
+MOODLE_ADMIN_PASS="eWibA9962p96"
 MOODLE_ADMIN_EMAIL="info@example.com"
 MOODLE_SITENAME="E-Learning Academy"
 
