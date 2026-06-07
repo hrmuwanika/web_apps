@@ -278,8 +278,8 @@ echo "
 #---------------------------------------------------------"
 cd /var/www/moodle
 
-# FIXED: Provided explicitly required database parameters to the script
-sudo -u www-data /usr/bin/php admin/cli/install_database.php \
+# Run the installer from the core directory
+sudo -u www-data /usr/bin/php admin/cli/install.php \
     --lang="en" \
     --dbtype="mariadb" \
     --dbhost="localhost" \
@@ -291,7 +291,10 @@ sudo -u www-data /usr/bin/php admin/cli/install_database.php \
     --adminemail="$MOODLE_ADMIN_EMAIL" \
     --agree-license \
     --fullname="$MOODLE_SITENAME" \
-    --shortname="Moodle"
+    --shortname="Moodle" \
+    --wwwroot="${PROTOCOL}://${WEBSITE_NAME}" \
+    --dataroot="/var/moodledata" \
+    --non-interactive
 
 
 echo "
