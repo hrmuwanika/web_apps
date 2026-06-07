@@ -272,12 +272,20 @@ sudo mv composer.phar /usr/local/bin/composer
 sudo chmod +x /usr/local/bin/composer
 sudo composer install --no-dev --classmap-authoritative
 
-echo "----------------------------------------------------"
-echo "# Running Moodle Automated CLI Installer"
-echo "----------------------------------------------------"
-# This pre-configures and runs system initialization updates cleanly 
+echo "
+#---------------------------------------------------------
+# Running Moodle Automated CLI Installer
+#---------------------------------------------------------"
+cd /var/www/moodle
+
+# FIXED: Provided explicitly required database parameters to the script
 sudo -u www-data /usr/bin/php admin/cli/install_database.php \
     --lang="en" \
+    --dbtype="mariadb" \
+    --dbhost="localhost" \
+    --dbname="moodledb" \
+    --dbuser="moodleuser" \
+    --dbpass="$DB_PASS" \
     --adminuser="$MOODLE_ADMIN_USER" \
     --adminpass="$MOODLE_ADMIN_PASS" \
     --adminemail="$MOODLE_ADMIN_EMAIL" \
@@ -285,10 +293,14 @@ sudo -u www-data /usr/bin/php admin/cli/install_database.php \
     --fullname="$MOODLE_SITENAME" \
     --shortname="Moodle"
 
-# sudo cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
-echo "--------------------------------------------------"
-echo "# Writing Moodle config.php"
-echo "--------------------------------------------------"
+
+echo "
+#--------------------------------------------------------
+# Writing Moodle config.php
+#--------------------------------------------------------"
+# Adjust generated configuration parameters
+sudo chmod 644 /var/www/moodle/config.php
+
 sudo tee /var/www/moodle/config.php <<EOF
 <?PHP
 unset(\$CFG);
@@ -318,6 +330,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
 
+# Lock down down production configuration write access
 sudo chmod 444 /var/www/moodle/config.php
 
 sudo systemctl restart nginx
