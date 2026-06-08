@@ -175,34 +175,34 @@ sudo chown -R www-data:www-data /var/moodledata
 sudo chown -R www-data:www-data /var/quarantine
 sudo chmod -R 777 /var/moodledata
 
-sudo tee /etc/nginx/sites-available/moodle.conf << 'NGINX'
+sudo tee /etc/nginx/sites-available/moodle.conf << NGINX
 server {
     listen 80;
     listen [::]:80;
-    server_name  \$WEBSITE_NAME;
+    server_name $WEBSITE_NAME;
     
-    # Point root directly to the public folder of Moodle
-    root /var/www/moodle/public;
-    index  index.php index.html index.htm;
+    # Point root to the public/web folder of Moodle
+    root /var/www/moodle;
+    index index.php index.html index.htm;
     
     client_max_body_size 100M;
     autoindex off;
     
     location / {
-    try_files $uri $uri/ /r.php\$is_args$args;
-    }
-
-    # Deny access to internal files and dataroot
-    location /dataroot/ {
-      internal;
+        try_files \$uri \$uri/ /index.php\$is_args\$args;
     }
 
     # Pass PHP scripts to FastCGI server
-    location ~ \.php$ {
+    location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock; 
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
+    }
+    
+    # Protect system files from being accessed
+    location ~ /\.(?!well-known).* {
+        deny all;
     }
 }
 NGINX
