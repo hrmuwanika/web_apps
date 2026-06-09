@@ -91,6 +91,7 @@ sudo sed -ie 's/^upload_max_filesize =.*/upload_max_filesize = 256M/' /etc/php/8
 sudo sed -ie 's/^post_max_size =.*/post_max_size = 256M/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/^post_max_size =.*/post_max_size = 256M/' /etc/php/8.3/cli/php.ini
 sudo sed -ie 's/memory_limit =.*/memory_limit = 512M/' /etc/php/8.3/fpm/php.ini
+sudo sed -ie 's/;cgi.fix_pathinfo =.*/cgi.fix_pathinfo = 1/' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/;extension=pdo_pgsql.so/extension=pdo_pgsql.so/g' /etc/php/8.3/fpm/php.ini
 sudo sed -ie 's/;extension=pgsql.so/extension=pgsql.so/g' /etc/php/8.3/fpm/php.ini
 
