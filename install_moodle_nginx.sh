@@ -175,7 +175,10 @@ sudo chown -R www-data:www-data /var/moodledata
 sudo chown -R www-data:www-data /var/quarantine
 sudo chmod -R 777 /var/moodledata
 
-sudo tee /etc/nginx/sites-available/moodle.conf << NGINX
+# Set up the configuration file including the fallback required for the router
+# Using tee allows the file to be written in a single (rather long command). 
+# Be sure to copy and paste entire block from "sudo" to "EOF"
+sudo tee /etc/nginx/sites-available/moodle.conf > /dev/null <<EOF
 server {
     listen 80;
     listen [::]:80;
@@ -184,28 +187,28 @@ server {
     # Point root to the public/web folder of Moodle
     root /var/www/moodle;
     index index.php index.html index.htm;
-    
+
     client_max_body_size 100M;
     autoindex off;
-    
+
     location / {
-        try_files \$uri \$uri/ /index.php\$is_args\$args;
+        try_files \$uri \$uri/ /index.php?\$args /r.php;
     }
 
-    # Pass PHP scripts to FastCGI server
-    location ~ \.php\$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock; 
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+        fastcgi_index index.php;
         include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
     }
-    
-    # Protect system files from being accessed
-    location ~ /\.(?!well-known).* {
+
+    location ~ /\.ht {
         deny all;
     }
 }
-NGINX
+EOF
 
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
@@ -323,7 +326,7 @@ global \$CFG;
     'dbport'    => '',   
 );
 
-\$CFG->slasharguments = 0; 
+// $CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
