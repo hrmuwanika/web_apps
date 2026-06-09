@@ -327,7 +327,6 @@ global \$CFG;
     'dbport'    => '',   
 );
 
-// $CFG->slasharguments = 0; 
 \$CFG->preventexecpath = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
@@ -337,6 +336,9 @@ global \$CFG;
 require_once(dirname(__FILE__) . '/lib/setup.php');
 ?>
 EOF
+
+# nginx needs slash arguments set
+sudo sed -i "/require_once(__DIR__ . '\/lib\/setup.php');/i \$CFG->slasharguments = false;" /var/www/moodle/config.php
 
 # Lock down down production configuration write access
 sudo chmod 444 /var/www/moodle/config.php
