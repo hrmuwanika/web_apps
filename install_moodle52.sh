@@ -4,7 +4,7 @@
 #  Supports : Ubuntu 24.04 LTS | Apache or Nginx | PHP 8.3 | MariaDB
 #  Doc ref  : https://docs.moodle.org/502/en/Step-by-step_Installation_Guide_for_Ubuntu
 #  Version  : 2.0.0
-#  Author   : Moodle Clicks
+#  Author   : Henry Robert Muwanika
 #
 #  SECURITY AUDIT NOTES:
 #  - All variables are quoted to prevent word-splitting and glob expansion
@@ -29,9 +29,9 @@ set -euo pipefail
 LOG_FILE="$HOME/moodle_install.log"
 APT_RETRY_CONF="/etc/apt/apt.conf.d/80retries"
 MAX_PKG_RETRIES=5
-MOODLE_PATH="/var/www/html/sites"
+MOODLE_PATH="/var/www/"
 MOODLE_CODE_FOLDER="$MOODLE_PATH/moodle"
-MOODLE_DATA_FOLDER="/var/www/data"
+MOODLE_DATA_FOLDER="/var/data"
 PROTOCOL="http://"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
