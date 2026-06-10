@@ -186,7 +186,7 @@ server {
     server_name $WEBSITE_NAME;
     
     # Point root to the public/web folder of Moodle
-    root /var/www/moodle;
+    root /var/www/moodle/public;
     index index.php index.html index.htm;
 
     client_max_body_size 100M;
@@ -200,12 +200,9 @@ server {
     location ~ [^/]\.php(/|$) {
         fastcgi_split_path_info ^(.+\.php)(/.+)\$;
         fastcgi_index index.php;
-
-        # Pass the split path info straight to PHP
-        fastcgi_param PATH_INFO \$fastcgi_path_info;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        
         include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
     }
 
@@ -328,21 +325,24 @@ global \$CFG;
 \$CFG->dboptions = array(
     'dbpersist' => false,
     'dbsocket'  => false,
-    'dbport'    => '',   
+    'dbport'    => '',  
+    'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
 \$CFG->preventexecpath = true;
+\$CFG->routerconfigured = true;
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
-\$CFG->routerconfigured = true;
-\$CFG->directorypermissions = 02777;
 \$CFG->admin = 'admin';
-require_once(dirname(__FILE__) . '/lib/setup.php');
-?>
-EOF
 
-# nginx needs slash arguments set
-sudo sed -i "/require_once(__DIR__ . '\/lib\/setup.php');/i \$CFG->slasharguments = false;" /var/www/moodle/config.php
+\$CFG->directorypermissions = 02777;
+
+\$CFG->slasharguments = false;
+require_once(__DIR__ . '/lib/setup.php');
+
+// There is no php closing tag in this file,
+// it is intentional because it prevents trailing whitespace problems!
+EOF
 
 # Lock down down production configuration write access
 sudo chmod 444 /var/www/moodle/config.php
