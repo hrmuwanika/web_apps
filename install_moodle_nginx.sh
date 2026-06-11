@@ -312,9 +312,12 @@ sudo chmod 644 /var/www/moodle/config.php
 
 sudo tee /var/www/moodle/config.php <<EOF
 <?PHP
+// Moodle configuration file
+
 unset(\$CFG);
 global \$CFG;
 \$CFG = new stdClass();
+
 \$CFG->dbtype    = 'mariadb';            // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
 \$CFG->dblibrary = 'native';             // 'native' only at the moment
 \$CFG->dbhost    = 'localhost';          // eg 'localhost' or 'db.isp.com' or IP
@@ -322,15 +325,16 @@ global \$CFG;
 \$CFG->dbuser    = 'moodleuser';         // your database username
 \$CFG->dbpass    = '${DB_PASS}';         // your database password
 \$CFG->prefix    = 'mdl_';               // prefix to use for all table names
-\$CFG->dboptions = array(
-    'dbpersist' => false,
-    'dbsocket'  => false,
-    'dbport'    => '',  
+\$CFG->dboptions = array (
+    'dbpersist' => 0,
+    'dbport' => '',
+    'dbsocket' => '',
     'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
 // $CFG->preventexecpath = true;
 // $CFG->routerconfigured = true;
+
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
 \$CFG->admin = 'admin';
