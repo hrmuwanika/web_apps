@@ -178,26 +178,20 @@ sudo cp -rf moodle/ /var/www/
 #  Create the moodledata directory outside your web server's document root
 sudo mkdir -p /var/moodledata
 
-# Set the webserver as the owner and group recursively ( for both the files and contents)
 sudo chown -R www-data:www-data /var/moodledata
-
-#  Set the  moodledata directory permissions so only the web server can read, write, and access them.
 sudo find /var/moodledata -type d -exec chmod 700 {} \;
-
-# Set the  moodledata file permissions so only the web server can read and write them.
 sudo find /var/moodledata -type f -exec chmod 600 {} \;
 
 # Fix permissions on Moodle directory and codebase
+sudo chown -R www-data:www-data /var/www/moodle
 sudo find /var/www/moodle -type d -exec chmod 755 {} \;
 sudo find /var/www/moodle -type f -exec chmod 644 {} \;
 
-# sudo mkdir -p /var/quarantine
-# sudo chown -R www-data:www-data /var/www/moodle
-# sudo chown -R www-data:www-data /var/quarantine
-# sudo chmod -R 777 /var/moodledata
-
 # nginx needs slash arguments set
 sudo sed -i "/require_once(__DIR__ . '\/lib\/setup.php');/i \$CFG->slasharguments = false;" /var/www/moodle/config.php
+
+sudo systemctl restart nginx
+sudo systemctl restart php8.3-fpm
 
 # Set up the configuration file including the fallback required for the router
 # Using tee allows the file to be written in a single (rather long command). 
@@ -319,8 +313,6 @@ echo "
 #--------------------------------------------------------
 # Writing Moodle config.php
 #--------------------------------------------------------"
-# Adjust generated configuration parameters
-sudo chmod 644 /var/www/moodle/config.php
 
 sudo tee /var/www/moodle/config.php <<EOF
 <?PHP
@@ -361,6 +353,7 @@ require_once(__DIR__ . '/lib/setup.php');
 EOF
 
 # Lock down down production configuration write access
+sudo chown root:root /var/www/moodle/config.php
 sudo chmod 444 /var/www/moodle/config.php
 
 sudo systemctl restart nginx
