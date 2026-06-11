@@ -29,9 +29,9 @@ set -euo pipefail
 LOG_FILE="$HOME/moodle_install.log"
 APT_RETRY_CONF="/etc/apt/apt.conf.d/80retries"
 MAX_PKG_RETRIES=5
-MOODLE_PATH="/var/www/"
+MOODLE_PATH="/var/www"
 MOODLE_CODE_FOLDER="$MOODLE_PATH/moodle"
-MOODLE_DATA_FOLDER="/var/"
+MOODLE_DATA_FOLDER="/var"
 PROTOCOL="http://"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
