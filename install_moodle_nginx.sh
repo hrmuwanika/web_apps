@@ -337,7 +337,7 @@ global \$CFG;
 );
 
 // $CFG->preventexecpath = true;
-// $CFG->routerconfigured = true;
+\$CFG->routerconfigured = true;
 
 \$CFG->wwwroot   = "${PROTOCOL}://${WEBSITE_NAME}";
 \$CFG->dataroot  = '/var/moodledata';
