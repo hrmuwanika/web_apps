@@ -22,11 +22,11 @@ WEBSITE_NAME="elearning.example.com"
 # Provide Email to register ssl certificate
 ADMIN_EMAIL="info@example.com"
 # Database password
-DB_PASS="b5CB77Y1N5k5"
+DB_PASS=$(openssl rand -base64 12)
 
 # Moodle Admin Account UI setup configuration
 MOODLE_ADMIN_USER="admin"
-MOODLE_ADMIN_PASS="eWibA9962p96"
+MOODLE_ADMIN_PASS=$(openssl rand -base64 10)
 MOODLE_ADMIN_EMAIL="info@example.com"
 MOODLE_SITENAME="E-Learning Academy"
 
@@ -357,4 +357,8 @@ sudo systemctl restart php8.3-fpm
 echo "=================================================================="
 echo " Moodle installation setup is complete!"
 echo " Complete the UI web-setup at: ${PROTOCOL}://${WEBSITE_NAME}/"
+echo " database username: moodleuser"
+echo " database password: $DB_PASS"
+echo " moodle username: admin"
+echo " moodle password: $MOODLE_ADMIN_PASS"
 echo "=================================================================="
