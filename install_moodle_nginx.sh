@@ -161,6 +161,17 @@ cd /opt/
 wget https://download.moodle.org/download.php/direct/stable502/moodle-latest-502.tgz
 tar xzvf moodle-latest-502.tgz
 
+echo " 
+#-------------------------------------------------------
+# Configuring Cron Jobs
+#-------------------------------------------------------"
+sudo apt install -y cron 
+sudo systemctl enable cron
+sudo systemctl start cron
+
+# Call the cron.php in the moodle admin directory to run every minute.
+echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo crontab -u www-data -
+
 sudo rm -f /var/www/html/index.html || true
 sudo cp -rf moodle/ /var/www/
 
@@ -175,17 +186,6 @@ sudo find /var/moodledata -type d -exec chmod 700 {} \;
 
 # Set the  moodledata file permissions so only the web server can read and write them.
 sudo find /var/moodledata -type f -exec chmod 600 {} \;
-
-echo " 
-#-------------------------------------------------------
-# Configuring Cron Jobs
-#-------------------------------------------------------"
-sudo apt install -y cron 
-sudo systemctl enable cron
-sudo systemctl start cron
-
-# Call the cron.php in the moodle admin directory to run every minute.
-echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >/dev/null" | sudo crontab -u www-data -
 
 # Fix permissions on Moodle directory and codebase
 sudo find /var/www/moodle -type d -exec chmod 755 {} \;
