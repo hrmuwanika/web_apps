@@ -353,8 +353,8 @@ require_once(__DIR__ . '/lib/setup.php');
 EOF
 
 # Lock down down production configuration write access
-sudo chown root:root /var/www/moodle/config.php
-sudo chmod 444 /var/www/moodle/config.php
+sudo chown root:www-data /var/www/moodle/config.php
+sudo chmod 640 /var/www/moodle/config.php
 
 sudo systemctl restart nginx
 sudo systemctl restart php8.3-fpm
