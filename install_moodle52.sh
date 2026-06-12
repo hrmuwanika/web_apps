@@ -681,6 +681,22 @@ if [[ "$WEBSERVER" == "nginx" && -f "$MOODLE_CODE_FOLDER/config.php" ]]; then
     log_success "slasharguments=false applied for Nginx"
 fi
 
+echo "
+#--------------------------------------------------
+# Install and configure Firewall
+#--------------------------------------------------"
+sudo apt install -y ufw
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Enable UFW
+sudo ufw --force enable
+sudo ufw reload
+
 step_ok "Moodle installed successfully"
 
 # ===========================================================================
